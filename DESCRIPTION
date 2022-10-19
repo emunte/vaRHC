@@ -1,16 +1,39 @@
 Package: vaRHC
-Title: What the Package Does (One Line, Title Case)
+Title: ACMG variant classification semi-automated
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+    person("Elisabet", "Munté Roca", , "emunte@idibell.cat", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Description: ACMG variant classification.
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
+Imports:
+    Biostrings,
+    DBI,
+    RMySQL,
+    XLConnect,
+    stringr,
+    assertthat,
+    dplyr,
+    xml2,
+    rvest,
+    httr,
+    jsonlite,
+    DescTools,
+    RCurl,
+    purrr,
+    RSelenium,
+    tibble,
+    vcfR,
+    XML,
+    readr,
+    tidyr,
+    DT
 Suggests: 
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+
