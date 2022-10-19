@@ -18,9 +18,7 @@
 #' @return information about the variant.
 #' @author Elisabet Munté Roca
 #' @examples
-#' Without SpliceAI installed
 #' vaRinfo("hg19", "MLH1", "c.1AG>")
-#' With spliceAI installed
 #' vaRinfo("hg19", "MSH6", "c.211A>G", spliceai.program = TRUE, spliceai.reference = "./hg19.fa")
 #' @references
 #' Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17, 405–424. https://doi.org/10.1038/gim.2015.30
@@ -528,8 +526,9 @@ CI <- function (AC, AN, porc){
 gnomADtotal <- function (datasetA, datasetB, porc){
   total <- datasetA + datasetB %>% as.data.frame()
   total <- tibble::rownames_to_column(total) %>%
-           dplyr::rowwise() %>% mutate (AF= AC/AN) %>%
-           dplyr::mutate (CI=ifelse(is.na(porc), NA, CI(AC,AN,porc)))
+    dplyr::rowwise() %>%
+    dplyr::mutate (AF= AC/AN) %>%
+    dplyr::mutate (CI=ifelse(is.na(porc), NA, CI(AC,AN,porc)))
   return(total)
 }
 
