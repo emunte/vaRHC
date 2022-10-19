@@ -1145,7 +1145,7 @@ articlesInfo <- function (object, variant.cor, bbdd){
 ################################################################################
 #' @noRd
 biblioScholar <- function(object, first.article){
-  articles.summary <- tibble()
+  articles.summary <- tibble::tibble()
   nomenclature.google <-  nomenclatureScholaR(object)
   articles.summary <- "Error 429: too many requests, please do the search manually."
 
