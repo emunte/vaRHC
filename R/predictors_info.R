@@ -81,7 +81,7 @@ predicInfo<- function(object, gene.specific, bbdd, gnomad, spliceai.program=FALS
   cut.ben <- c(gene.specific %>% dplyr::select(phylop_ben, phastcons_ben, gerp_ben,
                                         revel_ben, VEST4_ben, provean_ben, bayesDel_noAF_ben,agvgd_ben, polyphen_ben, MAPP_ben, prior_utah_prot_ben)
                %>% as.matrix() %>%c(), NA, NA, rep(gene.specific %>% dplyr::select(spliceai_ben) %>% as.matrix() %>% c(), 4),  gene.specific %>% dplyr::select(trap_ben) %>% as.matrix() %>% c())
-  cut.pat <- c(gene.specific %>% select(phylop_pat, phastcons_pat, gerp_pat,
+  cut.pat <- c(gene.specific %>% dplyr::select(phylop_pat, phastcons_pat, gerp_pat,
                                         revel_pat, VEST4_pat, provean_pat, bayesDel_noAF_pat,agvgd_pat, polyphen_pat, MAPP_pat, prior_utah_prot_pat_sup)
                %>% as.matrix() %>%c(), NA, NA, rep(gene.specific %>% dplyr::select(spliceai_pat) %>% as.matrix() %>% c(), 4),   gene.specific %>% dplyr::select(trap_pat) %>% as.matrix() %>% c())
 
