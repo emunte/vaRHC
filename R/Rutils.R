@@ -8,10 +8,10 @@
 ################################################################################
 connectionDB <- function(query){
   assertthat::assert_that(is.character(query)|is.list(query), msg="please enter a character vector or list")
-  con <- DBI::dbConnect(RMySQL::MySQL(), 
-                        user='userguest', 
+  con <- DBI::dbConnect(RMySQL::MySQL(),
+                        user='userguest',
                         dbname='class_variants',
-                        host='varhcdb001.cluster-ro-ca55bxrovxyt.eu-central-1.rds.amazonaws.com', 
+                        host='varhcdb001.cluster-ro-ca55bxrovxyt.eu-central-1.rds.amazonaws.com',
                         password='jNU%cd%Xjw*tY*%')
   on.exit(DBI::dbDisconnect(con))
   results <- lapply(query, function(x){
@@ -52,7 +52,7 @@ api2 <- function(server, ext){
 ensemblTranscript <- function(NM, gene){
   #we need to know the ensembl ID
   ext.ensembl.id <- paste0("/xrefs/symbol/homo_sapiens/", NM, "?content-type=application/json") #ensembl id
-  server.ensembl <- "http://grch37.rest.ensembl.org" 
+  server.ensembl <- "http://grch37.rest.ensembl.org"
   ensembl.id <- api2(server.ensembl, ext.ensembl.id)
   if (length(ensembl.id)==0){
     ext.ensembl.id <- paste0("/xrefs/symbol/homo_sapiens/", gene, "?content-type=application/json")
@@ -69,8 +69,8 @@ ensemblTranscript <- function(NM, gene){
 
 calculateGrantham <- function(a1, a2) {
   grantham <- readr::read_tsv("https://gist.githubusercontent.com/danielecook/501f03650bca6a3db31ff3af2d413d2a/raw/5583a134b36b60762be6cd54002a0f4044338cd0/grantham.tsv", show_col_types = FALSE) %>%
-              tidyr:: gather(SECOND,SCORE, -FIRST) %>% 
-              dplyr::filter(SCORE > 0)  
+              tidyr:: gather(SECOND,SCORE, -FIRST) %>%
+              dplyr::filter(SCORE > 0)
   (grantham %>% dplyr::filter(FIRST == a1|FIRST==a2, SECOND == a2 |SECOND==a1))$SCORE
 }
 
@@ -80,7 +80,7 @@ calculateGrantham <- function(a1, a2) {
 ################################################################################
 
 ## Without Java script
-#' read url 
+#' read url
 #' @param url url to read
 readUrl <- function(url){
   out <- tryCatch({
@@ -105,9 +105,13 @@ readUrl <- function(url){
 
 ## With Java script
 #' readTableUrlJavascript
+#' @param url url to query
+#' @param browser Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".
+#' @param port port to use for the conneciton
+
 readTableUrlJavascript <- function (url, browser="firefox",  port=4568L){
 assertthat::assert_that(browser %in% c("firefox", "chrome","phantomjs"), msg="Only supported for firefix, chrome or phantomjs browser")
-  
+
 if (browser=="firefox"){
   ex.cap <- list("moz:firefoxOptions" = list(args = list('--headless')))
 }else if(browser == "chrome"){
@@ -117,14 +121,14 @@ if (browser=="firefox"){
 }
   information <- "Not working"
   rD <- try(rD <- RSelenium::rsDriver(browser=browser, port=port, extraCapabilities = ex.cap ))
-  
+
   if(class(rD)[1]=="try-error"){
     start.time <- Sys.time()
     end.time <- Sys.time()
     time.taken <- difftime(end.time,start.time, units = "secs")
     try(while(stringr::str_detect(rD, paste0("Selenium server signals port = [0-9]+")) && time.taken < 120){
       port <- port + 1 %>% as.integer()
-      rD <- try(rD <- RSelenium::rsDriver(browser=browser, port=port, extraCapabilities = ex.cap  )) 
+      rD <- try(rD <- RSelenium::rsDriver(browser=browser, port=port, extraCapabilities = ex.cap  ))
     })
   }
   tryCatch(
@@ -149,7 +153,7 @@ if (browser=="firefox"){
     },
     finally={
       message(paste("Processed URL:", url))
-      
+
     }
   )
   rD[["server"]]$stop()

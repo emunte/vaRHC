@@ -13,16 +13,15 @@ NULL
 #' @param NM Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM,  NC and CCDS must also be provided.
 #' @param NC Accession number of the chromosome RefSeq. It can be ommited if the variant is exonic. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NC, NM and CCDS must also be provided.
 #' @param CCDS Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM and NC must also be provided. Current version only works for hg19.
-#' @param gene.specific.df By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv or in the package docs folder and some parameters can be modified taking into account your preferences
-#' @browser Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".
-#' @spliceai.program Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.
-#' @spliceai.reference Path to the Reference genome hg19 fasta file. Can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
-#' @spliceai.annotation Path to gene annotation file. By default it uses the file stored in docs folder: "../docs/gencode_spliceai_hg19.txt"
-#' @spliceai.distance  Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)
-#' @spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
-#' @provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
+#' @param gene.specific.df By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv or in the package extdata folder and some parameters can be modified taking into account your preferences
+#' @param browser Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".
+#' @param spliceai.program Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.
+#' @param spliceai.reference Path to the Reference genome hg19 fasta file. Can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
+#' @param spliceai.annotation Path to gene annotation file. By default it uses the file stored in extdata folder: "../extdata/gencode_spliceai_hg19.txt"
+#' @param spliceai.distance  Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)
+#' @param spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
+#' @param provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
 #' @param excel.results Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved
-#' @param path.original.file If excel.results param is set to TRUE, path.original.file must contain the path to the excel template. By default is the template located in the package docs folder.
 #' @param path.copy.file By default is NULL. If excel.results param is set to TRUE, path.copy.file must provide the path where the excel file must be saved. If not provided it will be saved in the working directory.
 #' @author Elisabet Munté Roca
 #' @examples
@@ -36,8 +35,8 @@ NULL
 #' ClinGen PTEN Expert Panel Specifications to the ACMG/AMP Variant Interpretation Guidelines Version 2: https://clinicalgenome.org/site/assets/files/4000/clingen_pten_acmg_specifications_v2.pdf
 #' ClinGen InSiGHT Hereditary Colorectal Cancer/Polyposis Variant Curation Expert Panel Specifications to the ACMG/AMP Variant Interpretation Guidelines Version 1 (draft): https://www.insight-group.org/content/uploads/2021/11/DRAFT_Nov_2021_TEMPLATE_SVI.ACMG_Specifications_InSiGHT_MMR_V1.pdf
 #' Feliubadaló, L., Moles-Fernández, A., Santamariña-Pena, M., Sánchez, A. T., López-Novo, A., Porras, L. M., Blanco, A., Capellá, G., de la Hoya, M., Molina, I. J., Osorio, A., Pineda, M., Rueda, D., de la Cruz, X., Diez, O., Ruiz-Ponte, C., Gutiérrez-Enríquez, S., Vega, A., & Lázaro, C. (2021). A Collaborative Effort to Define Classification Criteria for ATM Variants in Hereditary Cancer Patients. Clinical chemistry, 67(3), 518–533. https://doi.org/10.1093/clinchem/hvaa250
-#'@export
-vaR <- function(assembly, gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=NULL, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("docs", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, excel.results = FALSE,  path.copy.file = NULL ){
+#' @export
+vaR <- function(assembly, gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=NULL, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("extdata", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, excel.results = FALSE,  path.copy.file = NULL ){
   cat("looking for VariantInfo, please wait\n")
   info <- vaRinfo(assembly,  gene, variant, NM = NM, NC = NC, CCDS = CCDS, gene.specific.df = gene.specific.df, browser= browser, spliceai.program = spliceai.program, spliceai.reference = spliceai.reference, spliceai.annotation= spliceai.annotation, spliceai.distance= spliceai.distance, spliceai.masked = spliceai.masked, provean.program = provean.program)
   cat("calculating the final classification , please wait \n")
@@ -55,27 +54,25 @@ vaR <- function(assembly, gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.spe
 #' vaRbatch()
 #' @description  vaRbatch function allows to perform vaR function in batch. It also returns a logfile.
 #' @param assembly character hg19 or hg38
-#' @param gene gene of interest
-#' @param variant variant of interest in cdna
-#' @param NM Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM,  NC and CCDS must also be provided.
-#' @param NC Accession number of the chromosome RefSeq. It can be ommited if the variant is exonic. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NC, NM and CCDS must also be provided.
-#' @param CCDS Consensus CD id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM and NC must also be provided. Current version only works for hg19.
+#' @param all.variants a dataframe object containing at least two columns named gene and variant. Variant mus be coding dna sequence and for batch function only works in transcripts stored in IDIBELL database (see vignette)
 #' @param gene.specific.df By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv or in the package docs folder and some parameters can be modified taking into account your preferences
-#' @browser Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".
-#' @spliceai.program Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.
-#' @spliceai.reference Path to the Reference genome hg19 fasta file. Can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
-#' @spliceai.annotation Path to gene annotation file. By default it uses the file stored in docs folder: "../docs/gencode_spliceai_hg19.txt"
-#' @spliceai.distance  Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)
-#' @spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
-#' @provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
+#' @param browser Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".
+#' @param spliceai.program Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.
+#' @param spliceai.reference Path to the Reference genome hg19 fasta file. Can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
+#' @param spliceai.annotation Path to gene annotation file. By default it uses the file stored in data folder: "../data/gencode_spliceai_hg19.txt"
+#' @param spliceai.distance  Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)
+#' @param spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
+#' @param provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
+#' @param print.data.frame  Logical. By defaul is TRUE and the results will be stored in a txt file.
 #' @param excel.results Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved
 #' @param path.copy.file By default is NULL. If excel.results param is set to TRUE, path.copy.file must provide the path where the excel file must be saved. If not provided it will be saved in the working directory.
 #' @author Elisabet Munté Roca
 #' @examples
-# all <- vaRbatch(assembly = "hg19", all.variants, spliceai.program = TRUE, spliceai.reference= "/home/emunte/hg19.fa", excel.results = TRUE, path.copy.file="/media/emunte/Nuevo/Variants_diagnostic/NS49/excels")
-# all <- vaRbatch(all.variants, spliceai.program = FALSE, excel.results = TRUE, path.original.file="../docs/template.xlsx", path.copy.file="/media/emunte/Nuevo/Variants_diagnostic/NS49/excels" )
+#' all.variants <- data.frame(gene=c("BRCA1", "MLH1"), variant="c.211A>G", "c.1A>G")
+#' all <- vaRbatch(assembly = "hg19", all.variants, spliceai.program = TRUE, spliceai.reference= "./hg19.fa", excel.results = TRUE)
+# all <- vaRbatch(assembly = "hg19", all.variants, spliceai.program = FALSE, excel.results = TRUE, path.copy.file = "./excel")
 #' @export
-vaRbatch <- function (assembly = "hg19", all.variants, gene.specific.df=NULL, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("docs", "gencode.v38lift37.annotation.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, print.data.frame = TRUE, excel.results = FALSE, path.copy.file = NULL){
+vaRbatch <- function (assembly = "hg19", all.variants, gene.specific.df=NULL, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("extdata", "gencode.v38lift37.annotation.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, print.data.frame = TRUE, excel.results = FALSE, path.copy.file = NULL){
   time <-  Sys.time() %>%
     stringr::str_replace_all("-|:| ", "_")
   log.file <- file.path(getwd(), "log")
