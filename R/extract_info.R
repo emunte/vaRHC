@@ -15,6 +15,7 @@
 #' @param spliceai.distance  Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)
 #' @param spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
 #' @param provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
+#' @param provean.sh Path to provean.sh. By default is NULL and will only be taken into account if provean.program is set to TRUE.
 #' @return information about the variant.
 #' @author Elisabet Munté Roca
 #' @examples
@@ -22,7 +23,7 @@
 #' vaRinfo("hg19", "MSH6", "c.211A>G", spliceai.program = TRUE, spliceai.reference = "./hg19.fa")
 #' @references
 #' Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17, 405–424. https://doi.org/10.1038/gim.2015.30
-vaRinfo <- function(assembly,  gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=NULL, browser="firefox",  spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation =  system.file("extdata", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE){
+vaRinfo <- function(assembly,  gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=NULL, browser="firefox",  spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation =  system.file("extdata", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL){
   nm.nc <- NMparam(gene, NM = NM, NC = NC, CCDS = CCDS)
   cat("0% completed... correcting variant nomenclature \n")
   variant.mutalyzer <- correctHgvsMutalyzer (NM = nm.nc$NM, NC = nm.nc$NC, gene = gene, variant = variant)

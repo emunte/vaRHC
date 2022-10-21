@@ -26,7 +26,7 @@ NULL
 #' @author Elisabet Munté Roca
 #' @examples
 #' vaR (assembly= "hg19", gene= "BRCA1", variant= "c.211A>G",  excel.results=TRUE, path.copy.file="./excels/")
-#' vaR.all <- vaR (assembly = "hg19", gene = "BRCA1", variant = "c.692C>T", spliceai.program = TRUE, spliceai.reference = "../docs/hg19.fa", excel.results = TRUE, path.copy.file="../excels" )
+#' vaR.all <- vaR (assembly = "hg19", gene = "BRCA1", variant = "c.692C>T", spliceai.program = TRUE, spliceai.reference = "./hg19.fa", excel.results = TRUE, path.copy.file="../excels" )
 #' @references
 #' Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17(5), 405–424. https://doi.org/10.1038/gim.2015.30
 #' Tavtigian, S. V., Harrison, S. M., Boucher, K. M., & Biesecker, L. G. (2020). Fitting a naturally scaled point system to the ACMG/AMP variant classification guidelines. Human mutation, 41(10), 1734–1737. https://doi.org/10.1002/humu.24088
@@ -36,7 +36,7 @@ NULL
 #' ClinGen InSiGHT Hereditary Colorectal Cancer/Polyposis Variant Curation Expert Panel Specifications to the ACMG/AMP Variant Interpretation Guidelines Version 1 (draft): https://www.insight-group.org/content/uploads/2021/11/DRAFT_Nov_2021_TEMPLATE_SVI.ACMG_Specifications_InSiGHT_MMR_V1.pdf
 #' Feliubadaló, L., Moles-Fernández, A., Santamariña-Pena, M., Sánchez, A. T., López-Novo, A., Porras, L. M., Blanco, A., Capellá, G., de la Hoya, M., Molina, I. J., Osorio, A., Pineda, M., Rueda, D., de la Cruz, X., Diez, O., Ruiz-Ponte, C., Gutiérrez-Enríquez, S., Vega, A., & Lázaro, C. (2021). A Collaborative Effort to Define Classification Criteria for ATM Variants in Hereditary Cancer Patients. Clinical chemistry, 67(3), 518–533. https://doi.org/10.1093/clinchem/hvaa250
 #' @export
-vaR <- function(assembly, gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=NULL, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("extdata", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, excel.results = FALSE,  path.copy.file = NULL ){
+vaR <- function(assembly, gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=NULL, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("extdata", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, excel.results = FALSE,  path.copy.file = NULL ){
   cat("looking for VariantInfo, please wait\n")
   info <- vaRinfo(assembly,  gene, variant, NM = NM, NC = NC, CCDS = CCDS, gene.specific.df = gene.specific.df, browser= browser, spliceai.program = spliceai.program, spliceai.reference = spliceai.reference, spliceai.annotation= spliceai.annotation, spliceai.distance= spliceai.distance, spliceai.masked = spliceai.masked, provean.program = provean.program)
   cat("calculating the final classification , please wait \n")
@@ -72,7 +72,7 @@ vaR <- function(assembly, gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.spe
 #' all <- vaRbatch(assembly = "hg19", all.variants, spliceai.program = TRUE, spliceai.reference= "./hg19.fa", excel.results = TRUE)
 # all <- vaRbatch(assembly = "hg19", all.variants, spliceai.program = FALSE, excel.results = TRUE, path.copy.file = "./excel")
 #' @export
-vaRbatch <- function (assembly = "hg19", all.variants, gene.specific.df=NULL, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("extdata", "gencode.v38lift37.annotation.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, print.data.frame = TRUE, excel.results = FALSE, path.copy.file = NULL){
+vaRbatch <- function (assembly = "hg19", all.variants, gene.specific.df=NULL, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("extdata", "gencode.v38lift37.annotation.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, print.data.frame = TRUE, excel.results = FALSE, path.copy.file = NULL){
   time <-  Sys.time() %>%
     stringr::str_replace_all("-|:| ", "_")
   log.file <- file.path(getwd(), "log")

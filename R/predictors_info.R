@@ -4,7 +4,7 @@
 
 ## General
 #' @noRd
-predicInfo<- function(object, gene.specific, bbdd, gnomad, spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation = system.file("extdata", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE){
+predicInfo<- function(object, gene.specific, bbdd, gnomad, spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation = system.file("extdata", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL){
   httr::set_config(httr::config(ssl_verifypeer = 0L))
   ensembl.id <- ensemblTranscript(object$NM, object$gene)
   #scores
@@ -19,7 +19,7 @@ predicInfo<- function(object, gene.specific, bbdd, gnomad, spliceai.program=FALS
   }
 
   if (object$most.severe.consequence %in% c("inframe_deletion", "inframe_insertion") && provean.program == TRUE){
-      dbnsfp$provean <- proveanR(object)
+      dbnsfp$provean <- proveanR(object, provean.sh)
   }
   align.gvgd <- alignGvgd(object, bbdd)
   spliceai.score <- spliceaiR(object = object, ext.spliceai = gnomad, bbdd = bbdd, spliceai.program = spliceai.program, reference.splice = spliceai.reference, annotation.splice = spliceai.annotation, distance = spliceai.distance, mask = spliceai.masked)
@@ -313,7 +313,7 @@ priorUtahProb <- function(object, gene=NULL, variant =NULL){
 #' @references Choi Y, Sims GE, Murphy S, Miller JR, Chan AP. Predicting the functional effect of amino acid substitutions and indels. PloS one. 2012-01-01; 7.3: e46688. PMID: 23056405
 #' @noRd
 
-proveanR <- function(object){
+proveanR <- function(object, provean.sh){
   prot.cor <- object$protein
   score.provean <- NA
   if(object$most.severe.consequence %in% c("missense_variant", "synonymous_variant")){
@@ -396,11 +396,23 @@ proveanR <- function(object){
     protein <- NA
   }
 
+  #obtain protein sequence
+   if(!is.na(protein)){
+    server.ensembl <- "http://grch37.rest.ensembl.org"
+     ext.ensembl <- paste0("/sequence/id/", ensemblTranscript(object$NM, object$gene)$id ,"?multiple_sequences=0;content-type=text/x-seqxml%2Bxml;type=protein")
+     prot.seq <- api(server.ensembl, ext.ensembl)$seq
+     .tmp <- file.path(getwd(), ".tmp")
+     dir.create(.tmp, showWarnings = FALSE)
+     seqinr::write.fasta(sequences = prot.seq, names=object$gene, file.out = file.path(.tmp, "provean.fasta"), as.string= TRUE)
+     write.table(protein, file.path(.tmp, "variants.var"), row.names = FALSE, col.names = FALSE, quote=FALSE )
+     cmd <- paste(provean.sh, "-q", file.path(.tmp, "provean.fasta"), "-v", file.path(.tmp, "variants.var"))
+     print(cmd); a <- try(system(cmd, intern=TRUE))
+     score.provean <- stringr::str_split(a[12], "\t") %>% purrr::map(2) %>% unlist() %>% as.numeric()
+   }
+
+
   ##Web scrapping -> web-based version has been retired
-  # if(!is.na(protein)){
-  #   server.ensembl <- "http://grch37.rest.ensembl.org"
-  #   ext.ensembl <- paste0("/sequence/id/", ensemblTranscript(object$NM, object$gene)$id ,"?multiple_sequences=0;content-type=text/x-seqxml%2Bxml;type=protein")
-  #   prot.seq <- api(server.ensembl, ext.ensembl)$seq
+  # if (web.scrapping==TRUE){
   #   rD <- RSelenium::rsDriver(browser=c("firefox"), port=4570L)
   #   driver <- rD[["client"]]
   #   url.provean <- "http://provean.jcvi.org/seq_submit.php"
