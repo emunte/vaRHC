@@ -649,10 +649,10 @@ clinVarIds <- function(object){
                           tibble::as_tibble() %>%
                           dplyr::mutate(V2=paste0(object$NM, "(", object$gene, ")", object$variant," ",object$protein))
         }else{
-          clinvar.info <- clinvar.info[[4]] %>% as_tibble()
+          clinvar.info <- clinvar.info[[4]] %>% tibble::as_tibble()
         }
       }else{
-        clinvar.info <- clinvar.info[[4]] %>% as_tibble()
+        clinvar.info <- clinvar.info[[4]] %>% tibble::as_tibble()
       }
     }
     if(nrow(clinvar.info)>0){
@@ -845,7 +845,7 @@ secondMet <- function(variant.mutalyzer, object, assembly){
     ext.clinvar.pvs1 <- paste0("track=clinvarMain;chrom=chr", object$chr,";start=",start.sec, ";end=", end.sec)
     server.ucsc <- "http://api.genome.ucsc.edu/getData/track?" #UCSC's REST API
     clinvar.pvs1.info <- api2(paste0(server.ucsc, "genome=", assembly,";"), ext.clinvar.pvs1)[["clinvarMain"]] %>%
-      as_tibble() %>%
+      tibble::as_tibble() %>%
                   dplyr::mutate (reviewStatus = purrr::map(stringr::str_split(reviewStatus, ":"),2),
                                  url = paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", purrr::map(stringr::str_split(origName, "\\|"),1)),
                                  origNames = purrr::map(stringr::str_split(origName, "\\|"),2),
