@@ -4,7 +4,7 @@
 
 ## General
 #' @noRd
-predicInfo<- function(object, gene.specific, bbdd, gnomad, spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation = system.file("extdata", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL){
+predicInfo<- function(object, gene.specific, bbdd, gnomad, spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL){
   httr::set_config(httr::config(ssl_verifypeer = 0L))
   ensembl.id <- ensemblTranscript(object$NM, object$gene)
   #scores
@@ -449,7 +449,7 @@ proveanR <- function(object, provean.sh){
 #' SpliceaiR
 #' @references Jaganathan, K., Panagiotopoulou, S. K., McRae, J. F., Darbandi, S. F., Knowles, D., Li, Y. I., ... & Farh, K. K. H. (2019). Predicting splicing from primary sequence with deep learning. Cell, 176(3), 535-548.
 #' @noRd
-spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precomputed = 1, mask = 1, bbdd, spliceai.program = FALSE,  reference.splice = NULL, annotation.splice = system.file("extdata", "gencode_spliceai_hg19.txt", package="vaRHC")) {
+spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precomputed = 1, mask = 1, bbdd, spliceai.program = FALSE,  reference.splice = NULL, annotation.splice = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC")) {
   assertthat::assert_that(is.logical(spliceai.program), msg="spliceai.program param must be TRUE or FALSE")
   cond <- precomputed==1 & genome==37 & distance==1000 & mask==1
   ensembl.id <- object$ensembl.id
