@@ -15,11 +15,12 @@ vaR(
   browser = "firefox",
   spliceai.program = FALSE,
   spliceai.reference = NULL,
-  spliceai.annotation = system.file("docs", "gencode_spliceai_hg19.txt", package =
+  spliceai.annotation = system.file("extdata", "gencode_spliceai_hg19.txt", package =
     "vaRHC"),
   spliceai.distance = 1000,
   spliceai.masked = 1,
   provean.program = FALSE,
+  provean.sh = NULL,
   excel.results = FALSE,
   path.copy.file = NULL
 )
@@ -37,13 +38,25 @@ vaR(
 
 \item{CCDS}{Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM and NC must also be provided. Current version only works for hg19.}
 
-\item{gene.specific.df}{By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv or in the package docs folder and some parameters can be modified taking into account your preferences}
+\item{gene.specific.df}{By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv or in the package extdata folder and some parameters can be modified taking into account your preferences}
+
+\item{browser}{Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".}
+
+\item{spliceai.program}{Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.}
+
+\item{spliceai.reference}{Path to the Reference genome hg19 fasta file. Can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.}
+
+\item{spliceai.annotation}{Path to gene annotation file. By default it uses the file stored in extdata folder: "../extdata/gencode_spliceai_hg19.txt"}
+
+\item{spliceai.distance}{Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)}
+
+\item{spliceai.masked}{Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)}
+
+\item{provean.program}{Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.}
 
 \item{excel.results}{Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved}
 
 \item{path.copy.file}{By default is NULL. If excel.results param is set to TRUE, path.copy.file must provide the path where the excel file must be saved. If not provided it will be saved in the working directory.}
-
-\item{path.original.file}{If excel.results param is set to TRUE, path.original.file must contain the path to the excel template. By default is the template located in the package docs folder.}
 }
 \description{
 vaR function firstly collects different type of information related to the variant of interest (e.g. Population frequencies, in-silico predictions, some functional studies...).
@@ -51,7 +64,7 @@ Secondly,  it mixes all this information and following modified ACMG rules it re
 }
 \examples{
 vaR (assembly= "hg19", gene= "BRCA1", variant= "c.211A>G",  excel.results=TRUE, path.copy.file="./excels/")
-vaR.all <- vaR (assembly = "hg19", gene = "BRCA1", variant = "c.692C>T", spliceai.program = TRUE, spliceai.reference = "../docs/hg19.fa", excel.results = TRUE, path.copy.file="../excels" )
+vaR.all <- vaR (assembly = "hg19", gene = "BRCA1", variant = "c.692C>T", spliceai.program = TRUE, spliceai.reference = "./hg19.fa", excel.results = TRUE, path.copy.file="../excels" )
 }
 \references{
 Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17(5), 405–424. https://doi.org/10.1038/gim.2015.30

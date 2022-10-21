@@ -27,13 +27,22 @@ gnomADcov(
 
 \item{end}{numeric. End of the region of interest. By default is NULL}
 
-\item{mean}{logical. By default is TRUE. If the region is more than 1 bp long it returns the mean coverage or if FALSE it returns the coverage of each position}
+\item{mean.value}{logical. By default is TRUE. If the region is more than 1 bp long it returns the mean coverage or if FALSE it returns the coverage of each position}
 }
 \value{
 Numeric value of the coverage region
 }
 \description{
 gnomADcov
+}
+\examples{
+gene <- "BRCA1"
+variant <- "c.211A>G"
+nm.nc <- NMparam(gene, nm.info)
+variant.correction <- correctHgvsMutalyzer (nm.nc$NM, nm.nc$NC, gene, variant)
+variant.info<- varDetails(NM=nm.nc$NM, NC=nm.nc$NC, CCDS=nm.nc$CCDS, gene, variant.correction, skip.pred=FALSE)
+gnom<- gnomADnomen(object = variant.info)
+exomes <- gnomADcov(assembly=assembly, track="Exomes", gnomAD.nomenclature=gnom)
 }
 \references{
 Karczewski, K.J., Francioli, L.C., Tiao, G. et al. The mutational constraint spectrum quantified from variation in 141,456 humans. Nature 581, 434–443 (2020). https://doi.org/10.1038/s41586-020-2308-7

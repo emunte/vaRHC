@@ -10,7 +10,11 @@ NMparam(gene, NM = NULL, NC = NULL, CCDS = NULL)
 \item{gene}{Your gene of interest
 If the gene doesn't exist in the table, an error message is obtained}
 
-\item{nm.info}{By default NULL. If not a valid NM (Ref-seq Accession number) must be provided. Be careful because only default NM have been tested.}
+\item{NM}{Accession number of the transcrit and mRNA from RefSeq.}
+
+\item{NC}{Accession number of the chromosome RefSeq.}
+
+\item{CCDS}{Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi.}
 }
 \value{
 The NM, NC and CCDS for that gene
@@ -19,7 +23,7 @@ The NM, NC and CCDS for that gene
 Get transcript information
 }
 \examples{
-
+library(vaRHC)
 NMparam(gene="BRCA1")
 NMparam(gene="TP53")
 NMparam(gene="TP53", NM = "NM_001126113.2", NC = "NC_000017.10", CCDS= "CCDS45606")

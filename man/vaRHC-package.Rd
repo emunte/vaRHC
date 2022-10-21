@@ -4,12 +4,12 @@
 \name{vaRHC-package}
 \alias{vaRHC}
 \alias{vaRHC-package}
-\title{vaRHC: What the Package Does (One Line, Title Case)}
+\title{vaRHC: ACMG variant classification semi-automated}
 \description{
-What the package does (one paragraph).
+ACMG variant classification.
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: Elisabet Munté Roca \email{emunte@idibell.cat} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
 
 }
 \keyword{internal}

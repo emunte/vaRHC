@@ -6,6 +6,13 @@
 \usage{
 readTableUrlJavascript(url, browser = "firefox", port = 4568L)
 }
+\arguments{
+\item{url}{url to query}
+
+\item{browser}{Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".}
+
+\item{port}{port to use for the conneciton}
+}
 \description{
 readTableUrlJavascript
 }
