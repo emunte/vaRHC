@@ -9,10 +9,10 @@
 #' @return The NM, NC and CCDS for that gene
 #' @author Elisabet Munté Roca
 #' @examples
+#' library(vaRHC)
 #' NMparam(gene="BRCA1")
 #' NMparam(gene="TP53")
 #' NMparam(gene="TP53", NM = "NM_001126113.2", NC = "NC_000017.10", CCDS= "CCDS45606")
-
 NMparam <- function(gene , NM=NULL, NC= NULL, CCDS=NULL){
   query <- paste0("SELECT * from  transcript WHERE namegene= '", gene ,"' AND maintranscript= 'T' ;")
   if (is.null(NM)){
@@ -54,7 +54,8 @@ correctHgvsMutalyzer <- function(NM, NC=NULL, gene, variant){
   utr <- stringr::str_detect(variant, "c.[+]|c.[-]")
 
   ###ext for rest apis
-  server.mutalyzer <- "https://mutalyzer.nl/json/" #Mutalyzer's REST API
+  server.mutalyzer <- "https://v2.mutalyzer.nl/json/" #Mutalyzer's REST API
+  server.mutalyzer <- "https://v3.mutalyzer.nl/api/"#Mutalyzer's V3 REST API
   server.mutalyzerv3 <- "https://v3.mutalyzer.nl/api/"#Mutalyzer's V3 REST API
 
   ####we encode the URL
@@ -391,7 +392,7 @@ aaShort <- function (aa){
 gnomADnomen <- function(object){
   del.ins.sel <- stringr::str_detect(object$variant,"dup")|stringr::str_detect(object$variant,"del")|stringr::str_detect(object$variant,"ins")
   if (del.ins.sel== TRUE){
-    web.mutalyzer <- xml2::read_html(utils::URLencode(paste0("https://mutalyzer.nl/name-checker?description=",object$genomic)))
+    web.mutalyzer <- xml2::read_html(utils::URLencode(paste0("https://v2.mutalyzer.nl/name-checker?description=",object$genomic)))
     sequence <- web.mutalyzer %>% rvest::html_nodes("pre")
     sequence1 <- sequence[1]
     seq1 <- stringr::str_split (as.character(sequence1), "\\>|\\<")[[1]][3]
