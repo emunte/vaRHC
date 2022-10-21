@@ -55,7 +55,6 @@ correctHgvsMutalyzer <- function(NM, NC=NULL, gene, variant){
 
   ###ext for rest apis
   server.mutalyzer <- "https://v2.mutalyzer.nl/json/" #Mutalyzer's REST API
-  server.mutalyzer <- "https://v3.mutalyzer.nl/api/"#Mutalyzer's V3 REST API
   server.mutalyzerv3 <- "https://v3.mutalyzer.nl/api/"#Mutalyzer's V3 REST API
 
   ####we encode the URL
