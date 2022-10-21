@@ -70,7 +70,8 @@ vaRinfo <- function(assembly,  gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gen
                                 spliceai.annotation =  spliceai.annotation,
                                 spliceai.distance = spliceai.distance,
                                 spliceai.masked = spliceai.masked,
-                                provean.program = provean.program
+                                provean.program = provean.program,
+                                provean.sh = provean.sh
                                 )
   cat("60% completed ... getting loss of function information\n")
   codon.stop <- stopCodon(object = variant.info, variant.mutalyzer = variant.mutalyzer)

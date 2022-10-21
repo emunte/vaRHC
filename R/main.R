@@ -38,7 +38,7 @@ NULL
 #' @export
 vaR <- function(assembly, gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=NULL, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("extdata", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, excel.results = FALSE,  path.copy.file = NULL ){
   cat("looking for VariantInfo, please wait\n")
-  info <- vaRinfo(assembly,  gene, variant, NM = NM, NC = NC, CCDS = CCDS, gene.specific.df = gene.specific.df, browser= browser, spliceai.program = spliceai.program, spliceai.reference = spliceai.reference, spliceai.annotation= spliceai.annotation, spliceai.distance= spliceai.distance, spliceai.masked = spliceai.masked, provean.program = provean.program)
+  info <- vaRinfo(assembly,  gene, variant, NM = NM, NC = NC, CCDS = CCDS, gene.specific.df = gene.specific.df, browser= browser, spliceai.program = spliceai.program, spliceai.reference = spliceai.reference, spliceai.annotation= spliceai.annotation, spliceai.distance= spliceai.distance, spliceai.masked = spliceai.masked, provean.program = provean.program. provean.sh = provean.sh)
   cat("calculating the final classification , please wait \n")
   class <- vaRclass(info)
   if (isTRUE(excel.results)){
@@ -109,6 +109,7 @@ vaRbatch <- function (assembly = "hg19", all.variants, gene.specific.df=NULL, br
                     spliceai.distance = spliceai.distance,
                     spliceai.masked = spliceai.masked,
                     provean.program = provean.program,
+                    provean.sh = provean.sh,
                     excel.results = excel.results,
                     path.copy.file= path.copy.file)
       crit <- paste0(info.R$vaRclass$final.classification$criteria.assigned  , collapse=";")
