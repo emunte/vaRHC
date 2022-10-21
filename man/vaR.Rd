@@ -15,7 +15,7 @@ vaR(
   browser = "firefox",
   spliceai.program = FALSE,
   spliceai.reference = NULL,
-  spliceai.annotation = system.file("extdata", "gencode_spliceai_hg19.txt", package =
+  spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package =
     "vaRHC"),
   spliceai.distance = 1000,
   spliceai.masked = 1,
@@ -46,7 +46,7 @@ vaR(
 
 \item{spliceai.reference}{Path to the Reference genome hg19 fasta file. Can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.}
 
-\item{spliceai.annotation}{Path to gene annotation file. By default it uses the file stored in extdata folder: "../extdata/gencode_spliceai_hg19.txt"}
+\item{spliceai.annotation}{Path to gene annotation file. By default it uses the file stored in extdata folder: "../data/gencode_spliceai_hg19.txt"}
 
 \item{spliceai.distance}{Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)}
 

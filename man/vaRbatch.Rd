@@ -11,8 +11,8 @@ vaRbatch(
   browser = "firefox",
   spliceai.program = FALSE,
   spliceai.reference = NULL,
-  spliceai.annotation = system.file("extdata", "gencode.v38lift37.annotation.txt",
-    package = "vaRHC"),
+  spliceai.annotation = system.file("data", "gencode.v38lift37.annotation.txt", package =
+    "vaRHC"),
   spliceai.distance = 1000,
   spliceai.masked = 1,
   provean.program = FALSE,
