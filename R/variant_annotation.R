@@ -112,7 +112,7 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant){
   #getting mutalyzer information
   cor.variant <- stringr::str_split(mutalyzerv3$normalized_description, ":")[[1]][2]
   html.prot <- mutalyzerv3$protein$description
-  mutalyzer.prot.pred <- mutalyzerv3$protein$predicted
+  mutalyzer.prot.pred <- mutalyzerv3$protein$reference
   exons.mut <- cbind(tibble::as_tibble(mutalyzerv3$selector_short$exon$g),
                        tibble::as_tibble(mutalyzerv3$selector_short$exon$c))
   names(exons.mut) <- c("gStart", "gStop", "cStart", "cStop")
@@ -432,12 +432,12 @@ protsyn <- function(object, var.mut){
 
 protsyn2 <- function(object, var.mut){
   if (object$most.severe.consequence %in% c("synonymous_variant")){
-    pos.dna<-stringr::str_extract(object$variant, "[0-9]+")
-    pos.aa<-as.integer(as.numeric(pos.dna)/3)
+    pos.dna <- stringr::str_extract(object$variant, "[0-9]+")
+    pos.aa <- as.integer(as.numeric(pos.dna)/3)
     if (as.numeric(pos.dna) %% 3 >0){ #if the division is not exact, we need to add 1 position
       pos.aa <- pos.aa + 1
     }
-    seq.prot<-stringr::str_sub(var.mut$protein_predicted, pos.aa, pos.aa)
+    seq.prot <- stringr::str_sub(var.mut$protein_predicted, pos.aa, pos.aa)
     aa <- Biostrings::AMINO_ACID_CODE[seq.prot]
     protein <- paste0("p.(", aa, pos.aa, "=)")
   }

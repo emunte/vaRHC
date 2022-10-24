@@ -100,6 +100,7 @@ vaRbatch <- function (assembly = "hg19", all.variants, gene.specific.df=NULL, br
                              clinvar_class=NULL, clinvar_review=NULL,
                              spliceAI_AG_score=NULL, spliceAI_AG_dis=NULL,spliceAI_AL_score=NULL, spliceAI_AL_dis=NULL,spliceAI_DG_score=NULL, spliceAI_DG_dis=NULL, spliceAI_DL_score=NULL, spliceAI_DL_dis=NULL,
                              revel=NULL )
+  info.R <- list()
   for (i in 1:nrow(all.variants)){
     cat(paste(i, "/", nrow(all.variants), "variants \n"))
     gene <- all.variants$gene[i]
