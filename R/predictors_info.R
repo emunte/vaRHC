@@ -520,7 +520,10 @@ spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precom
     outputFile <-file.path(.tmp, paste0("outputR",time,".vcf"))
 
     run.splice <- system.file("extdata", "runSpliceAI.sh", package="vaRHC")
-    cmd2 <- paste(run.splice, "spiceAI_env/bin/activate", inputVCF, outputFile, distance, mask, reference.splice, annotation.splice)
+    cp.splice.directory <- file.path(.tmp, paste0("runSpliceAI.sh"))
+    run.splice.copy <- paste("cp", run.splice, cp.splice.directory)
+    print(run.splice.copy); try(run.splice.copy)
+    cmd2 <- paste(cp.splice.directory, "spiceAI_env/bin/activate", inputVCF, outputFile, distance, mask, reference.splice, annotation.splice)
     print(cmd2); try(system(cmd2))
     vcf <- vcfR::read.vcfR(outputFile, "hg19")
     splice <- vcf@fix [,8] %>%
