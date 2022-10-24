@@ -52,6 +52,8 @@ api2 <- function(server, ext){
 ensemblTranscript <- function(NM, gene){
   #we need to know the ensembl ID
   ext.ensembl.id <- paste0("/xrefs/symbol/homo_sapiens/", NM, "?content-type=application/json") #ensembl id
+  #CDH1 exception
+  if(NM == "NM_004360.5") ext.ensembl.id <- paste0("/xrefs/symbol/homo_sapiens/", "NM_004360.3", "?content-type=application/json")
   server.ensembl <- "http://grch37.rest.ensembl.org"
   ensembl.id <- api2(server.ensembl, ext.ensembl.id)
   if (length(ensembl.id)==0){
