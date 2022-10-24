@@ -15,7 +15,7 @@ vaRinfo(
   browser = "firefox",
   spliceai.program = FALSE,
   spliceai.reference = NULL,
-  spliceai.annotation = system.file("extdata", "gencode_spliceai_hg19.txt", package =
+  spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package =
     "vaRHC"),
   spliceai.distance = 1000,
   spliceai.masked = 1,
