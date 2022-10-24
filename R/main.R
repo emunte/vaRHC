@@ -86,7 +86,7 @@ vaR <- function(assembly, gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.spe
 #' all <- vaRbatch(assembly = "hg19", all.variants, spliceai.program = TRUE, spliceai.reference= "./hg19.fa", excel.results = TRUE)
 # all <- vaRbatch(assembly = "hg19", all.variants, spliceai.program = FALSE, excel.results = TRUE, path.copy.file = "./excel")
 #' @export
-vaRbatch <- function (assembly = "hg19", all.variants, gene.specific.df=NULL, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("data", "gencode.v38lift37.annotation.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, print.data.frame = TRUE, excel.results = FALSE, path.copy.file = NULL){
+vaRbatch <- function (assembly = "hg19", all.variants, gene.specific.df=NULL, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, print.data.frame = TRUE, excel.results = FALSE, path.copy.file = NULL){
   time <-  Sys.time() %>%
     stringr::str_replace_all("-|:| ", "_")
   log.file <- file.path(getwd(), "log")
