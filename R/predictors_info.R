@@ -316,8 +316,6 @@ priorUtahProb <- function(object, gene=NULL, variant =NULL){
 proveanR <- function(object, provean.sh, cores=1){
   prot.cor <- object$protein
   score.provean <- NA
-  .tmp <- file.path(getwd(), ".tmp")
-  dir.create(.tmp, showWarnings = FALSE)
   if(object$most.severe.consequence %in% c("missense_variant", "synonymous_variant")){
     prot <- purrr::map(stringr::str_split(prot.cor, "\\(|\\)"),2)  %>%
                                                                    stringr::str_extract_all( "[A-z]+") %>%
@@ -410,6 +408,7 @@ proveanR <- function(object, provean.sh, cores=1){
      cmd <- paste(provean.sh, "-q", file.path(.tmp, "provean.fasta"), "-v", file.path(.tmp, "variants.var"), "--num_threads", cores)
      print(cmd); a <- try(system(cmd, intern=TRUE))
      score.provean <- stringr::str_split(a[12], "\t") %>% purrr::map(2) %>% unlist() %>% as.numeric()
+     unlink(.tmp, recursive=TRUE)
    }
 
 
@@ -443,7 +442,7 @@ proveanR <- function(object, provean.sh, cores=1){
   #
   #
 
-  unlink(.tmp, recursive=TRUE)
+
   return(score.provean)
 }
 

@@ -36,7 +36,7 @@ NMparam <- function(gene , NM=NULL, NC= NULL, CCDS=NULL){
 #' Correct variant hgvs nomenclature
 #'
 #' @param NM Accession number of the transcrit and mRNA from RefSeq
-#' @param NC Accession number of the chromosome RefSeq. It can be ommited if the variant is exonic.
+#' @param NC Accession number of the chromosome RefSeq.
 #' @param gene Your gene of interest
 #' @param variant Your cdna variant of interest
 #' @return The correct hgvs nomenclature of your variant from Mutalyzer. If the variant is intronic,
@@ -49,97 +49,78 @@ NMparam <- function(gene , NM=NULL, NC= NULL, CCDS=NULL){
 #' correctHgvsMutalyzer(NM="NM_007294.3", NC="NC_000017.10", gene="BRCA1", variant="c.-19-85C>G")
 #' @noRd
 
-correctHgvsMutalyzer <- function(NM, NC=NULL, gene, variant){
+correctHgvsMutalyzer <- function(NM, NC, gene, variant){
   intronic <- stringr::str_detect(variant, "[0-9][+]|[0-9][-]")
-  utr <- stringr::str_detect(variant, "c.[+]|c.[-]")
+  #utr <- stringr::str_detect(variant, "c.[+]|c.[-]")
 
   ###ext for rest apis
-  server.mutalyzer <- "https://v2.mutalyzer.nl/json/" #Mutalyzer's REST API
-  server.mutalyzerv3 <- "https://v3.mutalyzer.nl/api/"#Mutalyzer's V3 REST API
+  #server.mutalyzer <- "https://v2.mutalyzer.nl/json/" #Mutalyzer's REST API
+  server.mutalyzerv3 <- "https://mutalyzer.nl/api/"#Mutalyzer's V3 REST API
 
   ####we encode the URL
-  variant.mutalyzer <- ifelse(intronic,
-                              URLencode(paste0(NC, "(",NM, "):",variant),reserved=TRUE),
-                              paste0(NM, ":",variant))
+  variant.mutalyzer <- URLencode(paste0(NC, "(",NM, "):",variant),reserved=TRUE)
+
+  #Changing between equivalent versions, to avoid mutalyzer errors.
+  #MSH2
+  if(NM=="NM_000251.2")variant.mutalyzer <- ifelse(intronic,
+                                                   URLencode(paste0(NC, "(NM_000251.3):",variant),reserved=TRUE),
+                                                   paste0(NM, ":",variant))
+  #NTHL1
+  if(NM=="NM_002528.5")variant.mutalyzer <- ifelse(intronic,
+                                                   URLencode(paste0(NC, "(NM_002528.3):",variant),reserved=TRUE),
+                                                   paste0(NM, ":",variant))
+  #BRCA1
+  if(NM=="NM_007294.3")variant.mutalyzer <- ifelse(intronic,
+                                                   URLencode(paste0(NC, "(NM_007294.4):",variant),reserved=TRUE),
+                                                   paste0(NM, ":",variant))
+  #PMS2
+  if(NM=="NM_000535.5")variant.mutalyzer <- ifelse(intronic,
+                                                   URLencode(paste0(NC, "(NM_000535.7):",variant),reserved=TRUE),
+                                                   paste0(NM, ":",variant))
+
+  #CHEK2
+  if(NM=="NM_007194.3")variant.mutalyzer <- ifelse(intronic,
+                                                   URLencode(paste0(NC, "(NM_007194.4):",variant),reserved=TRUE),
+                                                   paste0(NM, ":",variant))
+  #BRIP1
+  if(NM=="NM_032043.2")variant.mutalyzer <- ifelse(intronic,
+                                                   URLencode(paste0(NC, "(NM_032043.3):",variant),reserved=TRUE),
+                                                   paste0(NM, ":",variant))
+  #UNC93B1
+  if(NM=="NM_030930.2")variant.mutalyzer <- ifelse(intronic,
+                                                   URLencode(paste0("NG_007581.1", "(", NM,"):",variant),reserved=TRUE),
+                                                   paste0(NM, ":",variant))
+  #TRAF3
+  if(NM=="NM_145725.2")variant.mutalyzer <- ifelse(intronic,
+                                                   URLencode(paste0(NC, "(NM_145725.3):",variant),reserved=TRUE),
+                                                   paste0(NM, ":",variant))
+  #TYK2
+  if(NM=="NM_003331.4")variant.mutalyzer <- ifelse(intronic,
+                                                   URLencode(paste0(NC, "(NM_003331.5):",variant),reserved=TRUE),
+                                                   paste0(NM, ":",variant))
+
+  if (intronic == TRUE) assertthat::assert_that(!is.null(NC), msg="'NC' argument must be given")
+
+  ext.mutalyzer.v3 <- paste0("normalize/", variant.mutalyzer)
+  mutalyzerv3 <- api2(server.mutalyzerv3, ext.mutalyzer.v3)
+  #Checking possible mutalyzer errors
+  assertthat::assert_that(!any(mutalyzerv3$custom$errors$code=="ERETR"), msg = paste(mutalyzerv3$custom$errors$details, ":try another NM Ref-Seq version"))
+  assertthat::assert_that(!any(mutalyzerv3$custom$errors$code=="ESEQUENCEMISMATCH"), msg= mutalyzerv3$custom$errors$details)
+  assertthat::assert_that(!any(mutalyzerv3$custom$errors$code=="EPARSE"), msg= paste(mutalyzerv3$custom$errors$details, ": Mutalyzer could not retrieve NM"))
+  assertthat::assert_that(!any(mutalyzerv3$custom$errors$code=="EREF"), msg= mutalyzerv3$custom$errors$details)
+
+  #getting mutalyzer information
+  cor.variant <- stringr::str_split(mutalyzerv3$normalized_description, ":")[[1]][2]
+  html.prot <- mutalyzerv3$protein$description
+  mutalyzer.prot.pred <- mutalyzerv3$protein$predicted
+  exons.mut <- cbind(tibble::as_tibble(mutalyzerv3$selector_short$exon$g),
+                       tibble::as_tibble(mutalyzerv3$selector_short$exon$c))
+  names(exons.mut) <- c("gStart", "gStop", "cStart", "cStop")
+  message.mutalyzer <- ifelse(mutalyzerv3$corrected_description==mutalyzerv3$normalized_description,
+                              "No errors found",
+                              "The variant's nomenclature was not ok")
 
 
-  # getting information about the variant from mutalyzer
-  #Non intronic variants
-  if (intronic == FALSE){
-    ext.mutalyzer.run <-paste0("runMutalyzer?variant=", variant.mutalyzer)
-    mutalyzer <- api2(server.mutalyzer,ext.mutalyzer.run)
-
-
-    assertthat::assert_that(!any(mutalyzer$messages$errorcode=="EPARSE"), msg="Mutalyzer could not retrieve NM")
-    assertthat::assert_that(!any(mutalyzer$messages$errorcode=="ERETR"), msg="try another NM Ref-Seq version")
-    assertthat::assert_that(!any(mutalyzer$messages$errorcode=="EREF"), msg = mutalyzer$messages$message)
-
-    warnings <- mutalyzer$warnings
-    errors <- mutalyzer$errors
-    cor.variant <- stringr::str_split(mutalyzer$transcriptDescriptions,":")[[1]][2]
-    html.prot <-  mutalyzer$proteinDescriptions[1]
-    message.mutalyzer <- ifelse(warnings+errors>0,
-                                paste(unlist(mutalyzer$messages[1]),unlist(mutalyzer$messages[2]), sep=":" ),
-                                "No warnings found")
-    exons.mut <- mutalyzer$exons
-    mutalyzer.prot.pred <- mutalyzer$origProtein
-
-  }else{ #Intronic variants are searched in mutalyzer v3 (alpha) because the other doesn't work properly for these variants
-    assertthat::assert_that(!is.null(NC), msg="'NC' argument must be given")
-
-    #Changing between equivalent versions, to avoid mutalyzer errors.
-    #MSH2
-    if(NM=="NM_000251.2")variant.mutalyzer <- ifelse(intronic,
-                                                     URLencode(paste0(NC, "(NM_000251.3):",variant),reserved=TRUE),
-                                                     paste0(NM, ":",variant))
-    #NTHL1
-    if(NM=="NM_002528.5")variant.mutalyzer <- ifelse(intronic,
-                                                     URLencode(paste0(NC, "(NM_002528.3):",variant),reserved=TRUE),
-                                                     paste0(NM, ":",variant))
-    #BRCA1
-    if(NM=="NM_007294.3")variant.mutalyzer <- ifelse(intronic,
-                                                     URLencode(paste0(NC, "(NM_007294.4):",variant),reserved=TRUE),
-                                                     paste0(NM, ":",variant))
-    #PMS2
-    if(NM=="NM_000535.5")variant.mutalyzer <- ifelse(intronic,
-                                                     URLencode(paste0(NC, "(NM_000535.7):",variant),reserved=TRUE),
-                                                     paste0(NM, ":",variant))
-    #CDH1
-    if(NM=="NM_004360.3")variant.mutalyzer <- ifelse(intronic,
-                                                     URLencode(paste0(NC, "(NM_004360.5):",variant),reserved=TRUE),
-                                                     paste0(NM, ":",variant))
-   #BRIP1
-     if(NM=="NM_032043.2")variant.mutalyzer <- ifelse(intronic,
-                                                     URLencode(paste0(NC, "(NM_032043.3):",variant),reserved=TRUE),
-                                                     paste0(NM, ":",variant))
-     #UNC93B1
-     if(NM=="NM_030930.2")variant.mutalyzer <- ifelse(intronic,
-                                                    URLencode(paste0("NG_007581.1", "(", NM,"):",variant),reserved=TRUE),
-                                                    paste0(NM, ":",variant))
-     #TRAF3
-     if(NM=="NM_145725.2")variant.mutalyzer <- ifelse(intronic,
-                                                      URLencode(paste0(NC, "(NM_145725.3):",variant),reserved=TRUE),
-                                                      paste0(NM, ":",variant))
-     #TYK2
-     if(NM=="NM_003331.4")variant.mutalyzer <- ifelse(intronic,
-                                                      URLencode(paste0(NC, "(NM_003331.5):",variant),reserved=TRUE),
-                                                      paste0(NM, ":",variant))
-
-    #ext.mutalyzer.v3 <- paste0("name_check/", variant.mutalyzer)
-    ext.mutalyzer.v3 <- paste0("normalize/", variant.mutalyzer)
-    mutalyzerv3 <- api2(server.mutalyzerv3, ext.mutalyzer.v3)
-    assertthat::assert_that(!any(mutalyzerv3$errors$code=="ERETR"), msg = mutalyzerv3$errors$details)
-    assertthat::assert_that(!any(mutalyzerv3$errors$code=="ESEQUENCEMISMATCH"), msg= mutalyzerv3$errors$details)
-
-    cor.variant <- stringr::str_split(mutalyzerv3$normalized_description, ":")[[1]][2]
-    html.prot <- mutalyzerv3$protein$description
-    mutalyzer.prot.pred <- mutalyzerv3$protein$predicted
-    exons.mut <- cbind(tibble::as_tibble(mutalyzerv3$selector_short$exon$g),tibble::as_tibble(mutalyzerv3$selector_short$exon$c))
-    names(exons.mut) <- c("gStart", "gStop", "cStart", "cStop")
-    message.mutalyzer <- ifelse(mutalyzerv3$corrected_description==mutalyzerv3$normalized_description,
-                                "No errors found",
-                                "The variant's nomenclature was not ok")
-  }
   cor.prot <- stringr::str_split(html.prot,"\\:")
   if (length(cor.prot)==0){
     cor.prot <- "p.?"
@@ -148,32 +129,15 @@ correctHgvsMutalyzer <- function(NM, NC=NULL, gene, variant){
     prot2<-cor.prot
   }
 
-
-  ###Genomic coordinates
-  ext.mut.convert <- paste0("numberConversion?build=hg19&variant=", NM,":", cor.variant, "&gene=", gene)
-  #TLR7 gene equivalent versions
-  if(NM=="NM_016562.4")ext.mut.convert <- paste0("numberConversion?build=hg19&variant=NM_016562.3:", cor.variant, "&gene=", gene)
-  if(NM=="NM_001572.5")ext.mut.convert <- paste0("numberConversion?build=hg19&variant=NM_001572.3:", cor.variant, "&gene=", gene)
-  # STAT2
-  if(NM=="NM_005419.4")ext.mut.convert <- paste0("numberConversion?build=hg19&variant=NM_005419.3:", cor.variant, "&gene=", gene)
-  #TBK1
-  if(NM=="NM_013254.4")ext.mut.convert <- paste0("numberConversion?build=hg19&variant=NM_013254.3:", cor.variant, "&gene=", gene)
-
-
-  ext.mut.convert <- gsub("\\+", "%2B", ext.mut.convert)
-  mutalyzer.genomic <- api2(server.mutalyzer, ext.mut.convert )
+  #genomic nomenclature
+  mutalyzer.genomic <- mutalyzerv3$equivalent_descriptions$g
   mutalyzer.other.selected <- list()
-
 
   ###Other relevant transcripts
   if (gene=="TP53"){  #it has more important transcripts
-    ext.mut.convert2 <- paste0("numberConversion?build=hg19&variant=", mutalyzer.genomic ,"&gene=", gene)
-    mutalyzer.other.trans <- api2(server.mutalyzer, ext.mut.convert2 )
-    mutalyzer.other.selected <- mutalyzer.other.trans[stringr::str_detect(mutalyzer.other.trans, "NM_000546.5|NM_001126114.2|NM_001126113.2")==TRUE & stringr::str_detect(mutalyzer.other.trans, NM)==FALSE]
+    mutalyzer.other.selected <- mutalyzerv3$equivalent_descriptions$c[stringr::str_detect(mutalyzerv3$equivalent_descriptions$c, "NM_000546.5|NM_001126114.2|NM_001126113.2")==TRUE & stringr::str_detect(mutalyzerv3$equivalent_descriptions$c, NM)==FALSE]
   }else if( gene== "CDKN2A"){
-    ext.mut.convert2 <- paste0("numberConversion?build=hg19&variant=", mutalyzer.genomic ,"&gene=", gene)
-    mutalyzer.other.trans <- api2(server.mutalyzer, ext.mut.convert2 )
-    mutalyzer.other.selected <- mutalyzer.other.trans[stringr::str_detect(mutalyzer.other.trans, "NM_000077.4|NM_058195.3")==TRUE & stringr::str_detect(mutalyzer.other.trans, NM)==FALSE]
+    mutalyzer.other.selected <- mutalyzerv3$equivalent_descriptions$c[stringr::str_detect(mutalyzerv3$equivalent_descriptions$c, "NM_000077.4|NM_058195.3")==TRUE & stringr::str_detect(mutalyzerv3$equivalent_descriptions$c, NM)==FALSE]
   }
 
   ##final output
@@ -189,6 +153,7 @@ correctHgvsMutalyzer <- function(NM, NC=NULL, gene, variant){
                           other.important.transcripts = mutalyzer.other.selected)
   return (correct.variant)
 }
+
 
 
 #' Variant info from Ensembl VEP

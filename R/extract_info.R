@@ -26,7 +26,7 @@
 vaRinfo <- function(assembly,  gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=NULL, browser="firefox",  spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation =  system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL){
   nm.nc <- NMparam(gene, NM = NM, NC = NC, CCDS = CCDS)
   cat("0% completed... correcting variant nomenclature \n")
-  variant.mutalyzer <- correctHgvsMutalyzer (NM = nm.nc$NM, NC = nm.nc$NC, gene = gene, variant = variant)
+  variant.mutalyzer <- correctHgvsMutalyzerv2 (NM = nm.nc$NM, NC = nm.nc$NC, gene = gene, variant = variant)
   cat("10% completed... getting variant coordinates\n")
   variant.info <- varDetails(NM=nm.nc$NM, NC=nm.nc$NC, CCDS=nm.nc$CCDS, gene = gene, variant = variant, variant.mutalyzer, skip.pred=FALSE)
   variant.info.other <- list()
