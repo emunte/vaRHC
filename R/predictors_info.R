@@ -313,9 +313,11 @@ priorUtahProb <- function(object, gene=NULL, variant =NULL){
 #' @references Choi Y, Sims GE, Murphy S, Miller JR, Chan AP. Predicting the functional effect of amino acid substitutions and indels. PloS one. 2012-01-01; 7.3: e46688. PMID: 23056405
 #' @noRd
 
-proveanR <- function(object, provean.sh){
+proveanR <- function(object, provean.sh, cores=1){
   prot.cor <- object$protein
   score.provean <- NA
+  .tmp <- file.path(getwd(), ".tmp")
+  dir.create(.tmp, showWarnings = FALSE)
   if(object$most.severe.consequence %in% c("missense_variant", "synonymous_variant")){
     prot <- purrr::map(stringr::str_split(prot.cor, "\\(|\\)"),2)  %>%
                                                                    stringr::str_extract_all( "[A-z]+") %>%
@@ -405,7 +407,7 @@ proveanR <- function(object, provean.sh){
      dir.create(.tmp, showWarnings = FALSE)
      seqinr::write.fasta(sequences = prot.seq, names=object$gene, file.out = file.path(.tmp, "provean.fasta"), as.string= TRUE)
      write.table(protein, file.path(.tmp, "variants.var"), row.names = FALSE, col.names = FALSE, quote=FALSE )
-     cmd <- paste(provean.sh, "-q", file.path(.tmp, "provean.fasta"), "-v", file.path(.tmp, "variants.var"))
+     cmd <- paste(provean.sh, "-q", file.path(.tmp, "provean.fasta"), "-v", file.path(.tmp, "variants.var"), "--num_threads", cores)
      print(cmd); a <- try(system(cmd, intern=TRUE))
      score.provean <- stringr::str_split(a[12], "\t") %>% purrr::map(2) %>% unlist() %>% as.numeric()
    }
@@ -441,7 +443,7 @@ proveanR <- function(object, provean.sh){
   #
   #
 
-
+  unlink(.tmp, recursive=TRUE)
   return(score.provean)
 }
 
