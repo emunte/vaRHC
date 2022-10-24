@@ -4,7 +4,7 @@
 
 ## General
 #' @noRd
-predicInfo<- function(object, gene.specific, bbdd, gnomad, spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL){
+predicInfo <- function(object, gene.specific, bbdd, gnomad, spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL){
   httr::set_config(httr::config(ssl_verifypeer = 0L))
   ensembl.id <- ensemblTranscript(object$NM, object$gene)
   #scores
