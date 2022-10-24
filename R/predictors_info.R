@@ -19,7 +19,7 @@ predicInfo<- function(object, gene.specific, bbdd, gnomad, spliceai.program=FALS
   }
 
   if (object$most.severe.consequence %in% c("inframe_deletion", "inframe_insertion") && provean.program == TRUE){
-      dbnsfp$provean <- proveanR(object, provean.sh)
+      dbnsfp$PROVEAN_score <- proveanR(object, provean.sh)
   }
   align.gvgd <- alignGvgd(object, bbdd)
   spliceai.score <- spliceaiR(object = object, ext.spliceai = gnomad, bbdd = bbdd, spliceai.program = spliceai.program, reference.splice = spliceai.reference, annotation.splice = spliceai.annotation, distance = spliceai.distance, mask = spliceai.masked)
