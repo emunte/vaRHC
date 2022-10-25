@@ -7,7 +7,6 @@ NULL
 #' vaR()
 #' @description  vaR function firstly collects different type of information related to the variant of interest (e.g. Population frequencies, in-silico predictions, some functional studies...).
 #' Secondly,  it mixes all this information and following modified ACMG rules it returns the final classification of the variant and it specifies which criteria are given. Optionally, all the information can be printed in an excel file.
-#' @param assembly character hg19 or hg38
 #' @param gene gene of interest
 #' @param variant variant of interest in cdna
 #' @param NM Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM,  NC and CCDS must also be provided.
@@ -25,8 +24,8 @@ NULL
 #' @param path.copy.file By default is NULL. If excel.results param is set to TRUE, path.copy.file must provide the path where the excel file must be saved. If not provided it will be saved in the working directory.
 #' @author Elisabet Munté Roca
 #' @examples
-#' vaR (assembly= "hg19", gene= "BRCA1", variant= "c.211A>G",  excel.results=TRUE, path.copy.file="./excels/")
-#' vaR.all <- vaR (assembly = "hg19", gene = "BRCA1", variant = "c.692C>T", spliceai.program = TRUE, spliceai.reference = "./hg19.fa", excel.results = TRUE, path.copy.file="../excels" )
+#' vaR (gene= "BRCA1", variant= "c.211A>G",  excel.results=TRUE, path.copy.file="./excels/")
+#' vaR.all <- vaR (gene = "BRCA1", variant = "c.692C>T", spliceai.program = TRUE, spliceai.reference = "./hg19.fa", excel.results = TRUE, path.copy.file="../excels" )
 #' @references
 #' Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17(5), 405–424. https://doi.org/10.1038/gim.2015.30
 #' Tavtigian, S. V., Harrison, S. M., Boucher, K. M., & Biesecker, L. G. (2020). Fitting a naturally scaled point system to the ACMG/AMP variant classification guidelines. Human mutation, 41(10), 1734–1737. https://doi.org/10.1002/humu.24088
@@ -36,10 +35,10 @@ NULL
 #' ClinGen InSiGHT Hereditary Colorectal Cancer/Polyposis Variant Curation Expert Panel Specifications to the ACMG/AMP Variant Interpretation Guidelines Version 1 (draft): https://www.insight-group.org/content/uploads/2021/11/DRAFT_Nov_2021_TEMPLATE_SVI.ACMG_Specifications_InSiGHT_MMR_V1.pdf
 #' Feliubadaló, L., Moles-Fernández, A., Santamariña-Pena, M., Sánchez, A. T., López-Novo, A., Porras, L. M., Blanco, A., Capellá, G., de la Hoya, M., Molina, I. J., Osorio, A., Pineda, M., Rueda, D., de la Cruz, X., Diez, O., Ruiz-Ponte, C., Gutiérrez-Enríquez, S., Vega, A., & Lázaro, C. (2021). A Collaborative Effort to Define Classification Criteria for ATM Variants in Hereditary Cancer Patients. Clinical chemistry, 67(3), 518–533. https://doi.org/10.1093/clinchem/hvaa250
 #' @export
-vaR <- function(assembly, gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=NULL, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, excel.results = FALSE,  path.copy.file = NULL ){
+vaR <- function(gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=NULL, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, excel.results = FALSE,  path.copy.file = NULL ){
+
   cat("looking for VariantInfo, please wait\n")
-  info <- vaRinfo(assembly = assembly,
-                  gene = gene,
+  info <- vaRinfo(gene = gene,
                   variant = variant,
                   NM = NM,
                   NC = NC,
@@ -67,7 +66,6 @@ vaR <- function(assembly, gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.spe
 
 #' vaRbatch()
 #' @description  vaRbatch function allows to perform vaR function in batch. It also returns a logfile.
-#' @param assembly character hg19 or hg38
 #' @param all.variants a dataframe object containing at least two columns named gene and variant. Variant mus be coding dna sequence and for batch function only works in transcripts stored in IDIBELL database (see vignette)
 #' @param gene.specific.df By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv or in the package docs folder and some parameters can be modified taking into account your preferences
 #' @param browser Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".
@@ -83,10 +81,10 @@ vaR <- function(assembly, gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.spe
 #' @author Elisabet Munté Roca
 #' @examples
 #' all.variants <- data.frame(gene=c("BRCA1", "MLH1"), variant="c.211A>G", "c.1A>G")
-#' all <- vaRbatch(assembly = "hg19", all.variants, spliceai.program = TRUE, spliceai.reference= "./hg19.fa", excel.results = TRUE)
-# all <- vaRbatch(assembly = "hg19", all.variants, spliceai.program = FALSE, excel.results = TRUE, path.copy.file = "./excel")
+#' all <- vaRbatch( all.variants, spliceai.program = TRUE, spliceai.reference= "./hg19.fa", excel.results = TRUE)
+# all <- vaRbatch( all.variants, spliceai.program = FALSE, excel.results = TRUE, path.copy.file = "./excel")
 #' @export
-vaRbatch <- function (assembly = "hg19", all.variants, gene.specific.df=NULL, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, print.data.frame = TRUE, excel.results = FALSE, path.copy.file = NULL){
+vaRbatch <- function (all.variants, gene.specific.df=NULL, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, print.data.frame = TRUE, excel.results = FALSE, path.copy.file = NULL){
   time <-  Sys.time() %>%
     stringr::str_replace_all("-|:| ", "_")
   log.file <- file.path(getwd(), "log")
@@ -110,8 +108,7 @@ vaRbatch <- function (assembly = "hg19", all.variants, gene.specific.df=NULL, br
     CCDS <- NULL
     tryCatch({
       time.start <- Sys.time()
-      info.R <- vaR(assembly = assembly,
-                    gene = gene,
+      info.R <- vaR(gene = gene,
                     variant = variant,
                     NM = NM,
                     NC = NC,
