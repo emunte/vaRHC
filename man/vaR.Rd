@@ -5,7 +5,6 @@
 \title{vaR()}
 \usage{
 vaR(
-  assembly,
   gene,
   variant,
   NM = NULL,
@@ -26,8 +25,6 @@ vaR(
 )
 }
 \arguments{
-\item{assembly}{character hg19 or hg38}
-
 \item{gene}{gene of interest}
 
 \item{variant}{variant of interest in cdna}
@@ -63,8 +60,8 @@ vaR function firstly collects different type of information related to the varia
 Secondly,  it mixes all this information and following modified ACMG rules it returns the final classification of the variant and it specifies which criteria are given. Optionally, all the information can be printed in an excel file.
 }
 \examples{
-vaR (assembly= "hg19", gene= "BRCA1", variant= "c.211A>G",  excel.results=TRUE, path.copy.file="./excels/")
-vaR.all <- vaR (assembly = "hg19", gene = "BRCA1", variant = "c.692C>T", spliceai.program = TRUE, spliceai.reference = "./hg19.fa", excel.results = TRUE, path.copy.file="../excels" )
+vaR (gene= "BRCA1", variant= "c.211A>G",  excel.results=TRUE, path.copy.file="./excels/")
+vaR.all <- vaR (gene = "BRCA1", variant = "c.692C>T", spliceai.program = TRUE, spliceai.reference = "./hg19.fa", excel.results = TRUE, path.copy.file="../excels" )
 }
 \references{
 Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17(5), 405–424. https://doi.org/10.1038/gim.2015.30

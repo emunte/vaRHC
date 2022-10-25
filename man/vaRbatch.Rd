@@ -5,13 +5,12 @@
 \title{vaRbatch()}
 \usage{
 vaRbatch(
-  assembly = "hg19",
   all.variants,
   gene.specific.df = NULL,
   browser = "firefox",
   spliceai.program = FALSE,
   spliceai.reference = NULL,
-  spliceai.annotation = system.file("data", "gencode.v38lift37.annotation.txt", package =
+  spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package =
     "vaRHC"),
   spliceai.distance = 1000,
   spliceai.masked = 1,
@@ -23,8 +22,6 @@ vaRbatch(
 )
 }
 \arguments{
-\item{assembly}{character hg19 or hg38}
-
 \item{all.variants}{a dataframe object containing at least two columns named gene and variant. Variant mus be coding dna sequence and for batch function only works in transcripts stored in IDIBELL database (see vignette)}
 
 \item{gene.specific.df}{By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv or in the package docs folder and some parameters can be modified taking into account your preferences}
@@ -54,7 +51,7 @@ vaRbatch function allows to perform vaR function in batch. It also returns a log
 }
 \examples{
 all.variants <- data.frame(gene=c("BRCA1", "MLH1"), variant="c.211A>G", "c.1A>G")
-all <- vaRbatch(assembly = "hg19", all.variants, spliceai.program = TRUE, spliceai.reference= "./hg19.fa", excel.results = TRUE)
+all <- vaRbatch( all.variants, spliceai.program = TRUE, spliceai.reference= "./hg19.fa", excel.results = TRUE)
 }
 \author{
 Elisabet Munté Roca

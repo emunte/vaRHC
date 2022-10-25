@@ -5,7 +5,6 @@
 \title{vaRinfo ()}
 \usage{
 vaRinfo(
-  assembly,
   gene,
   variant,
   NM = NULL,
@@ -24,8 +23,6 @@ vaRinfo(
 )
 }
 \arguments{
-\item{assembly}{character hg19 or hg38}
-
 \item{gene}{gene of interest}
 
 \item{variant}{variant of interest in cdna}
