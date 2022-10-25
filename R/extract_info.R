@@ -923,7 +923,7 @@ stopCodon <- function(object, variant.mutalyzer){
         !stringr::str_detect(exons$cStop[exons$exon==variant.exon$exon], "-") &
         !stringr::str_detect(exons$cStart[exons$exon==variant.exon$exon], "-")){
       pvs1.mutalyzer.cdna <- paste0("c.", variant.exon$cStart, "_", variant.exon$cStop, "del")
-      correct.skipping <- correctHgvsMutalyzer(NM=object$NM, gene=object$gene, variant=pvs1.mutalyzer.cdna )
+      correct.skipping <- correctHgvsMutalyzer(NM=object$NM, NC=object$NC, gene=object$gene, variant=pvs1.mutalyzer.cdna )
       skipping.info<- varDetails(NM=object$NM, NC=object$NC, CCDS=object$CCDS, gene=NULL, variant=NULL, variant.mutalyzer=correct.skipping, skip.pred=TRUE)
       fs.window <- fsWindow (skipping.info)
       canonical.skipping <- skipping.info %>%
@@ -1013,7 +1013,7 @@ insightInfo <- function (object, browser){
   functional <- NA
   list.genes1 <- c("APC", "MLH1", "MSH2", "MSH6", "PMS2", "EPCAM", "MUTYH", "CDH1", "GALNT12")
   list.genes2 <- c("MLH1", "MSH2", "MSH6", "PMS2")
-  index <- insightUrl (object, list.genes1, "index", browser)
+  index <- insightUrl (object, list.genes2, "index", browser)
   multifactorial <- insightUrl (object, list.genes2, "mmr_integrative_eval", browser)
 
   return (list (classification = index,
