@@ -1105,7 +1105,7 @@ BS1 <- function (all.information, final.criteria){
           bs1.sup.all <- ba1_bs1_df(all.information$gnomAD$info$exomes$non.cancer$overall %>% tibble::as_tibble() %>% tibble::rownames_to_column() , all.information, "BS1_sup")
         }
         final.criteria$criteria.res["BS1", 4] <- ifelse (nrow(bs1.sup.df)==0 & nrow(bs1.sup.all)==0,  0,  1)
-        BS1.message <- ifelse (nrow(bs1.suc.1399T>Cp.all)>0,
+        BS1.message <- ifelse (nrow(bs1.sup.all)>0,
                                paste0("The location is well covered in gnomAD and the overall AF in non_cancer v2.1.1 dataset is", bs1.all$AF, "which is >", bs1.cutoff),
                                ifelse(nrow(bs1.sup.df)==0,
                                       paste0("The location is well covered in gnomAD but the variant is found in AF <  ", bs1.sup.cutoff, " in european(non-finish), lationo, African, South Asian and East Asian so BS1_supporting is not assigned.", collapse=""),
