@@ -62,46 +62,27 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant){
 
   #Changing between equivalent versions, to avoid mutalyzer errors.
   #MSH2
-  if(NM=="NM_000251.2")variant.mutalyzer <- ifelse(intronic,
-                                                   URLencode(paste0(NC, "(NM_000251.3):",variant),reserved=TRUE),
-                                                   paste0(NM, ":",variant))
+  if(NM=="NM_000251.2")variant.mutalyzer <- URLencode(paste0(NC, "(NM_000251.3):",variant),reserved=TRUE)
   #NTHL1
-  if(NM=="NM_002528.5")variant.mutalyzer <- ifelse(intronic,
-                                                   URLencode(paste0(NC, "(NM_002528.3):",variant),reserved=TRUE),
-                                                   paste0(NM, ":",variant))
+  if(NM=="NM_002528.5")variant.mutalyzer <- URLencode(paste0(NC, "(NM_002528.3):",variant),reserved=TRUE)
   #BRCA1
-  if(NM=="NM_007294.3")variant.mutalyzer <- ifelse(intronic,
-                                                   URLencode(paste0(NC, "(NM_007294.4):",variant),reserved=TRUE),
-                                                   paste0(NM, ":",variant))
+  if(NM=="NM_007294.3")variant.mutalyzer <- URLencode(paste0(NC, "(NM_007294.4):",variant),reserved=TRUE)
   #PMS2
-  if(NM=="NM_000535.5")variant.mutalyzer <- ifelse(intronic,
-                                                   URLencode(paste0(NC, "(NM_000535.7):",variant),reserved=TRUE),
-                                                   paste0(NM, ":",variant))
+  if(NM=="NM_000535.5")variant.mutalyzer <- URLencode(paste0(NC, "(NM_000535.7):",variant),reserved=TRUE)
 
   #CHEK2
-  if(NM=="NM_007194.3")variant.mutalyzer <- ifelse(intronic,
-                                                   URLencode(paste0(NC, "(NM_007194.4):",variant),reserved=TRUE),
-                                                   paste0(NM, ":",variant))
+  if(NM=="NM_007194.3")variant.mutalyzer <- URLencode(paste0(NC, "(NM_007194.4):",variant),reserved=TRUE)
   #BRIP1
-  if(NM=="NM_032043.2")variant.mutalyzer <- ifelse(intronic,
-                                                   URLencode(paste0(NC, "(NM_032043.3):",variant),reserved=TRUE),
-                                                   paste0(NM, ":",variant))
+  if(NM=="NM_032043.2")variant.mutalyzer <- URLencode(paste0(NC, "(NM_032043.3):",variant),reserved=TRUE)
   #UNC93B1
-  if(NM=="NM_030930.2")variant.mutalyzer <- ifelse(intronic,
-                                                   URLencode(paste0("NG_007581.1", "(", NM,"):",variant),reserved=TRUE),
-                                                   paste0(NM, ":",variant))
+  if(NM=="NM_030930.2")variant.mutalyzer <- URLencode(paste0("NG_007581.1", "(", NM,"):",variant),reserved=TRUE)
   #TRAF3
-  if(NM=="NM_145725.2")variant.mutalyzer <- ifelse(intronic,
-                                                   URLencode(paste0(NC, "(NM_145725.3):",variant),reserved=TRUE),
-                                                   paste0(NM, ":",variant))
+  if(NM=="NM_145725.2")variant.mutalyzer <-URLencode(paste0(NC, "(NM_145725.3):",variant),reserved=TRUE)
   #TYK2
-  if(NM=="NM_003331.4")variant.mutalyzer <- ifelse(intronic,
-                                                   URLencode(paste0(NC, "(NM_003331.5):",variant),reserved=TRUE),
-                                                   paste0(NM, ":",variant))
+  if(NM=="NM_003331.4")variant.mutalyzer <- URLencode(paste0(NC, "(NM_003331.5):",variant),reserved=TRUE)
+
   #PTEN (99.96% identity)
-  if(NM=="NM_000314.6")variant.mutalyzer <- ifelse(intronic,
-                                                   URLencode(paste0(NC, "(NM_000314.8):",variant),reserved=TRUE),
-                                                   paste0(NM, ":",variant))
+  if(NM=="NM_000314.6")variant.mutalyzer <- URLencode(paste0(NC, "(NM_000314.8):",variant),reserved=TRUE)
   if (intronic == TRUE) assertthat::assert_that(!is.null(NC), msg="'NC' argument must be given")
 
   ext.mutalyzer.v3 <- paste0("normalize/", variant.mutalyzer)
