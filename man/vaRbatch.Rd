@@ -53,8 +53,11 @@ vaRbatch(
 vaRbatch function allows to perform vaR function in batch. It also returns a logfile.
 }
 \examples{
-all.variants <- data.frame(gene=c("BRCA1", "MLH1"), variant="c.211A>G", "c.1A>G")
-all <- vaRbatch( all.variants, spliceai.program = TRUE, spliceai.reference= "./hg19.fa", excel.results = TRUE)
+all.variants.eg <- data.frame(gene=c("BRCA1", "MLH1"), variant="c.211A>G", "c.1A>G")
+all <- vaRbatch( all.variants = all.variants.eg, spliceai.program = TRUE, spliceai.reference= "./hg19.fa", excel.results = TRUE)
+lbrary(vaRHC)
+data("example_input_vaRbatch")
+all <- vaRbatch( all.variants = example_input_vaRbatch, spliceai.program = FALSE, excel.results = TRUE, path.copy.file = "./excel")
 }
 \author{
 Elisabet Munté Roca
