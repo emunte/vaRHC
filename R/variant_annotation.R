@@ -61,28 +61,59 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant){
   variant.mutalyzer <- URLencode(paste0(NC, "(",NM, "):",variant),reserved=TRUE)
 
   #Changing between equivalent versions, to avoid mutalyzer errors.
+  message.mutalyzer <- NA
   #MSH2
-  if(NM=="NM_000251.2")variant.mutalyzer <- URLencode(paste0(NC, "(NM_000251.3):",variant),reserved=TRUE)
+  if(NM=="NM_000251.2"){
+    variant.mutalyzer <- URLencode(paste0(NC, "(NM_000251.3):",variant),reserved=TRUE)
+    message.mutalyzer <- "No NM_000251.2 selector found in reference, to continue NM_000251.3 has been used instead. "
+    }
   #NTHL1
-  if(NM=="NM_002528.5")variant.mutalyzer <- URLencode(paste0(NC, "(NM_002528.3):",variant),reserved=TRUE)
+  if(NM=="NM_002528.5"){
+    variant.mutalyzer <- URLencode(paste0(NC, "(NM_002528.3):",variant),reserved=TRUE)
+    message.mutalyzer <- "No NM_002528.5 selector found in reference, to continue NM_002528.3 has been used instead. "
+
+    }
   #BRCA1
-  if(NM=="NM_007294.3")variant.mutalyzer <- URLencode(paste0(NC, "(NM_007294.4):",variant),reserved=TRUE)
+  if(NM=="NM_007294.3"){
+    variant.mutalyzer <- URLencode(paste0(NC, "(NM_007294.4):",variant),reserved=TRUE)
+    message.mutalyzer <- "No NM_007294.3 selector found in reference, to continue NM_007294.4 has been used instead. "
+  }
+
   #PMS2
-  if(NM=="NM_000535.5")variant.mutalyzer <- URLencode(paste0(NC, "(NM_000535.7):",variant),reserved=TRUE)
+  if(NM=="NM_000535.5"){
+    variant.mutalyzer <- URLencode(paste0(NC, "(NM_000535.7):",variant),reserved=TRUE)
+    message.mutalyzer <- "No NM_000535.5 selector found in reference, to continue NM_000535.7 has been used instead. "
+    }
 
   #CHEK2
-  if(NM=="NM_007194.3")variant.mutalyzer <- URLencode(paste0(NC, "(NM_007194.4):",variant),reserved=TRUE)
+  if(NM=="NM_007194.3"){
+    variant.mutalyzer <- URLencode(paste0(NC, "(NM_007194.4):",variant),reserved=TRUE)
+    message.mutalyzer <- "No NM_007194.3 selector found in reference, to continue NM_007194.4 has been used instead. "
+    }
   #BRIP1
-  if(NM=="NM_032043.2")variant.mutalyzer <- URLencode(paste0(NC, "(NM_032043.3):",variant),reserved=TRUE)
+  if(NM=="NM_032043.2"){
+    variant.mutalyzer <- URLencode(paste0(NC, "(NM_032043.3):",variant),reserved=TRUE)
+    message.mutalyzer <- "No NM_032043.2 selector found in reference, to continue NM_032043.3 has been used instead. "
+    }
   #UNC93B1
   if(NM=="NM_030930.2")variant.mutalyzer <- URLencode(paste0("NG_007581.1", "(", NM,"):",variant),reserved=TRUE)
   #TRAF3
-  if(NM=="NM_145725.2")variant.mutalyzer <-URLencode(paste0(NC, "(NM_145725.3):",variant),reserved=TRUE)
+  if(NM=="NM_145725.2"){
+    variant.mutalyzer <-URLencode(paste0(NC, "(NM_145725.3):",variant),reserved=TRUE)
+    message.mutalyzer <- "No NM_145725.2 selector found in reference, to continue NM_145725.3 has been used instead. "
+  }
   #TYK2
-  if(NM=="NM_003331.4")variant.mutalyzer <- URLencode(paste0(NC, "(NM_003331.5):",variant),reserved=TRUE)
+  if(NM=="NM_003331.4"){
+    variant.mutalyzer <- URLencode(paste0(NC, "(NM_003331.5):",variant),reserved=TRUE)
+    message.mutalyzer <- "No NM_003331.4 selector found in reference, to continue NM_003331.5 has been used instead. "
+  }
 
   #PTEN (99.96% identity)
-  if(NM=="NM_000314.6")variant.mutalyzer <- URLencode(paste0(NC, "(NM_000314.8):",variant),reserved=TRUE)
+  if(NM=="NM_000314.6"){
+    variant.mutalyzer <- URLencode(paste0(NC, "(NM_000314.8):",variant),reserved=TRUE)
+    message.mutalyzer <- "No NM_000314.6 selector found in reference, to continue NM_000314.8 has been used instead. Be careful, they share 99.96% identity."
+  }
+
   if (intronic == TRUE) assertthat::assert_that(!is.null(NC), msg="'NC' argument must be given")
 
   ext.mutalyzer.v3 <- paste0("normalize/", variant.mutalyzer)
@@ -100,10 +131,12 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant){
   exons.mut <- cbind(tibble::as_tibble(mutalyzerv3$selector_short$exon$g),
                        tibble::as_tibble(mutalyzerv3$selector_short$exon$c))
   names(exons.mut) <- c("gStart", "gStop", "cStart", "cStop")
-  message.mutalyzer <- ifelse(mutalyzerv3$corrected_description==mutalyzerv3$normalized_description,
+
+  message.mutalyzer2 <- ifelse(mutalyzerv3$corrected_description==mutalyzerv3$normalized_description,
                               "No errors found",
                               "The variant's nomenclature was not ok")
 
+  message.mutalyzer.def <- data.frame(NM_nomenclature=message.mutalyzer, variant_nomenclature=message.mutalyzer2)
 
   cor.prot <- stringr::str_split(html.prot,"\\:")
   if (length(cor.prot)==0){
@@ -130,7 +163,7 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant){
                           gene = gene,
                           variant = cor.variant,
                           protein = cor.prot,
-                          warning = message.mutalyzer,
+                          warning = message.mutalyzer.def,
                           genomic = as.character(mutalyzer.genomic),
                           exons = exons.mut,
                           protein_predicted = mutalyzer.prot.pred,
