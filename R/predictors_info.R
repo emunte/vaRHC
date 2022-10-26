@@ -52,7 +52,7 @@ predicInfo <- function(object, gene.specific, bbdd, gnomad, spliceai.program=FAL
     prior.utah.splice.reference <- NA
   }
 
-  #trap.score <- traPscore(gnomADnomen(object = object)) #webpage not working
+  #trap.score <- traPscore(gnomADnomen(object = object)) #webpage not working``
   trap.score <- NULL
   trap.score <- ifelse(is.null(trap.score), NA, trap.score)
 
