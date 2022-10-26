@@ -1,6 +1,5 @@
 #' @importFrom dplyr %>%
 #' @import Biostrings
-#' @import XLConnect
 #' @import RMySQL
 NULL
 
