@@ -35,11 +35,12 @@ vaRinfo <- function(gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.
     variant.other <- stringr::str_split(variant.mutalyzer$other.important.transcripts, ":") %>% purrr::map(2) %>% unlist()
     for (i in 1:length(NM.other)){
       cat(paste("getting information from other transcripts:", NM.other[i], "\n"))
-      query <- paste0("SELECT * from  transcript WHERE namegene= '", gene ,"' AND NM = '", NM.other[i], "' ;")
+      NM.other.b <- stringr::str_extract(NM.other[i], "NM_[0-9]+.[0-9]")
+      query <- paste0("SELECT * from  transcript WHERE namegene= '", gene ,"' AND NM = '", NM.other.b, "' ;")
       CCDS.other <- connectionDB(query)[[1]] %>%
                     tibble::as_tibble() %>%
                     dplyr::select (CCDS)
-      variant.info.other[[NM.other[i]]]<- varDetails(NM.other[i], NC=nm.nc$NC, CCDS=CCDS.other, gene, variant.other[i])
+      variant.info.other[[NM.other[i]]]<- varDetails(NM = NM.other[i], NC = nm.nc$NC, CCDS = CCDS.other, gene, variant.other[i])
       }
   }
 
