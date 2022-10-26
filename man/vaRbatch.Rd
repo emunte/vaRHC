@@ -57,6 +57,7 @@ all.variants.eg <- data.frame(gene=c("BRCA1", "MLH1"), variant="c.211A>G", "c.1A
 all <- vaRbatch( all.variants = all.variants.eg, spliceai.program = TRUE, spliceai.reference= "./hg19.fa", excel.results = TRUE)
 lbrary(vaRHC)
 data("example_input_vaRbatch")
+example_input_vaRbatch[] <- lapply(example_input_vaRbatch, as.character) #convert to character
 all <- vaRbatch( all.variants = example_input_vaRbatch, spliceai.program = FALSE, excel.results = TRUE, path.copy.file = "./excel")
 }
 \author{
