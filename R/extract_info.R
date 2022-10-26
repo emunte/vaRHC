@@ -22,7 +22,7 @@
 #' vaRinfo("hg19", "MSH6", "c.211A>G", spliceai.program = TRUE, spliceai.reference = "./hg19.fa")
 #' @references
 #' Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17, 405–424. https://doi.org/10.1038/gim.2015.30
-vaRinfo <- function(gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=NULL, browser="firefox",  spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation =  system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL){
+vaRinfo <- function(gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=NULL, remote = TRUE, browser="firefox",  spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation =  system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL){
   assembly = "hg19"
   nm.nc <- NMparam(gene, NM = NM, NC = NC, CCDS = CCDS)
   cat("0% completed... correcting variant nomenclature \n")
@@ -79,7 +79,7 @@ vaRinfo <- function(gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.
   cat("70% completed ... getting start codon information\n")
   second.met <- secondMet(variant.mutalyzer = variant.mutalyzer, object = variant.info, assembly=assembly)
   cat("80% completed ... getting functional studies information\n")
-  insight.info <- insightInfo(variant.info, browser)
+  insight.info <- insightInfo(variant.info, remote,  browser)
   articles <- articlesInfo(object = variant.info, variant.mutalyzer, bbdd = bbdd.info)
   references.google.30 = biblioScholar(variant.info, c(0,10,20))
   cat("90% completed ... getting cancerhotspots information\n")
@@ -1009,13 +1009,17 @@ insightUrl <- function (object, list.genes, database, browser){
 }
 
 #' @noRd
-insightInfo <- function (object, browser){
+insightInfo <- function (object, remote, browser){
   index <- NA
   functional <- NA
   list.genes1 <- c("APC", "MLH1", "MSH2", "MSH6", "PMS2", "EPCAM", "MUTYH", "CDH1", "GALNT12")
   list.genes2 <- c("MLH1", "MSH2", "MSH6", "PMS2")
+  if (remote == TRUE){
   index <- insightUrl (object, list.genes2, "index", browser)
   multifactorial <- insightUrl (object, list.genes2, "mmr_integrative_eval", browser)
+  } else{
+    index <- "Not working"
+  }
 
   return (list (classification = index,
                 multifactorial = multifactorial))

@@ -113,7 +113,6 @@ readUrl <- function(url){
 
 readTableUrlJavascript <- function (url, browser="firefox",  port=4568L){
 assertthat::assert_that(browser %in% c("firefox", "chrome","phantomjs"), msg="Only supported for firefix, chrome or phantomjs browser")
-
 if (browser=="firefox"){
   ex.cap <- list("moz:firefoxOptions" = list(args = list('--headless')))
 }else if(browser == "chrome"){
