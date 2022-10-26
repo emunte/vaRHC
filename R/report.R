@@ -1,6 +1,9 @@
 
 
 vaRreport <-   function(vaRinfo, vaRclass, path.copy.file=NULL ){
+  if(!requireNamespace("XLConnect", quietly=TRUE)){
+    warning("Please install package 'XLConnect' when using 'excel.results = FALSE'")
+  }else{
   path.original.file = system.file("extdata", "template.xlsx", package="vaRHC")
   if(!(file.exists(path.original.file))) stop("The excel template path must be provided, you can download it from https://github.com/emunte/vaRHC/ext_data ")
   file.name<-paste0(vaRinfo$Variant.Info$gene,"_", stringr::str_replace(vaRinfo$Variant.Info$variant,">","-"),"_", Sys.Date(),".xlsx", "")  %>%
@@ -23,7 +26,7 @@ vaRreport <-   function(vaRinfo, vaRclass, path.copy.file=NULL ){
 
   ###-----------------Load workbook; creating if not existing``
   wb <- XLConnect::loadWorkbook(paste0(path.copy.file,file.name), create = FALSE)
-  setStyleAction(wb,XLC$"STYLE_ACTION.NONE")
+  XLConnect::setStyleAction(wb,XLC$"STYLE_ACTION.NONE")
 
   ###-----------------Every sheet ----
   gene <- vaRinfo$Variant.Info$gene
@@ -412,7 +415,7 @@ vaRreport <-   function(vaRinfo, vaRclass, path.copy.file=NULL ){
                                 sheet=sheet.name,
                                 startRow=4, startCol=2,
                                 header=FALSE, rownames= FALSE)
-      setSheetPos(wb, sheet.name, 6+j)
+      XLConnect::setSheetPos(wb, sheet.name, 6+j)
       id.variant <- vaRinfo$clinVar$clinVar.ids$table %>%
                                                       dplyr::filter(variant==var) %>%
                                                       dplyr::select(V1)
@@ -688,4 +691,5 @@ vaRreport <-   function(vaRinfo, vaRclass, path.copy.file=NULL ){
   }
   # Save workbook ----
   XLConnect::saveWorkbook(wb, )
+}
 }

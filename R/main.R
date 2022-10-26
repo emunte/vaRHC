@@ -83,9 +83,11 @@ vaR <- function(gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=N
 #' @param path.copy.file By default is NULL. If excel.results param is set to TRUE, path.copy.file must provide the path where the excel file must be saved. If not provided it will be saved in the working directory.
 #' @author Elisabet Munté Roca
 #' @examples
-#' all.variants <- data.frame(gene=c("BRCA1", "MLH1"), variant="c.211A>G", "c.1A>G")
-#' all <- vaRbatch( all.variants, spliceai.program = TRUE, spliceai.reference= "./hg19.fa", excel.results = TRUE)
-# all <- vaRbatch( all.variants, spliceai.program = FALSE, excel.results = TRUE, path.copy.file = "./excel")
+#' all.variants.eg <- data.frame(gene=c("BRCA1", "MLH1"), variant="c.211A>G", "c.1A>G")
+#' all <- vaRbatch( all.variants = all.variants.eg, spliceai.program = TRUE, spliceai.reference= "./hg19.fa", excel.results = TRUE)
+#' lbrary(vaRHC)
+#' data("example_input_vaRbatch")
+#' all <- vaRbatch( all.variants = example_input_vaRbatch, spliceai.program = FALSE, excel.results = TRUE, path.copy.file = "./excel")
 #' @export
 vaRbatch <- function (all.variants, gene.specific.df=NULL, remote = TRUE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, print.data.frame = TRUE, excel.results = FALSE, path.copy.file = NULL){
   time <-  Sys.time() %>%
