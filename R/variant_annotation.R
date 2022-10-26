@@ -175,9 +175,9 @@ varDetails <- function (NM, NC=NULL, CCDS, gene, variant, variant.mutalyzer=NULL
   ensembl.id <- ensemblTranscript(NM, gene)$id
 
   #we construct vep extension
-  if(NM=="NM_000314.6")NM <- "NM_000314.8"
   server.ensembl <- "http://grch37.rest.ensembl.org" #Ensembl's REST API
   ext.vep <-  paste0("/vep/human/hgvs/",NM,":",variant.mutalyzer$variant)
+  if(NM=="NM_000314.6")ext.vep <- paste0("/vep/human/hgvs/NM_000314.8:",variant.mutalyzer$variant)
   coordinates <- api2(server.ensembl, ext.vep)
   assertthat::assert_that(length(coordinates$error)==0, msg=coordinates$error)
   chr<-unlist(coordinates$seq_region_name)
@@ -287,7 +287,7 @@ geneLrgCoord <- function (object){
 }
 
 coordNonCoding <- function (variant.mutalyzer, object){
-  coordinates.exon.nocodi<- geneLrgCoord(object)
+  coordinates.exon.nocodi <- geneLrgCoord(object)
   query <- paste0("SELECT exon, cStart, cStop FROM LRG_cds WHERE LRG_id= '", coordinates.exon.nocodi$transcript[1] ,"'; ")
   lrg.cds <- connectionDB(query)[[1]]
 
