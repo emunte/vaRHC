@@ -1,6 +1,25 @@
 #' @importFrom dplyr %>%
+#' @importFrom dplyr mutate
+#' @importFrom dplyr select
+#' @importFrom dplyr filter
 #' @import Biostrings
 #' @import RMySQL
+#' @import stringr
+#' @importFrom assertthat assert_that
+#' @importFrom tibble as_tibble
+#' @importFrom tibble rownames_to_column
+#' @importFrom tibble tibble
+#' @importFrom httr content
+#' @importFrom httr set_config
+#' @importFrom httr GET
+#' @importFrom DBI dbConnect
+#' @importFrom RCurl getURL
+#' @importFrom jsonlite fromJSON
+#' @importFrom jsonlite toJSON
+#' @importFrom RSelenium rsDriver
+#' @importFrom purrr map
+#' @importFrom xml2 read_html
+#' @importFrom XML readHTMLTable
 NULL
 
 #' vaR()
