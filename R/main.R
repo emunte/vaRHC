@@ -105,6 +105,7 @@ vaR <- function(gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=N
 #' all <- vaRbatch( all.variants = all.variants.eg, spliceai.program = TRUE, spliceai.reference= "./hg19.fa", excel.results = TRUE)
 #' lbrary(vaRHC)
 #' data("example_input_vaRbatch")
+#' example_input_vaRbatch[] <- lapply(example_input_vaRbatch, as.character) #convert to character
 #' all <- vaRbatch( all.variants = example_input_vaRbatch, spliceai.program = FALSE, excel.results = TRUE, path.copy.file = "./excel")
 #' @export
 vaRbatch <- function (all.variants, gene.specific.df=NULL, remote = TRUE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, print.data.frame = TRUE, excel.results = FALSE, path.copy.file = NULL){
