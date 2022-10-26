@@ -98,7 +98,10 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant){
   if(NM=="NM_003331.4")variant.mutalyzer <- ifelse(intronic,
                                                    URLencode(paste0(NC, "(NM_003331.5):",variant),reserved=TRUE),
                                                    paste0(NM, ":",variant))
-
+  #PTEN (99.96% identity)
+  if(NM=="NM_000314.6")variant.mutalyzer <- ifelse(intronic,
+                                                   URLencode(paste0(NC, "(NM_000314.8):",variant),reserved=TRUE),
+                                                   paste0(NM, ":",variant))
   if (intronic == TRUE) assertthat::assert_that(!is.null(NC), msg="'NC' argument must be given")
 
   ext.mutalyzer.v3 <- paste0("normalize/", variant.mutalyzer)
