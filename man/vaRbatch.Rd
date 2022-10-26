@@ -7,6 +7,7 @@
 vaRbatch(
   all.variants,
   gene.specific.df = NULL,
+  remote = TRUE,
   browser = "firefox",
   spliceai.program = FALSE,
   spliceai.reference = NULL,
@@ -25,6 +26,8 @@ vaRbatch(
 \item{all.variants}{a dataframe object containing at least two columns named gene and variant. Variant mus be coding dna sequence and for batch function only works in transcripts stored in IDIBELL database (see vignette)}
 
 \item{gene.specific.df}{By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv or in the package docs folder and some parameters can be modified taking into account your preferences}
+
+\item{remote}{Logical. Connect remotely to RSelenium server? By default is TRUE and will start Rselenium server.If it is FALSE vaRHC will not connect to insight database.}
 
 \item{browser}{Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".}
 

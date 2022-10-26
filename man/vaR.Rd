@@ -11,6 +11,7 @@ vaR(
   NC = NULL,
   CCDS = NULL,
   gene.specific.df = NULL,
+  remote = TRUE,
   browser = "firefox",
   spliceai.program = FALSE,
   spliceai.reference = NULL,
@@ -36,6 +37,8 @@ vaR(
 \item{CCDS}{Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM and NC must also be provided. Current version only works for hg19.}
 
 \item{gene.specific.df}{By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv or in the package extdata folder and some parameters can be modified taking into account your preferences}
+
+\item{remote}{Logical. Connect remotely to RSelenium server? By default is TRUE and will start Rselenium server.If it is FALSE vaRHC will not connect to insight database.}
 
 \item{browser}{Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".}
 

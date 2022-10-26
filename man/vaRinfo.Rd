@@ -11,6 +11,7 @@ vaRinfo(
   NC = NULL,
   CCDS = NULL,
   gene.specific.df = NULL,
+  remote = TRUE,
   browser = "firefox",
   spliceai.program = FALSE,
   spliceai.reference = NULL,
