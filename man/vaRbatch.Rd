@@ -58,7 +58,7 @@ all <- vaRbatch( all.variants = all.variants.eg, spliceai.program = TRUE, splice
 lbrary(vaRHC)
 data("example_input_vaRbatch")
 example_input_vaRbatch[] <- lapply(example_input_vaRbatch, as.character) #convert to character
-all <- vaRbatch( all.variants = example_input_vaRbatch, spliceai.program = FALSE, excel.results = TRUE, path.copy.file = "./excel")
+all <- vaRbatch( all.variants = example_input_vaRbatch, spliceai.program = FALSE, excel.results = TRUE)
 }
 \author{
 Elisabet Munté Roca
