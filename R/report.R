@@ -26,7 +26,7 @@ vaRreport <-   function(vaRinfo, vaRclass, path.copy.file=NULL ){
 
   ###-----------------Load workbook; creating if not existing``
   wb <- XLConnect::loadWorkbook(paste0(path.copy.file,file.name), create = FALSE)
-  XLConnect::setStyleAction(wb,XLC$"STYLE_ACTION.NONE")
+  XLConnect::setStyleAction(wb,XLConnect:::XLC$"STYLE_ACTION.NONE")
 
   ###-----------------Every sheet ----
   gene <- vaRinfo$Variant.Info$gene
