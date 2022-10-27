@@ -221,7 +221,7 @@ startVariants <- function (all.information, final.criteria){
 PS1 <- function (all.information, final.criteria){
   PS1.message <- NULL
   gene <- all.information$Variant.Info$gene
-  server.mutalyzer <- "https://mutalyzer.nl/json/" #Mutalyzer's REST API
+  #server.mutalyzer <- "https://mutalyzer.nl/json/" #Mutalyzer's REST API
   final.criteria$criteria.res["PS1", c(1,3,4)]<- NA
   if (all.information$Variant.Info$most.severe.consequence=="missense_variant" & ! (gene %in% c("CDH1", "PALB2"))){
     #clinvar.evidence.calc <- calculate_clinvar_evidences(all.information=all.information)
@@ -230,7 +230,7 @@ PS1 <- function (all.information, final.criteria){
 
     if(length(clinvar.evidence.calc)>0){
       rownames(clinvar.evidence.calc) <- c("ben_guideline", "pben_guideline", "unc_guideline",  "ppat_guideline", "pat_guideline",  "ben_expert",     "pben_expert",    "unc_expert",     "ppat_expert",    "pat_expert",     "ben_submitter",  "pben_submitter", "unc_submitter", "ppat_submitter", "pat_submitter")
-      server.mutalyzer <- "https://mutalyzer.nl/json/"
+      #server.mutalyzer <- "https://mutalyzer.nl/json/"
       ps1.df <- clinvar.evidence.calc %>%
         t() %>% as.data.frame %>%
         dplyr::mutate(variants.name=colnames(clinvar.evidence.calc)) %>%
@@ -239,10 +239,10 @@ PS1 <- function (all.information, final.criteria){
 
 
       if (nrow(ps1.df)>0){
-
+        NC <- stringr::str_extract(all.information$Variant.Info$genomic, "NC_[0-9]+.[0-9]+")
         ps1.df <- ps1.df %>%
           dplyr::rowwise %>%
-          dplyr::mutate(genomic=toGenomic(all.information$Variant.Info$NM, stringr::str_sub(purrr::map(stringr::str_split(variants.name, "\\(|\\):"),3),1,-2) ,all.information$Variant.Info$gene) ) %>%
+          dplyr::mutate(genomic=toGenomic(all.information$Variant.Info$NM, NC, stringr::str_sub(purrr::map(stringr::str_split(variants.name, "\\(|\\):"),3),1,-2) ,all.information$Variant.Info$gene) ) %>%
           dplyr::mutate(ext.spliceai.ps1= paste0(all.information$Variant.Info$chr, "-", purrr::map(stringr::str_split(genomic, "g\\.|[A-Z]"),4),"-", stringr::str_sub(genomic, -3,-3), "-", stringr::str_sub(genomic,-1,-1) )) %>%
           dplyr::mutate(scores.spliceai =  connectionDB( paste0("SELECT *  from spliceAI  WHERE var_chr= '", ext.spliceai.ps1 ,"'AND max_dis= 1000 AND transcript='", all.information$Variant.Info$ensembl.id,"' AND masked='",TRUE,"';"))%>% purrr::map(., function(x) c(x[[8]], x[[10]],x[[12]],x[[14]]))) %>%
           dplyr::mutate(score.spliceai= max(unlist(scores.spliceai), na.rm=FALSE))
@@ -621,16 +621,17 @@ PM5 <- function (all.information, final.criteria){
       if (nrow(pm5.df) > 0){
         aa.our.variant <- aaShort(toProtein(all.information$Variant.Info$protein)$aa.alt)
         aa.ref <- aaShort(toProtein(all.information$Variant.Info$protein)$aa.ref)
-        server.spliceai <- "https://spliceailookup-api.broadinstitute.org/spliceai/?hg=37&distance=1000&precomputed=0&mask=1&variant="
+        #server.spliceai <- "https://spliceailookup-api.broadinstitute.org/spliceai/?hg=37&distance=1000&precomputed=0&mask=1&variant="
         ensembl.id <- ensemblTranscript(all.information$Variant.Info$NM)$id
+        NC <- stringr::str_extract(all.information$Variant.Info$genomic, "NC_[0-9]+.[0-9]+")
         pm5.df <- pm5.df %>%
           dplyr::rowwise() %>%
           dplyr::mutate (a1 = toProtein(protein)$aa.ref %>%
                            aaShort(), a2 = toProtein(protein)$aa.alt %>%
                            aaShort()) %>%
           dplyr::mutate (blosum = BLOSUM62[a1, a2], prior = NA, grantham = calculateGrantham(a1,a2)) %>%
-          dplyr::mutate(genomic = toGenomic(all.information$Variant.Info$NM, stringr::str_sub(purrr::map(stringr::str_split(variants.name, "\\(|\\):"),3),1,-2) ,all.information$Variant.Info$gene) ) %>%
-          dplyr::mutate(genomic=toGenomic(all.information$Variant.Info$NM, stringr::str_sub(purrr::map(stringr::str_split(variants.name, "\\(|\\):"),3),1,-2) , all.information$Variant.Info$gene) ) %>%
+          dplyr::mutate(genomic = toGenomic(all.information$Variant.Info$NM, NC, stringr::str_sub(purrr::map(stringr::str_split(variants.name, "\\(|\\):"),3),1,-2) ,all.information$Variant.Info$gene) ) %>%
+          #dplyr::mutate(genomic=toGenomic(all.information$Variant.Info$NM, NC, stringr::str_sub(purrr::map(stringr::str_split(variants.name, "\\(|\\):"),3),1,-2) , all.information$Variant.Info$gene) ) %>%
           dplyr::mutate(ext.spliceai.pm5= paste0(all.information$Variant.Info$chr, "-", purrr::map(stringr::str_split(genomic, "g\\.|[A-Z]"),4),"-", stringr::str_sub(genomic, -3,-3), "-", stringr::str_sub(genomic,-1,-1) )) %>%
           dplyr::mutate(scores.spliceai =  connectionDB( paste0("SELECT *  from spliceAI  WHERE var_chr= '", ext.spliceai.pm5 ,"'AND max_dis= 1000 AND transcript='", all.information$Variant.Info$ensembl.id,"' AND masked='",TRUE,"';"))%>% purrr::map(., function(x) c(x[[8]], x[[10]],x[[12]],x[[14]]))) %>%
           dplyr::mutate(score.spliceai = max(unlist(scores.spliceai), na.rm=FALSE))

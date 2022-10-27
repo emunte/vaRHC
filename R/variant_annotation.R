@@ -463,12 +463,12 @@ protsyn2 <- function(object, var.mut){
   return(prot)
 }
 
-toGenomic <- function(NM, cor.variant, gene){
-  server.mutalyzer <- "https://mutalyzer.nl/json/"
-  ext.mut.convert <- paste0("numberConversion?build=hg19&variant=", NM, ":", cor.variant, "&gene=", gene)
-  ext.mut.convert <- gsub("\\+", "%2B", ext.mut.convert)
-  mutalyzer.genomic <- api2(server.mutalyzer, ext.mut.convert )
-  return(mutalyzer.genomic)
+toGenomic <- function(NM, NC, cor.variant, gene){
+  mutalyzer <- vaRHC:::correctHgvsMutalyzer(NM = NM, NC = NC, gene = gene, variant = cor.variant)
+  #server.mutalyzer <- "https://mutalyzer.nl/json/"
+  #ext.mut.convert <- paste0("numberConversion?build=hg19&variant=", NM, ":", cor.variant, "&gene=", gene)
+  #ext.mut.convert <- gsub("\\+", "%2B", ext.mut.convert)
+  return(mutalyzer$genomic)
 }
 
 CodingTranscriptCds <- function(object){
