@@ -39,6 +39,7 @@ NULL
 #' @param spliceai.distance  Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)
 #' @param spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
 #' @param provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
+#' @param provean.sh Path to provean.sh. It will only be considered if provean.program is set to TRUE.
 #' @param excel.results Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved
 #' @param path.copy.file By default is NULL. If excel.results param is set to TRUE, path.copy.file must provide the path where the excel file must be saved. If not provided it will be saved in the working directory.
 #' @author Elisabet Munté Roca
@@ -96,6 +97,7 @@ vaR <- function(gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=N
 #' @param spliceai.distance  Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)
 #' @param spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
 #' @param provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
+#' @param provean.sh Path to provean.sh. It will only be considered if provean.program is set to TRUE.
 #' @param print.data.frame  Logical. By defaul is TRUE and the results will be stored in a txt file.
 #' @param excel.results Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved
 #' @param path.copy.file By default is NULL. If excel.results param is set to TRUE, path.copy.file must provide the path where the excel file must be saved. If not provided it will be saved in the working directory.
@@ -217,6 +219,6 @@ vaRbatch <- function (all.variants, gene.specific.df=NULL, remote = TRUE, browse
     })
   }
   cat (paste0("Find log file: ",  file.path(log.file, paste0(time, ".log"))))
-  return(info.R)
+  return(all.variants.list)
 }
 

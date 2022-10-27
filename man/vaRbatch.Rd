@@ -43,6 +43,8 @@ vaRbatch(
 
 \item{provean.program}{Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.}
 
+\item{provean.sh}{Path to provean.sh. It will only be considered if provean.program is set to TRUE.}
+
 \item{print.data.frame}{Logical. By defaul is TRUE and the results will be stored in a txt file.}
 
 \item{excel.results}{Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved}
