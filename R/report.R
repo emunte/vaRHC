@@ -72,7 +72,7 @@ vaRreport <-   function(vaRinfo, vaRclass, path.copy.file=NULL ){
 
   weigth <- c(8,4,2,1,-8,-4,-2,-1)
   sum.criteria2 <- unlist(sumCriteria(vaRclass))* weigth
-  writeWorksheet(wb, as.matrix(sum.criteria2, nrow=8), sheet="Classification Summary",
+  XLConnect::writeWorksheet(wb, as.matrix(sum.criteria2, nrow=8), sheet="Classification Summary",
                  startRow=12, startCol=9,
                  header=FALSE)
   XLConnect::writeWorksheet(wb, paste(vaRclass$final.classification$criteria.assigned, collapse=","), sheet="Classification Summary",
@@ -524,7 +524,7 @@ vaRreport <-   function(vaRinfo, vaRclass, path.copy.file=NULL ){
   if(nrow(vaRinfo$functional.assays$parsons)==0){
     XLConnect::writeWorksheet(wb, "This variant is not listed in Parsons et al.",
                               sheet="Bibliography data vaRHC", startRow=8, startCol=1, header=FALSE)
-    if (!(gene %in% c("BRCA1", "BRCA2"))) setRowHeight(wb, sheet="Bibliography data vaRHC", row=c(5:9), height = 0 )
+    if (!(gene %in% c("BRCA1", "BRCA2"))) XLConnect::setRowHeight(wb, sheet="Bibliography data vaRHC", row=c(5:9), height = 0 )
   }else{
     XLConnect::writeWorksheet(wb,  vaRinfo$functional.assays$parsons,
                               sheet="Bibliography data vaRHC", startRow=8, startCol=1, header=FALSE)
@@ -534,7 +534,7 @@ vaRreport <-   function(vaRinfo, vaRclass, path.copy.file=NULL ){
   if(is.na(vaRinfo$functional.assays$lyra[1])|| nrow(vaRinfo$functional.assays$lyra)==0){
     XLConnect::writeWorksheet(wb, "This variant is not listed in Lyra et al's Supplementary Table 9",
                               sheet="Bibliography data vaRHC", startRow=16, startCol=1, header=FALSE)
-    if (!(gene %in% c("BRCA1"))) setRowHeight(wb, sheet="Bibliography data vaRHC", row=c(11:17), height = 0 )
+    if (!(gene %in% c("BRCA1"))) XLConnect::setRowHeight(wb, sheet="Bibliography data vaRHC", row=c(11:17), height = 0 )
   } else{
     XLConnect::writeWorksheet(wb, vaRinfo$functional.assays$lyra,
                               sheet="Bibliography data vaRHC", startRow=16, startCol=1, header=FALSE)
@@ -545,7 +545,7 @@ vaRreport <-   function(vaRinfo, vaRclass, path.copy.file=NULL ){
   if(is.na(vaRinfo$functional.assays$Adamovich_Fayer[1])|| nrow(vaRinfo$functional.assays$Adamovich_Fayer)==0){
     XLConnect::writeWorksheet(wb, "This variant is not listed in Fayer et al. (2021), nor in Adamovich et al. (2022)",
                               sheet="Bibliography data vaRHC", startRow=22, startCol=1, header=FALSE)
-    if (!(gene %in% c("BRCA1"))) setRowHeight(wb, sheet="Bibliography data vaRHC", row=c(18:22), height = 0 )
+    if (!(gene %in% c("BRCA1"))) XLConnect::setRowHeight(wb, sheet="Bibliography data vaRHC", row=c(18:22), height = 0 )
   } else{
     XLConnect::writeWorksheet(wb, vaRinfo$functional.assays$Adamovich_Fayer[,2:12],
                               sheet="Bibliography data vaRHC", startRow=22, startCol=1, header=FALSE)
@@ -556,7 +556,7 @@ vaRreport <-   function(vaRinfo, vaRclass, path.copy.file=NULL ){
   if(is.na(vaRinfo$functional.assays$jia[1])||nrow(vaRinfo$functional.assays$jia)==0){
     XLConnect::writeWorksheet(wb,"This variant is not listed in Jia et al.",
                               sheet="Bibliography data vaRHC", startRow=27, startCol=1, header=FALSE)
-    if (!(gene %in% c("MSH2"))) setRowHeight(wb, sheet="Bibliography data vaRHC", row=c(25:27), height = 0 )
+    if (!(gene %in% c("MSH2"))) XLConnect::setRowHeight(wb, sheet="Bibliography data vaRHC", row=c(25:27), height = 0 )
   }else{
     XLConnect::writeWorksheet(wb, vaRinfo$functional.assays$jia,
                               sheet="Bibliography data vaRHC", startRow=27, startCol=1, header=FALSE)
@@ -566,7 +566,7 @@ vaRreport <-   function(vaRinfo, vaRclass, path.copy.file=NULL ){
   if(is.na(vaRinfo$functional.assays$cimra[1])||nrow(vaRinfo$functional.assays$cimra)==0){
     XLConnect::writeWorksheet(wb, "This variant is not listed in Cimra et al.",
                               sheet="Bibliography data vaRHC", startRow=32, startCol=1, header=FALSE)
-    if (!(gene %in% c("MLH1", "MSH2", "MSH6", "PMS2"))) setRowHeight(wb, sheet="Bibliography data vaRHC", row=c(30:32), height = 0 )
+    if (!(gene %in% c("MLH1", "MSH2", "MSH6", "PMS2"))) XLConnect::setRowHeight(wb, sheet="Bibliography data vaRHC", row=c(30:32), height = 0 )
 
   }else{
     XLConnect::writeWorksheet(wb, vaRinfo$functional.assays$cimra[,2:19],
