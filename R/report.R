@@ -610,7 +610,7 @@ vaRreport <-   function(vaRinfo, vaRclass, path.copy.file=NULL ){
   }
 
   #cancer_hotspots
-  if (is.na(vaRinfo$cancer.hotspots$variant) || nrow(vaRinfo$cancer.hotspots$variant)==0){
+  if (is.na(vaRinfo$cancer.hotspots$variant)[1] || nrow(vaRinfo$cancer.hotspots$variant)==0){
     XLConnect::writeWorksheet(wb,  "Not found in the db",
                               sheet="Bibliography data vaRHC", startRow=48, startCol=1, header=FALSE)
     XLConnect::setRowHeight(wb, sheet="Bibliography data vaRHC", row=c(46:50), height = 0 )
@@ -652,7 +652,7 @@ vaRreport <-   function(vaRinfo, vaRclass, path.copy.file=NULL ){
   XLConnect::writeWorksheet(wb, vaRinfo$google.scholar.30.references$google.scholar.search,
                             sheet="Bibliography data vaRHC", startRow=65, startCol=3, header=FALSE)
   if(!is.na(vaRinfo$google.scholar.30.references$articles)[1]){
-    if (is.character(vaRinfo$google.scholar.30.references$articles[1])){
+    if (stringr::str_detect(vaRinfo$google.scholar.30.references$articles[1],"Error 429:" )&& nrow(vaRinfo$google.scholar.30.references$articles)==1){
       XLConnect::writeWorksheet(wb, vaRinfo$google.scholar.30.references$articles,
                                 sheet="Bibliography data vaRHC", startRow=67, startCol=1, header=FALSE)
     }else{
