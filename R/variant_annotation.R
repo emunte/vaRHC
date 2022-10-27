@@ -243,7 +243,23 @@ varDetails <- function (NM, NC=NULL, CCDS, gene, variant, variant.mutalyzer=NULL
       most.severe.consequence <- c(cons1, cons2, cons3) %>% as.character()
     }else {
       num <- which(stringr::str_detect("inframe_deletion", most.severe.consequence) | stringr::str_detect("frameshift_variant", most.severe.consequence))
-      most.severe.consequence <- most.severe.consequence[num]
+      if(length(num)!=0){
+        most.severe.consequence <-most.severe.consequence[num]
+      }else{
+        conse <- stringr::str_split(variant.mutalyzer$genomic, ":g.") %>%
+          purrr::map(2) %>%
+          unlist() %>%
+          stringr::str_split(pattern = "del") %>%
+          purrr::map(1) %>% unlist()
+          pos.g <- stringr::str_extract_all(conse, "[0-9]+") %>%
+            unlist() %>%
+            as.numeric()
+          division <- (pos.g[2]-pos.g[1]+1)/3
+          division.exact <- (pos.g[2]-pos.g[1]+1) %/% 3
+          most.severe.consequence <- ifelse(division == division.exact,
+                                            "inframe_deletion",
+                                            "frameshift_variant")
+      }
     }
   }
   object <- data.frame(NM=NM, variant=variant, protein=variant.mutalyzer$protein, strand=strand, gene=gene, most.severe.consequence=most.severe.consequence[1])
