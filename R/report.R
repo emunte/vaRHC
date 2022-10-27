@@ -407,7 +407,7 @@ vaRreport <-   function(vaRinfo, vaRclass, path.copy.file=NULL ){
       if(stringr::str_length(sheet.name) > 30){
         sheet.name <- stringr::str_sub(sheet.name,1,30)
       }
-      cloneSheet(wb, 6, name=sheet.name)#we create sheets for each variant in the same codon found in clinvar
+      XLConnect::cloneSheet(wb, 6, name=sheet.name)#we create sheets for each variant in the same codon found in clinvar
       XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.ids$table %>%
                                                                       dplyr::filter(stringr::str_detect(V2, vaRinfo$Variant.Info$variant)) %>%
                                                                       dplyr::select(blosum, prior, grantham) %>%
@@ -465,7 +465,7 @@ vaRreport <-   function(vaRinfo, vaRclass, path.copy.file=NULL ){
                                 header=FALSE, rownames= FALSE)
     }
   }
-  removeSheet(wb, "ClinVar Extra")
+  XLConnect::removeSheet(wb, "ClinVar Extra")
 
 
   #············Predictors----
