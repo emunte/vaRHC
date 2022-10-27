@@ -40,7 +40,7 @@ vaRinfo <- function(gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.
       CCDS.other <- connectionDB(query)[[1]] %>%
                     tibble::as_tibble() %>%
                     dplyr::select (CCDS)
-      variant.info.other[[NM.other[i]]]<- varDetails(NM = NM.other[i], NC = nm.nc$NC, CCDS = CCDS.other, gene, variant.other[i])
+      variant.info.other[[NM.other[i]]]<- varDetails(NM = NM.other.b, NC = nm.nc$NC, CCDS = CCDS.other, gene, variant.other[i])
       }
   }
 
