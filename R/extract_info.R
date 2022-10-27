@@ -1228,9 +1228,9 @@ nomenclatureScholaR <- function(object){
     biblio.variant <- paste0("'", object$gene, "'('", no.c, "' | '", no.c.1,"' | '", no.c.2,"' | '",
                              no.c.3, "' | '",   protein, "' | '",  no.p.1,"' | '",rs, "')")
 
-  }else if (object$most.severe.consequence%in% c("intron_variant", "splice_donor_variant", "splice_acceptor_variant", "splice_donor_region_variant", "splice_acceptor_region_variant")){
-    no.c.1.b <- paste0("IVS", object$exon, stringr::str_extract(object$variant, "[-|+][0-9]+"))
-    no.c.1.c <- paste0("IVS ", object$exon, stringr::str_extract(object$variant, "[-|+][0-9]+"))
+  }else if (object$most.severe.consequence%in% c("intron_variant", "splice_donor_variant", "splice_acceptor_variant", "splice_donor_region_variant", "splice_acceptor_region_variant") | stringr::str_detect(object$most.severe.consequence, "splice_")){
+    no.c.1.b <- paste0("IVS", object$exon_intron, stringr::str_extract(object$variant, "[-|+][0-9]+"))
+    no.c.1.c <- paste0("IVS ", object$exon_intron, stringr::str_extract(object$variant, "[-|+][0-9]+"))
 
     if(stringr::str_detect(object$variant, "del|dup")){
       # web_mutalyzer <- xml2::read_html(URLencode(paste0("https://mutalyzer.nl/name-checker?description=",object$genomic)))
