@@ -1,5 +1,8 @@
 ---
 title: "vaRHC"
+author: "Elisabet Munté Roca <emunte@idibell.cat>"
+date: "`r Sys.Date()`"
+package: "`r pkgload::pkg_version(path='.')"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{vaRHC}
@@ -14,18 +17,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(vaRHC)
-```
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-library(roxygen2)
-library(dplyr)
-load_pkgload("/media/emunte/Nuevo/Variant_class/vaRHC") 
+
 ```
 ## Contents
 
@@ -55,18 +53,16 @@ In the last 5 years, some programs have been developed with the aim to semi-auto
 The current version of the package is based on the GRCh37 assembly of the human genome and works for single substitutions, deletions and insertions up to 25 bp, intronic variants and 5’ or 3’-UTR variants 25 bp beyond the coding sequence. 
 
 ## 2. Installation {#install}
-vaRHC package can be installed via CRAN:
+The package can  be downloaded from Github:
 ```{r, eval=FALSE}
-install.packages("vaRHC")
-```
-The package can bee also be downloaded from Github:
-```{r, eval=FALSE}
+install.packages('remotes') ## Only the first time
+library(remotes)
 devtools::install_github("emunte/vaRHC")
 ```
 
 
 After the package needs to be loaded in R environtment.
-```{r, eval=FALSE}
+```{r}
 library("vaRHC")
 ```
 
@@ -85,9 +81,9 @@ Below an example is detailed for variant c.1137+1G>A in *CDH1*.
 ```{r, eval=FALSE, cache=TRUE}
 eg.gene <- "CDH1"
 eg.variant <- "c.1137+1G>A"
-eg.assembly <- "hg19"
 
-var.information <- vaR(assembly = eg.assembly, gene = eg.gene, variant = eg.variant)
+
+var.information <- vaR(gene = eg.gene, variant = eg.variant)
 
 ```
 
@@ -103,8 +99,8 @@ Additionally, *vaR()* has more parameters:
 
 
 ```{r echo=FALSE}
-all.transcript <- connectionDB("SELECT ensembltranscriptID, namegene, NM, NC, CCDS from transcript WHERE maintranscript = 'T';") %>% as.data.frame() %>% dplyr::arrange(namegene)
-knitr::kable(all.transcript)
+all.transcript <- vaRHC:::connectionDB("SELECT ensembltranscriptID, namegene, NM, NC, CCDS from transcript WHERE maintranscript = 'T';") %>% as.data.frame() %>% dplyr::arrange(namegene)
+DT::datatable(all.transcript)
 ```
 
 
@@ -114,7 +110,7 @@ This table contains gene-specific information to apply criteria: BA1, BS1, BS2, 
 If the user wants to modify any of these criteria or specify another extra gene, he can load to R environment a table containing all these criteria, and put it in the gene.specific.df parameter. A template of how the table needs to be can be downloaded from Github (gene.specific.df) or in the package documentation. Column names cannot be modified.
 See below the default table and the explanation of each column:
 ```{r, echo=FALSE}
- gene.specific.df <- connectionDB("SELECT * from  gene_specific;") %>% as.data.frame()
+ gene.specific.df <- vaRHC:::connectionDB("SELECT * from  gene_specific;") %>% as.data.frame()
     knitr::kable(gene.specific.df %>% filter(genename %in% c("general", "ATM", "CDH1", "CHEK2", "MLH1", "MSH2", "MSH6", "PMS2", "PTEN", "TP53")))
 ```
 
@@ -142,14 +138,14 @@ See below the default table and the explanation of each column:
 ```{r, eval=FALSE}
 eg.gene <- "CDH1"
 eg.variant <- "c.1137+1G>A"
-eg.assembly <- "hg19"
 eg.gene.specific <- read.csv("./gene.specific.df")
 
-var.information <- vaR(assembly = eg.assembly, gene = eg.gene, variant = eg.variant, gene.specific.df = eg.gene.specific)
+var.information <- vaR(gene = eg.gene, variant = eg.variant, gene.specific.df = eg.gene.specific)
 ```
 
-##### 3.1.1.2.3 browser
-Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs" (but they have not been tested for this package).
+##### 3.1.1.2.3 Connecting to webpages using javascript
+Insight database needs to be queried using RSelenium package. However, we have detected that some Institutes have unabled the possibility to connect to a remote server. The ****remotes*** parameter allows to decide if the user wants to allow this capability (TRUE) or not (FALSE). If it is set to FALSE the user will not collect information from insight database. 
+The ***browser*** parameter is used to set which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs" (but they have not been tested for this package).
 
 ##### 3.1.1.2.4 SpliceAI related parameters
 - ***spliceai.program*** : Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.
@@ -162,7 +158,11 @@ Which browser to start Rselenium server. By default is "firefox" (the recommende
 
 - ***spliceai.masked*** : Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1, that is masked)
 
-##### 3.1.1.2.5 Report related parameters
+##### 3.1.1.2.5 Provean related parameters
+- ***provean***: Logical. By default is FALSE and it is assumed that provean program is not installed in your computer. Set to TRUE if you want to compute provean locally.
+- ***provean.sh***: Path to the provean.sh file. It will only be taken into account when provean is set to TRUE.
+
+##### 3.1.1.2.6 Report related parameters
 
 - ***excel.results*** : Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved
 - ***path.original.file***: If excel.results param is set to TRUE, path.original.file must contain the path to the excel template. By default is the template located in the package docs folder.
@@ -178,11 +178,10 @@ Where all the information retrieved is stored. The names of the list elements ar
 
 ```{r, include=FALSE, cache=TRUE}
 eg.gene <- "CDH1"
-gene <- "CDH1"
 eg.variant <- "c.1137+1G>A"
-eg.assembly <- "hg19"
+
 #var.all <- vaR(assembly = eg.assembly, gene = eg.gene, variant = eg.variant, gene.specific.df = NULL)
-var.information <- vaR(assembly = eg.assembly, gene = eg.gene, variant = eg.variant, gene.specific.df = NULL)
+var.information <- vaR(variant = eg.variant, gene= eg.gene, gene.specific.df = NULL)
 
 ```
 ```{r}
@@ -283,12 +282,18 @@ The excel file has the following sheets:<br>
 The input is a data frame containing gene and variant column. See and example below. This function only works for the NM described in 3.1.1.2.1 section. 
 
 ```{r eval=FALSE}
-eg.variants <- data.frame(gene=c("ATM", "MSH6", "BRCA2"), variants = c("c.8420A>T", "c.1559G>A", "c.6024dup"))
-batch.results <- vaRbatch(assembly = "hg19", all.variants = eg.variants, spliceai.program = TRUE, spliceai.reference= "../docs/hg19.fa", excel.results = TRUE, path.original.file="../docs/template.xlsx")
+#Example 1
+data("example_input_vaRbatch")
+example_input_vaRbatch[] <- lapply(example_input_vaRbatch, as.character) #convert to character
+all <- vaRbatch( all.variants = example_input_vaRbatch, spliceai.program = TRUE, splieai.reference= "./hg19.fa", excel.results = TRUE)
+
+#Example2
+eg.variants <- data.frame(gene=c("ATM", "MSH6", "BRCA1"), variants = c("c.8420A>T", "c.1559G>A", "c.211A>G"))
+batch.results <- vaRbatch( all.variants = eg.variants, spliceai.program =FALSE, print.data.frame = FALSE excel.results = TRUE)
 ```
 
 #### 3.1.2 Output
-It returns a list containing vaR() info for all variants and it also returns a log file, with the detailed time execution and any error that may occur explained. The log file is stored in package log folder.
+It returns a list containing vaR() output for all variants. The user can choose to print a data frame (***print.data.frame***) to store classification results in a csv file. The function also returns a log file, with the detailed time execution and any error that may occur explained. The log file is stored in a log folder in the working directory.
 
 ### 4. Legal advice and privacy policy for users {#legal}
 #### Legal advice
