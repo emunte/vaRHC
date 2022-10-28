@@ -281,9 +281,13 @@ varDetails <- function (NM, NC=NULL, CCDS, gene, variant, variant.mutalyzer=NULL
   }
   #adjust synonymous nomenclature
   protein <- protsyn2(object, variant.mutalyzer)
-  if(any( stringr::str_detect(most.severe.consequence, "frameshift_variant"))){
-    most.severe.consequence <- ifelse(rep(most.severe.consequence=="frameshift_variant" && length(stringr::str_extract_all(variant.mutalyzer$protein, "[0-9]+"))==1,3), "stop_gained", most.severe.consequence) #sometimes frameshift variants are nonsense
-    most.severe.consequence <- ifelse(rep(stringr::str_detect(variant.mutalyzer$protein, "fs"),3), "frameshift_variant", most.severe.consequence)
+  if(skip.pred == FALSE && any( stringr::str_detect(most.severe.consequence, "frameshift_variant"))){
+    most.severe.consequence <- ifelse(rep(most.severe.consequence=="frameshift_variant" && length(stringr::str_extract_all(variant.mutalyzer$protein, "[0-9]+"))==1,3),
+                                      "stop_gained",
+                                      most.severe.consequence) #sometimes frameshift variants are nonsense
+    most.severe.consequence <- ifelse(rep(stringr::str_detect(variant.mutalyzer$protein, "fs"),3),
+                                      "frameshift_variant",
+                                      most.severe.consequence)
   }
   domain.info <- domainProt(chr, start, end) %>%
                  unique
