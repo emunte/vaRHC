@@ -39,6 +39,7 @@ NMparam <- function(gene , NM=NULL, NC= NULL, CCDS=NULL){
 #' @param NC Accession number of the chromosome RefSeq.
 #' @param gene Your gene of interest
 #' @param variant Your cdna variant of interest
+#' @param skip.pred By default is FALSE and will only be set to TRUE when calculin the predicted skipping effect
 #' @return The correct hgvs nomenclature of your variant from Mutalyzer. If the variant is intronic,
 #' Mutalyzer V3 is checked where as if the variant is not intronic Mutalyzer v2. A list is given, where the variant and the error message can be checked.
 #' @author Elisabet Munté Roca
