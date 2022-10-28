@@ -131,6 +131,8 @@ extractBBDD <- function(mutalyzer, object, gnom){
   dbnsfp <- paste0("SELECT chr, start, ref , alt, PROVEAN_score, VEST4_score, REVEL_score, BayesDel_noAF_score from dbnsfp_all WHERE start= '", object$start ,"'AND chr='", object$chr,"'AND ref='",object$ref,"'AND alt='", object$alt,"';")
   ####spliceAI
   spliceai <- paste0("SELECT *  from spliceAI  WHERE var_chr= '", gnom ,"'AND max_dis= 1000 AND transcript='", object$ensembl.id,"' AND masked='",TRUE,"';")
+  ### provean
+  provean <- pste0("SELECT provean_score from provean WHERE variant_g'", gnom, "' AND gene='", object$gene,"';")
 
   #geneLrgCoord
   #gene.LRG <- paste0("SELECT  l.transcript, l.namegene,l.coordinates, l.transcript2, l.cds_start, l.cds_end, l.strand,  c.exon, c.cStart, c.cStop FROM LRG l LEFT JOIN  transcript t ON t.ensembltranscriptID=l.transcript_id LEFT JOIN LRG_cds c ON l.transcript = c.LRG_id WHERE l.namegene= '",object$gene ,"' AND t.NM='", object$NM, "'; ")
@@ -202,6 +204,7 @@ extractBBDD <- function(mutalyzer, object, gnom){
                   align.gvd = align.gvgd,
                   dbnsfp = dbnsfp,
                   spliceai = spliceai,
+                  provean = provean,
                   cancer.hotspots = cancer.hotspots,
                   lyra = lyra,
                   adamovich = adamovich,

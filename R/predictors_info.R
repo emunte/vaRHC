@@ -315,30 +315,32 @@ priorUtahProb <- function(object, gene=NULL, variant =NULL){
 #' @noRd
 
 proveanR <- function(object, provean.sh, cores=1){
+  score.provean <- bbdd$provean
+  if(is.na(provean.score)){
   prot.cor <- object$protein
   score.provean <- NA
   if(object$most.severe.consequence %in% c("missense_variant", "synonymous_variant")){
     prot <- purrr::map(stringr::str_split(prot.cor, "\\(|\\)"),2)  %>%
-                                                                   stringr::str_extract_all( "[A-z]+") %>%
-                                                                   unlist
+      stringr::str_extract_all( "[A-z]+") %>%
+      unlist
     prot.num <- purrr::map(stringr::str_split(prot.cor, "\\(|\\)"),2)  %>%
-                                                                       stringr::str_extract_all("[0-9]+") %>%
-                                                                       unlist
+      stringr::str_extract_all("[0-9]+") %>%
+      unlist
     protein <- paste0(aaShort(prot[1]), prot.num,  aaShort(prot[2]))
   }else if (object$most.severe.consequence %in% c("inframe_deletion")){
     prot1 <- purrr::map(stringr::str_split(prot.cor, "\\(|\\)|_|del"),2)  %>%
-                                                                          stringr::str_extract_all( "[A-z]+") %>%
-                                                                          unlist
+      stringr::str_extract_all( "[A-z]+") %>%
+      unlist
     prot2 <- purrr::map(stringr::str_split(prot.cor, "\\(|\\)|_|del"),3)  %>%
-                                                                          stringr::str_extract_all( "[A-z]+") %>%
-                                                                          unlist
+      stringr::str_extract_all( "[A-z]+") %>%
+      unlist
 
     prot.num1 <- purrr::map(stringr::str_split(prot.cor, "\\(|\\)|_|del"),2) %>%
-                                                                             stringr::str_extract_all("[0-9]+") %>%
-                                                                             unlist
+      stringr::str_extract_all("[0-9]+") %>%
+      unlist
     prot.num2 <- purrr::map(stringr::str_split(prot.cor, "\\(|\\)|_|del"),3) %>%
-                                                                             stringr::str_extract_all("[0-9]+") %>%
-                                                                             unlist
+      stringr::str_extract_all("[0-9]+") %>%
+      unlist
     protein <- ifelse(stringr::str_detect(prot.cor, "_"),
                       paste0(aaShort(prot1), prot.num1, "_", aaShort(prot2), prot.num2, "del"),
                       paste0(aaShort(prot1), prot.num1, "del"))
@@ -347,38 +349,38 @@ proveanR <- function(object, provean.sh, cores=1){
     if(stringr::str_detect(object$protein, "dup")){
       if(stringr::str_detect(object$protein, "_")){
         prot1 <- purrr::map(stringr::str_split(prot.cor, "\\(|\\)|_|dup"),2)  %>%
-                                                                              stringr::str_extract_all( "[A-z]+") %>%
-                                                                              unlist
+          stringr::str_extract_all( "[A-z]+") %>%
+          unlist
         prot2 <-  purrr::map(stringr::str_split(prot.cor, "\\(|\\)|_|dup"),3)  %>%
-                                                                              stringr::str_extract_all( "[A-z]+") %>%
-                                                                              unlist
+          stringr::str_extract_all( "[A-z]+") %>%
+          unlist
         num1 <-  purrr::map(stringr::str_split(prot.cor, "\\(|\\)|_|dup"),2)  %>%
-                                                                              stringr::str_extract_all( "[0-9]+") %>%
-                                                                              unlist
+          stringr::str_extract_all( "[0-9]+") %>%
+          unlist
         num2 <- purrr::map(stringr::str_split(prot.cor, "\\(|\\)|_|dup"),3)  %>%
-                                                                             stringr::str_extract_all( "[0-9]+") %>%
-                                                                             unlist
+          stringr::str_extract_all( "[0-9]+") %>%
+          unlist
         protein <- paste0(aaShort(prot1), num1, "_", aaShort(prot2), num2, "dup")
 
       }else{
         prot <- purrr::map(stringr::str_split(prot.cor, "\\(|\\)"),2)  %>%
-                                                                       stringr::str_extract_all( "[A-z]+") %>%
-                                                                       unlist
+          stringr::str_extract_all( "[A-z]+") %>%
+          unlist
         prot.num <- purrr::map(stringr::str_split(prot.cor, "\\(|\\)"),2)  %>%
-                                                                           stringr::str_extract_all("[0-9]+") %>%
-                                                                           unlist
+          stringr::str_extract_all("[0-9]+") %>%
+          unlist
         protein <- paste0(aaShort(prot[1]), prot.num,  prot[2])
       }
 
     }else if(stringr::str_detect(object$protein, "ins")){
       prot1 <- purrr::map(stringr::str_split(prot.cor, "\\(|\\)|_|ins"),2)  %>%
-                                                                            stringr::str_extract_all( "[A-z]+") %>%
-                                                                            unlist
+        stringr::str_extract_all( "[A-z]+") %>%
+        unlist
       prot2 <-  purrr::map(stringr::str_split(prot.cor, "\\(|\\)|_|ins"),3) %>%
-                                                                            stringr::str_extract_all( "[A-z]+") %>%
-                                                                            unlist
+        stringr::str_extract_all( "[A-z]+") %>%
+        unlist
       prot3 <-  purrr::map(stringr::str_split(prot.cor, "\\(|\\)|_|ins"),4) %>%
-                                                                            unlist()
+        unlist()
       prot.ins <- NULL
       for(i in 1:stringr::str_length(prot3)){
         proti <- aaShort(stringr::str_sub(prot3, i, i +2))
@@ -386,11 +388,11 @@ proveanR <- function(object, provean.sh, cores=1){
         i <- i+2
       }
       prot.num1 <- purrr::map(stringr::str_split(prot.cor, "\\(|\\)|_|ins"),2) %>%
-                                                                               stringr::str_extract_all("[0-9]+") %>%
-                                                                               unlist
+        stringr::str_extract_all("[0-9]+") %>%
+        unlist
       prot.num2 <- purrr::map(stringr::str_split(prot.cor, "\\(|\\)|_|ins"),3) %>%
-                                                                               stringr::str_extract_all("[0-9]+") %>%
-                                                                               unlist
+        stringr::str_extract_all("[0-9]+") %>%
+        unlist
       protein <- paste0(aaShort(prot1), prot.num1, "_", aaShort(prot2), prot.num2, "ins", prot.ins)
     }
   }else{
@@ -412,7 +414,7 @@ proveanR <- function(object, provean.sh, cores=1){
      unlink(.tmp, recursive=TRUE)
    }
 
-
+ }
   ##Web scrapping -> web-based version has been retired
   # if (web.scrapping==TRUE){
   #   rD <- RSelenium::rsDriver(browser=c("firefox"), port=4570L)
