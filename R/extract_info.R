@@ -885,7 +885,7 @@ stopCodon <- function(object, variant.mutalyzer){
   canonical.skipping <- NA
   stop.pos.all <- NA
   length.transcript <- tryCatch({
-    CodingTranscriptCds(object) %>% lenCodingTranscriptCds
+    CodingTranscriptCds(object) %>% lenCodingTranscriptCds()
   },
   error=function(cond){
     return(NA)
@@ -925,7 +925,7 @@ stopCodon <- function(object, variant.mutalyzer){
         !stringr::str_detect(exons$cStart[exons$exon==variant.exon$exon], "-")){
       pvs1.mutalyzer.cdna <- paste0("c.", variant.exon$cStart, "_", variant.exon$cStop, "del")
       NC <- NMparam(object$gene)$NC
-      correct.skipping <- correctHgvsMutalyzer(NM=object$NM, NC=NC, gene=object$gene, variant=pvs1.mutalyzer.cdna )
+      correct.skipping <- correctHgvsMutalyzer(NM=object$NM, NC=NC, gene=object$gene, variant=pvs1.mutalyzer.cdna, skip.pred=TRUE )
       skipping.info <- varDetails(NM=object$NM, NC=NC, CCDS=object$CCDS, gene=NULL, variant=NULL, variant.mutalyzer=correct.skipping, skip.pred=TRUE)
       fs.window <- fsWindow (skipping.info)
       canonical.skipping <- skipping.info %>%

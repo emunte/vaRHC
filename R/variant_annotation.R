@@ -39,6 +39,7 @@ NMparam <- function(gene , NM=NULL, NC= NULL, CCDS=NULL){
 #' @param NC Accession number of the chromosome RefSeq.
 #' @param gene Your gene of interest
 #' @param variant Your cdna variant of interest
+#' @param skip.pred By default is FALSE and will only be set to TRUE when calculin the predicted skipping effect
 #' @return The correct hgvs nomenclature of your variant from Mutalyzer. If the variant is intronic,
 #' Mutalyzer V3 is checked where as if the variant is not intronic Mutalyzer v2. A list is given, where the variant and the error message can be checked.
 #' @author Elisabet Munté Roca
@@ -49,7 +50,7 @@ NMparam <- function(gene , NM=NULL, NC= NULL, CCDS=NULL){
 #' correctHgvsMutalyzer(NM="NM_007294.3", NC="NC_000017.10", gene="BRCA1", variant="c.-19-85C>G")
 #' @noRd
 
-correctHgvsMutalyzer <- function(NM, NC, gene, variant){
+correctHgvsMutalyzer <- function(NM, NC, gene, variant, skip.pred=FALSE){
   intronic <- stringr::str_detect(variant, "[0-9][+]|[0-9][-]")
   #utr <- stringr::str_detect(variant, "c.[+]|c.[-]")
 
@@ -156,6 +157,23 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant){
   }else if( gene== "CDKN2A"){
     mutalyzer.other.selected <- mutalyzerv3$equivalent_descriptions$c[stringr::str_detect(mutalyzerv3$equivalent_descriptions$c, "NM_000077.4|NM_058195.3")==TRUE & stringr::str_detect(mutalyzerv3$equivalent_descriptions$c, NM)==FALSE]
   }
+
+
+  if(skip.pred ==TRUE){
+    variant.mutalyzer <- paste0(NM,":", variant)
+    ext.mutalyzer.v3 <- paste0("normalize/", variant.mutalyzer)
+    mutalyzerv3 <- api2(server.mutalyzerv3, ext.mutalyzer.v3)
+    cor.variant <- stringr::str_split(mutalyzerv3$normalized_description, ":")[[1]][2]
+    html.prot <- mutalyzerv3$protein$description
+    cor.prot <- stringr::str_split(html.prot,"\\:")
+    if (length(cor.prot)==0){
+      cor.prot <- "p.?"
+    }else{
+      cor.prot<-cor.prot[[1]][2]
+      prot2<-cor.prot
+    }
+  }
+
 
   ##final output
   correct.variant <- list(initial.variant = variant,
