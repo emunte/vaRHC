@@ -52,7 +52,7 @@ predicInfo <- function(object, gene.specific, bbdd, gnomad, spliceai.program=FAL
     prior.utah.splice.reference <- NA
   }
 
-  #trap.score <- traPscore(gnomADnomen(object = object)) #webpage not working``
+  #trap.score <- traPscore(gnomADnomen(object = object)) #webpage not working
   trap.score <- NULL
   trap.score <- ifelse(is.null(trap.score), NA, trap.score)
 
@@ -525,6 +525,7 @@ spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precom
     cp.splice.directory <- file.path(.tmp, paste0("runSpliceAI.sh"))
     run.splice.copy <- paste("cp", run.splice, cp.splice.directory)
     try(system(run.splice.copy))
+    try(system(paste("chmod  +x", cp.splice.directory)))
     cmd2 <- paste(cp.splice.directory, "spiceAI_env/bin/activate", inputVCF, outputFile, distance, mask, reference.splice, annotation.splice)
     print(cmd2); try(system(cmd2))
     vcf <- vcfR::read.vcfR(outputFile, "hg19")
