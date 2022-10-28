@@ -622,7 +622,7 @@ PM5 <- function (all.information, final.criteria){
         aa.our.variant <- aaShort(toProtein(all.information$Variant.Info$protein)$aa.alt)
         aa.ref <- aaShort(toProtein(all.information$Variant.Info$protein)$aa.ref)
         #server.spliceai <- "https://spliceailookup-api.broadinstitute.org/spliceai/?hg=37&distance=1000&precomputed=0&mask=1&variant="
-        ensembl.id <- ensemblTranscript(all.information$Variant.Info$NM)$id
+        ensembl.id <- ensemblTranscript(all.information$Variant.Info$NM, gene)$id
         NC <- stringr::str_extract(all.information$Variant.Info$genomic, "NC_[0-9]+.[0-9]+")
         pm5.df <- pm5.df %>%
           dplyr::rowwise() %>%
