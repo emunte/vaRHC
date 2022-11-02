@@ -4,15 +4,13 @@
 \alias{NMparam}
 \title{Get transcript information}
 \usage{
-NMparam(gene, NM = NULL, NC = NULL, CCDS = NULL)
+NMparam(gene, NM = NULL, CCDS = NULL)
 }
 \arguments{
 \item{gene}{Your gene of interest
 If the gene doesn't exist in the table, an error message is obtained}
 
 \item{NM}{Accession number of the transcrit and mRNA from RefSeq.}
-
-\item{NC}{Accession number of the chromosome RefSeq.}
 
 \item{CCDS}{Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi.}
 }

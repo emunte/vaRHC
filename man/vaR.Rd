@@ -8,7 +8,6 @@ vaR(
   gene,
   variant,
   NM = NULL,
-  NC = NULL,
   CCDS = NULL,
   gene.specific.df = NULL,
   remote = TRUE,
@@ -31,8 +30,6 @@ vaR(
 \item{variant}{variant of interest in cdna}
 
 \item{NM}{Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM,  NC and CCDS must also be provided.}
-
-\item{NC}{Accession number of the chromosome RefSeq. It can be ommited if the variant is exonic. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NC, NM and CCDS must also be provided.}
 
 \item{CCDS}{Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM and NC must also be provided. Current version only works for hg19.}
 
@@ -59,6 +56,8 @@ vaR(
 \item{excel.results}{Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved}
 
 \item{output.dir}{By default is NULL. output.dir must provide the folder to store the results. If not provided it will be saved in the working directory.}
+
+\item{NC}{Accession number of the chromosome RefSeq. It can be ommited if the variant is exonic. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NC, NM and CCDS must also be provided.}
 }
 \description{
 vaR function firstly collects different type of information related to the variant of interest (e.g. Population frequencies, in-silico predictions, some functional studies...).

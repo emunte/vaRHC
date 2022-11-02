@@ -4,7 +4,6 @@
 #' @param gene Your gene of interest
 #' If the gene doesn't exist in the table, an error message is obtained
 #' @param NM Accession number of the transcrit and mRNA from RefSeq.
-#' @param NC Accession number of the chromosome RefSeq.
 #' @param CCDS Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi.
 #' @return The NM, NC and CCDS for that gene
 #' @author Elisabet Munté Roca
@@ -13,15 +12,15 @@
 #' NMparam(gene="BRCA1")
 #' NMparam(gene="TP53")
 #' NMparam(gene="TP53", NM = "NM_001126113.2", NC = "NC_000017.10", CCDS= "CCDS45606")
-NMparam <- function(gene , NM=NULL, NC= NULL, CCDS=NULL){
+NMparam <- function(gene , NM=NULL, CCDS=NULL){
   query <- paste0("SELECT * from  transcript WHERE namegene= '", gene ,"' AND maintranscript= 'T' ;")
-  if (is.null(NM)){
-    nm.nc <- connectionDB(query)[[1]] %>%
-      tibble::as_tibble() %>%
-      dplyr::select (NM, NC, CCDS, NC_hg38)
-  }else{
+  nm.nc <- connectionDB(query)[[1]] %>%
+    tibble::as_tibble() %>%
+    dplyr::select (NM, NC, CCDS, NC_hg38)
+  assertthat::assert_that(nrow(nm.nc)!=0, msg= "Gene not found in the database.")
+  if (!is.null(NM)){
     assertthat::assert_that(is.character(nm.info) & stringr::str_detect(nm.info,"NM_[0-9]+\\.[0-9]"), msg="Invalid NM entered")
-    assertthat::assert_that(!is.null(NC), msg="You must provide a NC id.")
+    NC <- nm.nc$NC
     assertthat::assert_that(stringr::str_detect(NC,"NC_[0-9]+\\.[0-9]"), msg="Invalid NC entered")
     assertthat::assert_that(!is.null(CCDS), msg="You must provide the CCDS id.")
     assertthat::assert_that(stringr::str_detect(CCDS,"CCDS[0-9]+"), msg="Invalid CCDS entered")
@@ -29,6 +28,10 @@ NMparam <- function(gene , NM=NULL, NC= NULL, CCDS=NULL){
                             NC = NC,
                             CCDS = CCDS)
   }
+   
+    #assertthat::assert_that(!is.null(NC), msg="You must provide a NC id.")
+   
+  
   return(nm.nc)
 }
 
@@ -128,12 +131,9 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant, skip.pred=FALSE){
   #checking problems with NM versions
   as <- "hg19"
   if( any(mutalyzerv3$custom$errors$code=="ENOSELECTORFOUND")){
-    NC_2 <- NC %>% stringr::str_split("\\.")
-    NC_2b <- NC_2 %>% purrr::map(2) %>% 
-      as.numeric %>% 
-      sum(1) %>% 
-      as.character()
-    NC.hg38 <- paste(NC_2 %>% purrr::map(1) %>% unlist(), NC_2b, sep=".")
+   query<- paste0("SELECT NC_hg38 FROM NCs where NC_hg19 ='", NC,"';")
+   NC.hg38 <- connectionDB(query)[[1]] %>%
+     as.character
     variant.mutalyzer <- URLencode(paste0(NC.hg38, "(",NM, "):",variant),reserved=TRUE)
     ext.mutalyzer.v3 <- paste0("normalize/", variant.mutalyzer)
     mutalyzerv3 <- api2(server.mutalyzerv3, ext.mutalyzer.v3)

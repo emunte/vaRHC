@@ -8,7 +8,6 @@ vaRinfo(
   gene,
   variant,
   NM = NULL,
-  NC = NULL,
   CCDS = NULL,
   gene.specific.df = NULL,
   remote = TRUE,
@@ -30,9 +29,7 @@ vaRinfo(
 
 \item{NM}{refSeq nomenclature. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM,  NC and CCDS must also be provided.}
 
-\item{NC}{refSeq nomenclature. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NC, NM and CCDS must also be provided.}
-
-\item{CCDS}{Consensus CD id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM and NC must also be provided. Current version only works for hg19.}
+\item{CCDS}{Consensus CD id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM must also be provided. Current version only works for hg19.}
 
 \item{gene.specific.df}{By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv and some parameters can be modified taking into account your preferences}
 
