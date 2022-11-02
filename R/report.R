@@ -1,31 +1,26 @@
 
 
-vaRreport <-   function(vaRinfo, vaRclass, path.copy.file=NULL ){
+vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
   if(!requireNamespace("XLConnect", quietly=TRUE)){
     warning("Please install package 'XLConnect' when using 'excel.results = FALSE'")
   }else{
   path.original.file = system.file("extdata", "template.xlsx", package="vaRHC")
-  if(!(file.exists(path.original.file))) stop("The excel template path must be provided, you can download it from https://github.com/emunte/vaRHC/ext_data ")
-  file.name<-paste0(vaRinfo$Variant.Info$gene,"_", stringr::str_replace(vaRinfo$Variant.Info$variant,">","-"),"_", Sys.Date(),".xlsx", "")  %>%
-                                                                                                                                            stringr::str_replace("\\*", "asterisk")#name of the file, with the variant
-  if (is.null(path.copy.file)){
-    path.copy.file <- file.path(getwd(), "excels")
-    dir.create(path.copy.file, showWarnings = FALSE)
-  }else{
-    if(!dir.exists(path.copy.file)) stop("The directory where the file has to be copied does not exist.")
-  }
+  #if(!(file.exists(path.original.file))) stop("The excel template path must be provided, you can download it from https://github.com/emunte/vaRHC/inst/extdata/template.xlsx")
+  file.name <- paste0(vaRinfo$Variant.Info$gene,"_", stringr::str_replace(vaRinfo$Variant.Info$variant,">","-"),"_", Sys.Date(),".xlsx", "")  %>%
+    stringr::str_replace("\\*", "asterisk")#name of the file, with the variant
 
-  if (stringr::str_sub(path.copy.file, -1)!="/") path.copy.file <- paste0(path.copy.file, "/")
+  ## -------------------Check output directory and create excel subfolder
+  output.dir.excels <- checkDir (output.dir, "excels")
 
-  file.copy(from=path.original.file,
-            to= paste0(path.copy.file,file.name),
+  file.copy(from = path.original.file,
+            to = file.path(output.dir.excels, file.name),
             recursive = FALSE,
             copy.mode = TRUE,
             copy.date = FALSE,
             overwrite = TRUE) #Plantilla cloned
 
   ###-----------------Load workbook; creating if not existing``
-  wb <- XLConnect::loadWorkbook(paste0(path.copy.file,file.name), create = FALSE)
+  wb <- XLConnect::loadWorkbook(file.path(output.dir.excels,file.name), create = FALSE)
   XLConnect::setStyleAction(wb,XLConnect:::XLC$"STYLE_ACTION.NONE")
 
   ###-----------------Every sheet ----

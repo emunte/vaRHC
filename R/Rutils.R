@@ -162,3 +162,17 @@ if (browser=="firefox"){
 }
 
 
+################################################################################
+## Check directory and create subfolder
+################################################################################
+checkDir <- function(output.dir, subfolder){
+  if (!is.null(output.dir)) {
+  assertthat::assert_that(dir.exists(output.dir), msg = "Output directory does not exists, please enter a valid one.")
+  if (stringr::str_sub(output.dir, -1)=="/") output.dir <- stringr::str_sub(output.dir, 1, -2)
+  }
+  output.dir.subfolder  <- ifelse(is.null(output.dir),
+                             file.path(getwd(), subfolder),
+                             file.path(output.dir, subfolder))
+  dir.create(output.dir.subfolder, showWarnings = FALSE)
+  return(output.dir.subfolder)
+}

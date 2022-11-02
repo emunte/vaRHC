@@ -41,11 +41,11 @@ NULL
 #' @param provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
 #' @param provean.sh Path to provean.sh. It will only be considered if provean.program is set to TRUE.
 #' @param excel.results Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved
-#' @param path.copy.file By default is NULL. If excel.results param is set to TRUE, path.copy.file must provide the path where the excel file must be saved. If not provided it will be saved in the working directory.
+#' @param output.dir By default is NULL. If excel.results param is set to TRUE, output.dir must provide the path where the results must be stored. If not provided it will be saved in the working directory.
 #' @author Elisabet Munté Roca
 #' @examples
-#' vaR (gene= "BRCA1", variant= "c.211A>G",  excel.results=TRUE, path.copy.file="./excels/")
-#' vaR.all <- vaR (gene = "BRCA1", variant = "c.692C>T", spliceai.program = TRUE, spliceai.reference = "./hg19.fa", excel.results = TRUE, path.copy.file="../excels" )
+#' vaR (gene= "BRCA1", variant= "c.211A>G",  excel.results=TRUE, outpur.dir="./results/")
+#' vaR.all <- vaR (gene = "BRCA1", variant = "c.692C>T", spliceai.program = TRUE, spliceai.reference = "./hg19.fa", excel.results = TRUE)
 #' @references
 #' Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17(5), 405–424. https://doi.org/10.1038/gim.2015.30
 #' Tavtigian, S. V., Harrison, S. M., Boucher, K. M., & Biesecker, L. G. (2020). Fitting a naturally scaled point system to the ACMG/AMP variant classification guidelines. Human mutation, 41(10), 1734–1737. https://doi.org/10.1002/humu.24088
@@ -55,8 +55,8 @@ NULL
 #' ClinGen InSiGHT Hereditary Colorectal Cancer/Polyposis Variant Curation Expert Panel Specifications to the ACMG/AMP Variant Interpretation Guidelines Version 1 (draft): https://www.insight-group.org/content/uploads/2021/11/DRAFT_Nov_2021_TEMPLATE_SVI.ACMG_Specifications_InSiGHT_MMR_V1.pdf
 #' Feliubadaló, L., Moles-Fernández, A., Santamariña-Pena, M., Sánchez, A. T., López-Novo, A., Porras, L. M., Blanco, A., Capellá, G., de la Hoya, M., Molina, I. J., Osorio, A., Pineda, M., Rueda, D., de la Cruz, X., Diez, O., Ruiz-Ponte, C., Gutiérrez-Enríquez, S., Vega, A., & Lázaro, C. (2021). A Collaborative Effort to Define Classification Criteria for ATM Variants in Hereditary Cancer Patients. Clinical chemistry, 67(3), 518–533. https://doi.org/10.1093/clinchem/hvaa250
 #' @export
-vaR <- function(gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=NULL, remote=TRUE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, excel.results = FALSE,  path.copy.file = NULL ){
-
+vaR <- function(gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=NULL, remote=TRUE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, excel.results = FALSE,  output.dir = NULL ){
+  if(!is.null(output.dir))assertthat::assert_that(dir.exists(output.dir), msg = "Output directory does not exists, please enter a valid one.")
   cat("looking for VariantInfo, please wait\n")
   info <- vaRinfo(gene = gene,
                   variant = variant,
@@ -77,7 +77,7 @@ vaR <- function(gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=N
   class <- vaRclass(info)
   if (isTRUE(excel.results)){
     cat("printing information in an excel file,  please wait \n")
-    vaRreport(info, class, path.copy.file)
+    vaRreport(info, class, output.dir)
   }
   return(list(vaRinfo = info,
               vaRclass = class))
@@ -100,7 +100,7 @@ vaR <- function(gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=N
 #' @param provean.sh Path to provean.sh. It will only be considered if provean.program is set to TRUE.
 #' @param print.data.frame  Logical. By defaul is TRUE and the results will be stored in a txt file.
 #' @param excel.results Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved
-#' @param path.copy.file By default is NULL. If excel.results param is set to TRUE, path.copy.file must provide the path where the excel file must be saved. If not provided it will be saved in the working directory.
+#' @param output.dir By default is NULL. output.dir must provide the folder to store the results. If not provided it will be saved in the working directory.
 #' @author Elisabet Munté Roca
 #' @examples
 #' all.variants.eg <- data.frame(gene=c("BRCA1", "MLH1"), variant="c.211A>G", "c.1A>G")
@@ -110,12 +110,13 @@ vaR <- function(gene, variant, NM=NULL, NC = NULL, CCDS=NULL, gene.specific.df=N
 #' example_input_vaRbatch[] <- lapply(example_input_vaRbatch, as.character) #convert to character
 #' all <- vaRbatch( all.variants = example_input_vaRbatch, spliceai.program = FALSE, excel.results = TRUE)
 #' @export
-vaRbatch <- function (all.variants, gene.specific.df=NULL, remote = TRUE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, print.data.frame = TRUE, excel.results = FALSE, path.copy.file = NULL){
+vaRbatch <- function (all.variants, gene.specific.df=NULL, remote = TRUE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, print.data.frame = TRUE, excel.results = FALSE, output.dir = NULL){
   time <-  Sys.time() %>%
     stringr::str_replace_all("-|:| ", "_")
-  log.file <- file.path(getwd(), "log")
-  dir.create(log.file, showWarnings = FALSE)
-  file.create(paste0(log.file,"/", time, ".log"))
+  log.folder<- checkDir (output.dir, "log")
+  #log.file <- file.path(getwd(), "log")
+  #dir.create(log.file, showWarnings = FALSE)
+  file.create(file.path(log.folder,paste0(time, ".log")))
   all.variants.list <- list()
   df.variants2 <- data.frame(NM=NULL, gene=NULL, variant=NULL, prot=NULL, final_class=NULL, all_criteria=NULL,
                              PVS1=NULL, PS1=NULL,  PS3=NULL,
@@ -150,7 +151,7 @@ vaRbatch <- function (all.variants, gene.specific.df=NULL, remote = TRUE, browse
                     provean.program = provean.program,
                     provean.sh = provean.sh,
                     excel.results = excel.results,
-                    path.copy.file= path.copy.file)
+                    output.dir= output.dir)
       crit <- paste0(info.R$vaRclass$final.classification$criteria.assigned  , collapse=";")
       if(print.data.frame == TRUE){
         df.variants2 <- rbind(df.variants2,
@@ -193,17 +194,16 @@ vaRbatch <- function (all.variants, gene.specific.df=NULL, remote = TRUE, browse
                                  "clinvar_class", "clinvar_review",
                                  "spliceAI_AG_score", "spliceAI_AG_dis","spliceAI_AL_score", "spliceAI_AL_dis", "spliceAI_DG_score", "spliceAI_DG_dis",  "spliceAI_DL_score", "spliceAI_DL_dis",
                                  "REVEL")
-        output <- file.path(getwd(), "output")
-        dir.create(output, showWarnings = FALSE)
+        dataframe.folder<- checkDir (output.dir, "dataframe")
         write.table(x = df.variants2,
-                    file = file.path(output, paste0(time, "variants.txt")),
+                    file = file.path(dataframe.folder, paste0(time, "variants.txt")),
                     row.names = F)
       }
 
       time.end <- Sys.time()
       time.diff <- time.end - time.start
       write.table(x = paste( gene, variant, "executed in ", time.diff),
-                  file = file.path(log.file, paste0(time, ".log")),
+                  file = file.path(log.folder, paste0(time, ".log")),
                   append=TRUE,
                   col.names = FALSE,
                   row.names = FALSE)
@@ -212,13 +212,13 @@ vaRbatch <- function (all.variants, gene.specific.df=NULL, remote = TRUE, browse
 
     }, error = function(e){
       write.table(x = paste(gene, variant, "ERROR:", conditionMessage(e)),
-                  file = file.path(log.file, paste0(time, ".log")),
+                  file = file.path(log.folder, paste0(time, ".log")),
                   append=TRUE,
                   col.names = FALSE,
                   row.names = FALSE)
     })
   }
-  cat (paste0("Find log file: ",  file.path(log.file, paste0(time, ".log"))))
+  cat (paste0("Find log file: ",  file.path(log.folder, paste0(time, ".log"))))
   return(all.variants.list)
 }
 

@@ -8,6 +8,13 @@
 \description{
 ACMG variant classification.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item Report bugs at \url{https://github.com/emunte/vaRHC/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Elisabet Munté Roca \email{emunte@idibell.cat} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
 

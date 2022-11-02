@@ -19,7 +19,7 @@ vaRbatch(
   provean.sh = NULL,
   print.data.frame = TRUE,
   excel.results = FALSE,
-  path.copy.file = NULL
+  output.dir = NULL
 )
 }
 \arguments{
@@ -49,7 +49,7 @@ vaRbatch(
 
 \item{excel.results}{Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved}
 
-\item{path.copy.file}{By default is NULL. If excel.results param is set to TRUE, path.copy.file must provide the path where the excel file must be saved. If not provided it will be saved in the working directory.}
+\item{output.dir}{By default is NULL. output.dir must provide the folder to store the results. If not provided it will be saved in the working directory.}
 }
 \description{
 vaRbatch function allows to perform vaR function in batch. It also returns a logfile.
