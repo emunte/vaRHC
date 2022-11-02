@@ -16,7 +16,7 @@ NMparam <- function(gene , NM=NULL, CCDS=NULL){
   query <- paste0("SELECT * from  transcript WHERE namegene= '", gene ,"' AND maintranscript= 'T' ;")
   nm.nc <- connectionDB(query)[[1]] %>%
     tibble::as_tibble() %>%
-    dplyr::select (NM, NC, CCDS, NC_hg38)
+    dplyr::select (NM, NC, CCDS)
   assertthat::assert_that(nrow(nm.nc)!=0, msg= "Gene not found in the database.")
   if (!is.null(NM)){
     assertthat::assert_that(is.character(nm.info) & stringr::str_detect(nm.info,"NM_[0-9]+\\.[0-9]"), msg="Invalid NM entered")
