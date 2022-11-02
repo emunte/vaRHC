@@ -41,7 +41,7 @@ NULL
 #' @param provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
 #' @param provean.sh Path to provean.sh. It will only be considered if provean.program is set to TRUE.
 #' @param excel.results Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved
-#' @param output.dir By default is NULL. If excel.results param is set to TRUE, output.dir must provide the path where the results must be stored. If not provided it will be saved in the working directory.
+#' @param output.dir By default is NULL. output.dir must provide the folder to store the results. If not provided it will be saved in the working directory.
 #' @author Elisabet Munté Roca
 #' @examples
 #' vaR (gene= "BRCA1", variant= "c.211A>G",  excel.results=TRUE, outpur.dir="./results/")
