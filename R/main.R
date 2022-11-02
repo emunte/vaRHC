@@ -20,6 +20,8 @@
 #' @importFrom purrr map
 #' @importFrom xml2 read_html
 #' @importFrom XML readHTMLTable
+#' @import rtracklayer
+#' @importFrom GenomicRanges GRanges
 NULL
 
 #' vaR()
