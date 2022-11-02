@@ -13,7 +13,7 @@ It follows gene-specific guidelines for ATM, CDH1, CHEK2, MLH1, MSH2, MSH6, PMS2
 The current version of the package is based on the GRCh37 assembly of the human genome and works for single substitutions, deletions and insertions up to 25 bp, intronic variants and 5’ or 3’-UTR variants 25 bp beyond the coding sequence. 
 
 ## How to use it
-Installation and user guide are available at the [vignette](https://htmlpreview.github.io/https://github.com/emunte/vaRHC/blob/main/inst/doc)
+Installation and user guide are available at the [vignette](https://htmlpreview.github.io/https://github.com/emunte/vaRHC/blob/main/inst/doc).
 
 ## Citation
 vaRHC was developed by Elisabet Munté Roca. The paper is now being submitted. 
