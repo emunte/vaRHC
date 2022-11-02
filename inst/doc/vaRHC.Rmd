@@ -90,10 +90,9 @@ var.information <- vaR(gene = eg.gene, variant = eg.variant)
 ##### 3.1.1.2 Optional parameters
 Additionally, *vaR()* has more parameters:  
 
-##### 3.1.1.2.1 NM, NC and CCDS
+##### 3.1.1.2.1 NM and CCDS
 - ***NM***: Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed above. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM,  NC and CCDS must also be provided.
 
-- ***NC***: Accession number of the chromosome RefSeq. It can be ommited if the variant is exonic. By default is NULL and vaRHC will consider the ones detailed above. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NC, NM and CCDS must also be provided.
 
 - ***CCDS***: Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed above. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM and NC must also be provided. 
 
