@@ -58,7 +58,7 @@ vaR(
 
 \item{excel.results}{Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved}
 
-\item{output.dir}{By default is NULL. If excel.results param is set to TRUE, output.dir must provide the path where the results must be stored. If not provided it will be saved in the working directory.}
+\item{output.dir}{By default is NULL. output.dir must provide the folder to store the results. If not provided it will be saved in the working directory.}
 }
 \description{
 vaR function firstly collects different type of information related to the variant of interest (e.g. Population frequencies, in-silico predictions, some functional studies...).
