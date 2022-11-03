@@ -574,7 +574,7 @@ liftOverhg38_hg19  <- function (genomic){
   path = system.file(package="liftOver", "extdata", "hg38ToHg19.over.chain")
   ch = rtracklayer::import.chain(path)
   variantGR <- GenomicRanges::GRanges(seqnames = paste0("chr", chr),
-                       IRanges(pos1, width = large)
+                       IRanges::IRanges(pos1, width = large)
                        )
   lift <- rtracklayer::liftOver(variantGR, ch)
   start <- lift[[1]]@ranges@start

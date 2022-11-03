@@ -22,6 +22,7 @@
 #' @importFrom XML readHTMLTable
 #' @import rtracklayer
 #' @importFrom GenomicRanges GRanges
+#' @importFrom IRanges IRanges
 NULL
 
 #' vaR()
