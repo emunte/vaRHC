@@ -91,10 +91,10 @@ var.information <- vaR(gene = eg.gene, variant = eg.variant)
 Additionally, *vaR()* has more parameters:  
 
 ##### 3.1.1.2.1 NM and CCDS
-- ***NM***: Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed above. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM,  NC and CCDS must also be provided.
+- ***NM***: Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed above. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM, CCDS must also be provided.
 
 
-- ***CCDS***: Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed above. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM and NC must also be provided. 
+- ***CCDS***: Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed above. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM  must also be provided. 
 
 
 ```{r echo=FALSE}
@@ -105,8 +105,8 @@ DT::datatable(all.transcript)
 
 ##### 3.1.1.2.2 gene.specific.df
 **gene.specific.df**: By default the parameter is NULL because it looks at the data stored in the gene.specific table in IDIBELL database.<br>
-This table contains gene-specific information to apply criteria: BA1, BS1, BS2, PM2, predictors cut-off and BP7. 
-If the user wants to modify any of these criteria or specify another extra gene, he can load to R environment a table containing all these criteria, and put it in the gene.specific.df parameter. A template of how the table needs to be can be downloaded from Github (gene.specific.df) or in the package documentation. Column names cannot be modified.
+This table contains gene-specific information to apply the following criteria: BA1, BS1, BS2, PM2, predictors cut-off and BP7. 
+If the user wants to modify any of these criteria or specify another extra gene, he can load to R environment a table containing all these criteria, and put it in the gene.specific.df parameter. A template of how the table needs to be can be downloaded from Github (gene.specific.df) or it can be found at the package documentation. Column names cannot be modified.
 See below the default table and the explanation of each column:
 ```{r, echo=FALSE}
  gene.specific.df <- vaRHC:::connectionDB("SELECT * from  gene_specific;") %>% as.data.frame()
@@ -137,7 +137,8 @@ See below the default table and the explanation of each column:
 ```{r, eval=FALSE}
 eg.gene <- "CDH1"
 eg.variant <- "c.1137+1G>A"
-eg.gene.specific <- read.csv("./gene.specific.df")
+data("gene_specific")
+eg.gene.specific <- gene_specific
 
 var.information <- vaR(gene = eg.gene, variant = eg.variant, gene.specific.df = eg.gene.specific)
 ```
