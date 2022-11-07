@@ -53,30 +53,30 @@ In the last 5 years, some programs have been developed with the aim to semi-auto
 The current version of the package is based on the GRCh37 assembly of the human genome and works for single substitutions, deletions and insertions up to 25 bp, intronic variants and 5’ or 3’-UTR variants 25 bp beyond the coding sequence. 
 
 ## 2. Installation {#install}
-The package can  be downloaded from Github:
+vaRHC can be downloaded from GitHub using the remotes package:
 ```{r, eval=FALSE}
-install.packages('remotes') ## Only the first time
+if(!require("remotes", quietly = TRUE)) install.packages('remotes') ## Only the first time
 library(remotes)
 devtools::install_github("emunte/vaRHC")
 ```
 
 
-After the package needs to be loaded in R environtment.
+Next, it has to be loaded into the workspace:
 ```{r}
 library("vaRHC")
 ```
 
 ## 3. Main functions {#functions}
-The package has two main functions ***vaR()***  and ***vaRbatch()***.
+The package consists of two main functions ***vaR()***  and ***vaRbatch()***.
 
 ### 3.1 vaR() {#fun1}
 
 #### 3.1.1 Input
 ##### 3.1.1.1 Parameters
-From the input of a **gene** and a **variant** name (in coding dna nomenclature) ***vaR()*** gathers relevant information from diverse sources. Then it applies updated ACMG/AMP criteria considering gene specificities to calculate the different criteria met by the variant and produce an explanation for the application or rejection of each criterion. Furthermore, it returns a final classification of the variant using Tavtigian Bayesian metastructure and considering most of CanVIG-UK recommendations. 
+Using a **gene** and a **variant** name (in coding DNA nomenclature) as input variables,  ***vaR()*** gathers relevant information from different sources.  Gene-specific ACMG/AMP guidelines are then applied in order to calculate whether the variant of interest meets different criteria. The output also provides an explanation of the reason for applying or rejecting each criterion. Additionally, it returns a final classification of the variant using Tavtigian Bayesian metastructure and also considering most of CanVIG-UK recommendations.
 
 
-Below an example is detailed for variant c.1137+1G>A in *CDH1*.
+The following example shows how to call the **vaR()** function for the variant  c.1137+1G>A in *CDH1* gene.
 
 ```{r, eval=FALSE, cache=TRUE}
 eg.gene <- "CDH1"
@@ -88,26 +88,28 @@ var.information <- vaR(gene = eg.gene, variant = eg.variant)
 ```
 
 ##### 3.1.1.2 Optional parameters
-Additionally, *vaR()* has more parameters:  
+Optional parameters of *vaR()* are described below.
 
 ##### 3.1.1.2.1 NM and CCDS
-- ***NM***: Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed above. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM, CCDS must also be provided.
+- ***NM***: Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed above. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM, CCDS must also be provided.The transcript accession number is retrieved from RefSeq. By default, this function parameter is set to NULL. vaRHC will consider the NMs listed in the table above. If a different NM is used than the ones described in the table, it must be noted that the program has not been validated yet for it. In this case, a CCDS ID is also required.
 
 
-- ***CCDS***: Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed above. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM  must also be provided. 
+
+- ***CCDS***: Consensus CDS ID retrieved from NCBI CCDS database (which can be found in the following link https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi). By default is set to NULL. vaRHC will consider the IDs detailed in the table above. Again, it must be noted that if a different CCDS ID is provided, the program has not been validated yet for it. In this case, NM accession number is required. 
+
 
 
 ```{r echo=FALSE}
 all.transcript <- vaRHC:::connectionDB("SELECT ensembltranscriptID, namegene, NM, NC, CCDS from transcript WHERE maintranscript = 'T';") %>% as.data.frame() %>% dplyr::arrange(namegene)
-DT::datatable(all.transcript)
+knitr::kable(all.transcript)
 ```
 
 
 ##### 3.1.1.2.2 gene.specific.df
-**gene.specific.df**: By default the parameter is NULL because it looks at the data stored in the gene.specific table in IDIBELL database.<br>
-This table contains gene-specific information to apply the following criteria: BA1, BS1, BS2, PM2, predictors cut-off and BP7. 
-If the user wants to modify any of these criteria or specify another extra gene, he can load to R environment a table containing all these criteria, and put it in the gene.specific.df parameter. A template of how the table needs to be can be downloaded from Github (gene.specific.df) or it can be found at the package documentation. Column names cannot be modified.
-See below the default table and the explanation of each column:
+**gene.specific.df**: By default the parameter is set to NULL as it considers the gene-specific cutoffs, frequencies and additional parameters queried in the IDIBELL database as described in the paper *vaRHC: an R package for semi-automation of variant classification in hereditary cancer genes according to ACMG/AMP and gene-specific ClinGen guidelines [Manuscript submitted for publication]*.
+This table contains gene-specific information for applying the following criteria: BA1, BS1, BS2, PM2, predictors cut-off and BP7. If the user wants to modify any of these criteria or specify another additional gene, a table containing all these criteria can be loaded to the R environment, and set as the gene.specific.df parameter. 
+A template of how the table needs to be can be downloaded from GitHub (https://github.com/emunte/vaRHC/blob/main/data/gene_specific.txt) or it can be found at the package documentation. Column names cannot be modified. See below the default table and the explanation of each column:
+
 ```{r, echo=FALSE}
  gene.specific.df <- vaRHC:::connectionDB("SELECT * from  gene_specific;") %>% as.data.frame()
     knitr::kable(gene.specific.df %>% filter(genename %in% c("general", "ATM", "CDH1", "CHEK2", "MLH1", "MSH2", "MSH6", "PMS2", "PTEN", "TP53")))
