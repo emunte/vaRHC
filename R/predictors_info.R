@@ -19,7 +19,7 @@ predicInfo <- function(object, gene.specific, bbdd, gnomad, spliceai.program=FAL
   }
 
   if (object$most.severe.consequence %in% c("inframe_deletion", "inframe_insertion") && provean.program == TRUE){
-      dbnsfp$PROVEAN_score <- proveanR(object, provean.sh)
+      dbnsfp$PROVEAN_score <- proveanR(object, provean.sh , bbdd)
   }
   align.gvgd <- alignGvgd(object, bbdd)
   spliceai.score <- spliceaiR(object = object, ext.spliceai = gnomad, bbdd = bbdd, spliceai.program = spliceai.program, reference.splice = spliceai.reference, annotation.splice = spliceai.annotation, distance = spliceai.distance, mask = spliceai.masked)
@@ -314,7 +314,7 @@ priorUtahProb <- function(object, gene=NULL, variant =NULL){
 #' @references Choi Y, Sims GE, Murphy S, Miller JR, Chan AP. Predicting the functional effect of amino acid substitutions and indels. PloS one. 2012-01-01; 7.3: e46688. PMID: 23056405
 #' @noRd
 
-proveanR <- function(object, provean.sh, cores=1){
+proveanR <- function(object, provean.sh, bbdd, cores=1){
   score.provean <- bbdd$provean
   if(is.na(provean.score)){
   prot.cor <- object$protein
