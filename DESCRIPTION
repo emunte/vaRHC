@@ -1,11 +1,15 @@
 Package: vaRHC
-Title: ACMG variant classification semi-automated
+Title: automate, as far as possible, the variant classification process for hereditary cancer genes  following specific ACMG rules
 Version: 0.0.0.9000
 Authors@R: 
-    person("Elisabet", "Munté Roca", , "emunte@idibell.cat", role = c("aut", "cre"),
+    person(given = "Elisabet", 
+           family = "Munté Roca", 
+           role = c("aut", "cre"), 
+           email = "emunte@idibell.cat",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: ACMG variant classification.
+Description: ACMG variant classification for hereditary cancer.
 License: CC BY 4.0
+URL: https://github.com/emunte/vaRHC
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
