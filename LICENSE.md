@@ -1,5 +1,4 @@
-Attribution 4.0 International
-
+vaRHC © 2022 Elisabet Munté Roca Institut d'Investigació Biomèdica de Bellvitge-IDIBELL is licensed under CC BY 4.0 
 =======================================================================
 
 Creative Commons Corporation ("Creative Commons") is not a law firm and
