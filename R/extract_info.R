@@ -9,7 +9,7 @@
 #' @param browser Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".
 #' @param spliceai.program Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.
 #' @param spliceai.reference Path to the Reference genome hg19 fasta file. Can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
-#' @param spliceai.annotation Path to gene annotation file. By default it uses the file stored in extdata folder: "../extdata/gencode_spliceai_hg19.txt"
+#' @param spliceai.annotation Path to gene annotation file. By default it uses the file data(gencode_spliceai_hg19). It must be txt.
 #' @param spliceai.distance  Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)
 #' @param spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
 #' @param provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
@@ -21,7 +21,7 @@
 #' vaRinfo("hg19", "MSH6", "c.211A>G", spliceai.program = TRUE, spliceai.reference = "./hg19.fa")
 #' @references
 #' Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17, 405–424. https://doi.org/10.1038/gim.2015.30
-vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote = TRUE, browser="firefox",  spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation =  system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL){
+vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote = TRUE, browser="firefox",  spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation =  NULL , spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL){
   assembly = "hg19"
   nm.nc <- NMparam(gene, NM = NM,  CCDS = CCDS)
   cat("0% completed... correcting variant nomenclature \n")
@@ -305,14 +305,6 @@ geneSpecific <- function (gene, gene.specific.df) {
 #' @author Elisabet Munté Roca
 #' @references
 #' Karczewski, K.J., Francioli, L.C., Tiao, G. et al. The mutational constraint spectrum quantified from variation in 141,456 humans. Nature 581, 434–443 (2020). https://doi.org/10.1038/s41586-020-2308-7
-#' @examples
-#' gene <- "BRCA1"
-#' variant <- "c.211A>G"
-#'nm.nc <- NMparam(gene, nm.info)
-#'variant.correction <- correctHgvsMutalyzer (nm.nc$NM, nm.nc$NC, gene, variant)
-#'variant.info<- varDetails(NM=nm.nc$NM, NC=nm.nc$NC, CCDS=nm.nc$CCDS, gene, variant.correction, skip.pred=FALSE)
-#'gnom<- gnomADnomen(object = variant.info)
-#'exomes <- gnomADcov(assembly=assembly, track="Exomes", gnomAD.nomenclature=gnom)
 gnomADcov <- function(assembly, track, gnomAD.nomenclature, chr=NULL, start=NULL, end=NULL, mean.value=TRUE){
   if (!(assembly%in% c("hg19","hg38"))) stop ("this assembly is not supported, please enter hg19 or hg38")
   if(assembly== "hg38") stop("We are sorry but right now only hg19 works, we will incorporate hg38 soon")
@@ -395,23 +387,6 @@ upDownPos<-function(gnomAD.nomen, track, id.gnomad, id.same.position){ #x means 
 #' @references
 #' Karczewski, K.J., Francioli, L.C., Tiao, G. et al. The mutational constraint spectrum quantified from variation in 141,456 humans. Nature 581, 434–443 (2020). https://doi.org/10.1038/s41586-020-2308-7
 #' @noRd
-#' @examples
-#' #####Knowing gnomAD nomenclature
-#' nomenclature <- "17-41258474-T-C"
-#' gene <- "BRCA1"
-#' specific <- geneSpecific(nomenclature, geneSpecific(gene, gene.specific.df))
-#' gnomADmerge(nomenclature, specific)
-#' #####Not knowing gnomAD nomenclature
-#' #' NM <- "NM_007294.3"
-#' NC <- "NC_000017.10"
-#' gene <- "BRCA1"
-#' CCDS <- "CCDS11453.1"
-#' variant <- "c.211A>G"
-#' mutalyzer.info <- correctHgvsMutalyzer(NM, NC,  gene, variant)
-#' variant.info <- varDetails(NM,NC, CCDS, gene, mutalyzer.info, skip.pred=FALSE)
-#' nomenclature <- gnomADnomen(variant.info)
-#' specific <- geneSpecific(nomenclature, geneSpecific(gene, gene.specific.df))
-#' gnomADmerge(nomenclature, specific)
 gnomADmerge <- function (gnom, specific.info, bbdd ){
   porc <- as.numeric(specific.info$IC)
   exomes.info.gnom <- gnomADinfo(track="exomes", gnomAD.ID = gnom, porc = porc, bbdd=bbdd)
@@ -553,7 +528,7 @@ gnomADtotal <- function (datasetA, datasetB, porc){
 #' @examples
 #' ####Knowing FLOSSIES nomenclature
 #' nomenclature.flossies <- "17-41245700-AGA-"
-#' flossiesInfo (nomen.flossies=nomenclature.flossies)
+#' vaRHC:::flossiesInfo(nomen.flossies=nomenclature.flossies)
 #' @noRd
 flossiesInfo <- function(nomen.flossies, nomen.gnomAD=NULL, gene){
   if(is.null(nomen.flossies)){
@@ -603,9 +578,9 @@ flossiesInfo <- function(nomen.flossies, nomen.gnomAD=NULL, gene){
 #' gene <- "BRCA1"
 #' CCDS <- "CCDS11453.1"
 #' variant <- "c.211A>G"
-#' mutalyzer.info <- correctHgvsMutalyzer(NM, NC,  gene, variant)
-#' variant.info <- varDetails(NM,NC, CCDS, gene, mutalyzer.info, skip.pred=FALSE)
-#' clinVarIds (variant.info)
+#' mutalyzer.info <- vaRHC:::correctHgvsMutalyzer(NM, NC,  gene, variant)
+#' variant.info <- vaRHC:::varDetails(NM,NC, CCDS, gene, mutalyzer.info, skip.pred=FALSE)
+#' clinVarIds(variant.info)
 clinVarIds <- function(object){
   clinvar.info <- data.frame()
   server.clinvar <- "https://clinicaltables.nlm.nih.gov/api/variants/v3/search?"
@@ -691,10 +666,10 @@ clinVarIds <- function(object){
 #' gene <- "BRCA1"
 #' CCDS <- "CCDS11453.1"
 #' variant <- "c.211A>G"
-#' mutalyzer.info <- correctHgvsMutalyzer(NM, NC,  gene, variant)
-#' variant.info <- varDetails(NM,NC, CCDS, gene, mutalyzer.info, skip.pred=FALSE)
-#' clinvar.ids <- clinVarIds (variant.info)
-#' clinvarDetails (clinvar.id= clinvar.ids)
+#' mutalyzer.info <- vaRHC:::correctHgvsMutalyzer(NM, NC,  gene, variant)
+#' variant.info <- vaRHC:::varDetails(NM,NC, CCDS, gene, mutalyzer.info, skip.pred=FALSE)
+#' clinvar.ids <- vaRHC:::clinVarIds (variant.info)
+#' vaRHC:::clinvarDetails(clinvar.id= clinvar.ids)
 
 clinVarInfo <- function (clinvar.id, object){
   if (clinvar.id$message!="Warning: It is not a missense variant."& clinvar.id$message!="Warning: There are not variants reported in clinvar at this codon"){
@@ -1052,13 +1027,13 @@ insightInfo <- function (object, remote, browser){
 #' variant <- "c.211A>G"
 #'
 #' #Correct variant nomenclature
-#' mutalyzer.info <- correctHgvsMutalyzer(NM, NC,  gene, variant)
+#' mutalyzer.info <- vaRHC:::correctHgvsMutalyzer(NM, NC,  gene, variant)
 #'
 #'#variant information
-#' variant.info <- varDetails(NM,NC, CCDS, gene, mutalyzer.info, skip.pred=FALSE)
+#' variant.info <- vaRHC:::varDetails(NM,NC, CCDS, gene, mutalyzer.info, skip.pred=FALSE)
 #'
-#' gnom <- gnomADnomen(object = variant.info)
-#' bbdd.info <- extractBBDD(mutalyzer = mutalyzer.info, object = variant.info, gnom = gnom) %>% connectionDB()
+#' gnom <- vaRHC:::gnomADnomen(object = variant.info)
+#' bbdd.info <- vaRHC:::extractBBDD(mutalyzer = mutalyzer.info, object = variant.info, gnom = gnom) %>% vaRHC:::connectionDB()
 #' articlesInfo(object = variant.info, variant.cor = mutalyzer.info, ddbb = bbdd.info)
 #' @references
 #' Parsons, M. T., Tudini, E., Li, H., Hahnen, E., Wappenschmidt, B., Feliubadaló, L., ... & Pohl‐Rescigno, E. (2019). Large scale multifactorial likelihood quantitative analysis of BRCA1 and BRCA2 variants: An ENIGMA resource to support clinical variant classification. Human mutation, 40(9), 1557-1578.

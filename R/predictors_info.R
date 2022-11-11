@@ -4,7 +4,7 @@
 
 ## General
 #' @noRd
-predicInfo <- function(object, gene.specific, bbdd, gnomad, spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC"), spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL){
+predicInfo <- function(object, gene.specific, bbdd, gnomad, spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation = NULL, spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL){
   httr::set_config(httr::config(ssl_verifypeer = 0L))
   ensembl.id <- ensemblTranscript(object$NM, object$gene)
   #scores
@@ -453,7 +453,7 @@ proveanR <- function(object, provean.sh, bbdd, cores=1){
 #' SpliceaiR
 #' @references Jaganathan, K., Panagiotopoulou, S. K., McRae, J. F., Darbandi, S. F., Knowles, D., Li, Y. I., ... & Farh, K. K. H. (2019). Predicting splicing from primary sequence with deep learning. Cell, 176(3), 535-548.
 #' @noRd
-spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precomputed = 1, mask = 1, bbdd, spliceai.program = FALSE,  reference.splice = NULL, annotation.splice = system.file("data", "gencode_spliceai_hg19.txt", package="vaRHC")) {
+spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precomputed = 1, mask = 1, bbdd, spliceai.program = FALSE,  reference.splice = NULL, annotation.splice = NULL) {
   assertthat::assert_that(is.logical(spliceai.program), msg="spliceai.program param must be TRUE or FALSE")
   cond <- precomputed==1 & genome==37 & distance==1000 & mask==1
   ensembl.id <- object$ensembl.id
@@ -469,7 +469,7 @@ spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precom
   if((cond==F || (cond==T && nrow(spliceai.score)==0)) && spliceai.program == TRUE){
     assertthat::assert_that(!is.null(reference.splice), msg="Reference file must be provided if spliceAI has to be computed")
     assertthat::assert_that(file.exists(reference.splice) & stringr::str_detect(reference.splice, ".fa"), msg="Please enter a valid reference file")
-    assertthat::assert_that(!is.null(annotation.splice), msg="Reference file must be provided if spliceAI has to be computed")
+    assertthat::assert_that(is.null(annotation.splice)| file.exists(annotation.splice) , msg="Reference file does not exist, please enter a valid one or keep it null")
     assertthat::assert_that(file.exists(annotation.splice), msg="Please enter a valid annotation file")
 
     #NM exeptions
@@ -502,6 +502,7 @@ spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precom
     #temporarly directory to store spliceAI output
     .tmp <- file.path(getwd(), ".tmp")
     dir.create(.tmp, showWarnings = FALSE)
+    
 
     var.tros <- stringr::str_split(ext.spliceai, "-") %>%
       unlist()
@@ -510,7 +511,13 @@ spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precom
       t()
     time <-  Sys.time() %>%
       stringr::str_replace_all("-|:| ", "_")
-
+    
+    if (is.null(annotation.splice)){
+      data("gencode_spliceai_hg19")
+      write.table(gencode_spliceai_hg19, file.path(.tmp, "gencode_spliceai_hg19.txt"), col.names=TRUE, row.names = FALSE )
+      annotation.splice <- file.path(.tmp, "gencode_spliceai_hg19.txt")
+    }
+    
     write.table(var.tros2,
                 file  = file.path(.tmp, paste0("var_splice", time, ".txt")),
                 col.names=FALSE,
