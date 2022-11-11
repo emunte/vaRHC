@@ -29,11 +29,12 @@ library(dplyr)
 
   1. [Introduction](#intro)
   2. [Installation](#install)
-  3. [Main functions](#functions)<br>
+  3. [Main functions](#functions)<br><br>
     3.1 [vaR()](#func1) <br>
-    3.2 [vaRbatch()](#func1)<br>
+    3.2 [vaRbatch()](#func2)<br>
   4. [Legal advice and privacy policy for users](#legal)
-  5. [Session Info](#session)
+  5. [Supplementary Tables](#Supplement)
+  6. [Session Info](#session)
   
 
 
@@ -69,7 +70,7 @@ library("vaRHC")
 ## 3. Main functions {#functions}
 The package consists of two main functions ***vaR()***  and ***vaRbatch()***.
 
-### 3.1 vaR() {#fun1}
+### 3.1 vaR() {#func1}
 
 #### 3.1.1 Input
 ##### 3.1.1.1 Parameters
@@ -91,18 +92,11 @@ var.information <- vaR(gene = eg.gene, variant = eg.variant)
 Optional parameters of *vaR()* are described below.
 
 ##### 3.1.1.2.1 NM and CCDS
-- ***NM***: Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed above. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM, CCDS must also be provided.The transcript accession number is retrieved from RefSeq. By default, this function parameter is set to NULL. vaRHC will consider the NMs listed in the table above. If a different NM is used than the ones described in the table, it must be noted that the program has not been validated yet for it. In this case, a CCDS ID is also required.
+- ***NM***: Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed above. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM, CCDS must also be provided.The transcript accession number is retrieved from RefSeq. By default, this function parameter is set to NULL. vaRHC will consider the NMs listed in the Supplementary Table 1. If a different NM is used than the ones described in the table, it must be noted that the program has not been validated yet for it. In this case, a CCDS ID is also required.
 
 
 
 - ***CCDS***: Consensus CDS ID retrieved from NCBI CCDS database (which can be found in the following link https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi). By default is set to NULL. vaRHC will consider the IDs detailed in the table above. Again, it must be noted that if a different CCDS ID is provided, the program has not been validated yet for it. In this case, NM accession number is required. 
-
-
-
-```{r echo=FALSE}
-all.transcript <- vaRHC:::connectionDB("SELECT ensembltranscriptID, namegene, NM, NC, CCDS from transcript WHERE maintranscript = 'T';") %>% as.data.frame() %>% dplyr::arrange(namegene)
-knitr::kable(all.transcript)
-```
 
 
 ##### 3.1.1.2.2 gene.specific.df
@@ -118,24 +112,24 @@ A template of how the table needs to be can be downloaded from GitHub (https://g
 - **BA1**: *float number*. Cut-off used to assign BA1 criterion.<br>
 - **BS1**: *float number*. Cut-off used to assign BS1 criterion.<br>
 - **IC**: *float number*. Interval of confidence used to assign BA1 and BS1 criterion<br>
-- **alleles**: *int number*. Number of minimum alleles needed in the subpopulation (the program only takes it into account where IC is not specified).<br>
-- **BS2**: *int number*. Number of individuals that need to carry the variant to assign BS2.<br>
-- **BS2_sup**: *int number*. Number of individuals that need to carry the variant to assign BS2_sup.<br>
-- **BS2_db**: *character* with the only options *FLOSSIES*, *GNOMAD_non_cancer*, *GNOMAD_non_neuro* or *NA*. Db to be queried.<br>
-- **status**: *character* with the only options *homo_healthy*, *hete_healthy*, NA. Type of zigosity asked for BS2 criteiron.<br>
+- **alleles**: *int number*. Minimum number of alleles needed in the subpopulation (it will only be considered when IC is not specified).<br>
+- **BS2**: *int number*. Minimum number of individuals that need to carry the variant to assign BS2.<br>
+- **BS2_sup**: *int number*. Minimum number of individuals that need to carry the variant to assign BS2_sup.<br>
+- **BS2_db**: *character* Db to be queried for BS2 criterion. Please introduce one of the following options *FLOSSIES*, *GNOMAD_non_cancer*, *GNOMAD_non_neuro* or *NA*. .<br>
+- **status**: *character* Type of zigosity asked for BS2 criterion. Please introduce one of the following options *homo_healthy*, *hete_healthy*, *NA*. <br>
 - **PM2**: float number. Cut-off used to assign PM2 criterion.<br>
 - **PM2_sup**: float number. Cut-off used to assign PM2_supporting criterion.<br>
 - **predictors section**:<br>
   Predictors shown are: nucleotide conservation(**phylop, phastcons, gerp**), protein level (**revel, VEST4, provean, bayesDel_noAF, agvgd, polyphen, MAPP, prior_utah_prot**) and splicing predcitors (**spliceai, trap**). See references in the tool paper. <br>
   For each predictor there are 4 columns: <br>
-  + **op_predictor_ben**: *character* with the only options *<*, *>*, *=<*, *=>* or *!=*. Operator to use for benign cut-off.
-  + **op_predictor_pat** : *character* with the only options *<*, *>*, *=<*, *=>* or *!=*. Operator to use for pathogenic cut-off.
+  + **op_predictor_ben**: *character* Operator to use for benign cut-off. The possible options to introduce are *<*, *>*, *=<*, *=>* or *!=*. 
+  + **op_predictor_pat** : *character* Operator to use for pathogenic cut-off. The possible options to introduce are *<*, *>*, *=<*, *=>* or *!=*. 
   + **predictor_ben** : *float number*. Benign cut-off to use with this predictor
   + **predictor_pat** : *float number*. Pathogenic cut-off to use with this predictor<br>
   
 > Be careful, changing a predictor cut-off will only be considered when the guidelines specify to use that predictor.
 
-- **BP7_splicing**: *character* with the only options *dependent*, *indpendent*. Wheter the BP7 criteria is dependent on splicing prediction not being altered or not. 
+- **BP7_splicing**: *character* Wheter the BP7 criteria is dependent on splicing prediction not being altered or not. Possible options are *dependent*, *indpendent*.  
 ```{r, eval=FALSE}
 eg.gene <- "CDH1"
 eg.variant <- "c.1137+1G>A"
@@ -150,28 +144,28 @@ Insight database needs to be queried using RSelenium package. However, we have d
 The ***browser*** parameter is used to set which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs" (but they have not been tested for this package).
 
 ##### 3.1.1.2.4 SpliceAI related parameters
-- ***spliceai.program*** : Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.
+- ***spliceai.program*** : *Logical*. By default is FALSE , assuming that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants considering a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set the parameter to TRUE.
 
-- ***spliceai.referenc*** : Path to the Reference genome hg19 fasta file. Can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
+- ***spliceai.referenc*** : Path to the Reference genome hg19 fasta file. It can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
 
 - ***spliceai.annotation*** : Path to gene annotation file. By default it uses the file stored in package docs folder: "../docs/gencode.v38lift37.annotation.txt"
 
-- ***spliceai.distance*** :  Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)
+- ***spliceai.distance*** :  *Integer*. Maximum distance between the variant and gained/lost splice site (default: 1000)
 
 - ***spliceai.masked*** : Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1, that is masked)
 
 ##### 3.1.1.2.5 Provean related parameters
-- ***provean***: Logical. By default is FALSE and it is assumed that provean program is not installed in your computer. Set to TRUE if you want to compute provean locally.
-- ***provean.sh***: Path to the provean.sh file. It will only be taken into account when provean is set to TRUE.
+- ***provean***: *Logical*. By default is FALSE and it is assumed that provean program is not installed in your computer. Set to TRUE if you want to compute provean locally.
+- ***provean.sh***: Path to the provean.sh file. It will only be considered when provean is set to TRUE.
 
 ##### 3.1.1.2.6 Report related parameters
 
-- ***excel.results*** : Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved
+- ***excel.results*** : *Logical*. By default is FALSE and the excel file will not be created. If TRUE and excel file will be saved.
 - ***path.original.file***: If excel.results param is set to TRUE, path.original.file must contain the path to the excel template. By default is the template located in the package docs folder.
 
 
 ##### 3.1.1.2.7 Output dir
-- ***output.dir***:  By default is NULL. output.dir must provide the folder to store the results. If not provided it will be saved in the working directory.
+- ***output.dir***:  By default is NULL and the output will be saved in the working directory. If yu want to save the output in another folder please enter here the path. 
 
 ####  3.1.2 Output
 The result is stored in a list but it can also be exported in a xlsx file.
@@ -279,7 +273,7 @@ The excel file has the following sheets:<br>
 
 
 
-### 3.1 vaRbatch() {#fun2}
+### 3.1 vaRbatch() {#func2}
 ***vaRbatch()***  allows to perform vaR function in batch.
 
 #### 3.1.1 Input
@@ -352,7 +346,17 @@ You will be able to request more information on the processing of data performed
 
 Furthermore, if you consider that you have not obtained satisfaction in the exercise of your rights, you will be able to file a complaint before the Catalan Data Protection Agency, and you will be able to find more information on the processing of your data from the IDIBELL to the following Privacy Policy. <br>
 
-### Session info {#session}
+
+
+## 5. Supplementary Tables {#Supplement}
+
+### ST1
+```{r echo=FALSE}
+all.transcript <- vaRHC:::connectionDB("SELECT ensembltranscriptID, namegene, NM, NC, CCDS from transcript WHERE maintranscript = 'T';") %>% as.data.frame() %>% dplyr::arrange(namegene)
+knitr::kable(all.transcript)
+```
+
+### 6. Session info {#session}
 ```{r}
 sessionInfo()
 ```
