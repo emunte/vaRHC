@@ -32,7 +32,10 @@ Imports:
     vcfR,
     XML,
     readr,
-    tidyr
+    tidyr,
+    GenomicRanges, 
+    IRanges, 
+    rtracklayer
 Suggests: 
     knitr,
     rmarkdown,
