@@ -4,19 +4,20 @@
 \name{vaRHC-package}
 \alias{vaRHC}
 \alias{vaRHC-package}
-\title{vaRHC: ACMG variant classification semi-automated}
+\title{vaRHC: Variant Classification in Hereditary Cancer Following Specific ACMG guidelines}
 \description{
-ACMG variant classification.
+automate, as far as possible, the variant classification process for hereditary cancer genes following specific ACMG guidelines
 }
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://github.com/emunte/vaRHC}
   \item Report bugs at \url{https://github.com/emunte/vaRHC/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: Elisabet Munté Roca \email{emunte@idibell.cat} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: Elisabet Munté Roca \email{emunte@idibell.cat} (\href{https://orcid.org/0000-0001-8396-8284}{ORCID})
 
 }
 \keyword{internal}

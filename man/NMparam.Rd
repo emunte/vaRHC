@@ -22,9 +22,9 @@ Get transcript information
 }
 \examples{
 library(vaRHC)
-NMparam(gene="BRCA1")
-NMparam(gene="TP53")
-NMparam(gene="TP53", NM = "NM_001126113.2", NC = "NC_000017.10", CCDS= "CCDS45606")
+vaRHC:::NMparam(gene="BRCA1")
+vaRHC:::NMparam(gene="TP53")
+vaRHC:::NMparam(gene="TP53", NM = "NM_001126113.2", CCDS= "CCDS45606")
 }
 \author{
 Elisabet Munté Roca
