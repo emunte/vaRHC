@@ -7,11 +7,6 @@
 #' @param CCDS Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi.
 #' @return The NM, NC and CCDS for that gene
 #' @author Elisabet Munté Roca
-#' @examples
-#' library(vaRHC)
-#' NMparam(gene="BRCA1")
-#' NMparam(gene="TP53")
-#' NMparam(gene="TP53", NM = "NM_001126113.2", NC = "NC_000017.10", CCDS= "CCDS45606")
 NMparam <- function(gene , NM=NULL, CCDS=NULL){
   query <- paste0("SELECT * from  transcript WHERE namegene= '", gene ,"' AND maintranscript= 'T' ;")
   nm.nc <- connectionDB(query)[[1]] %>%
@@ -19,7 +14,7 @@ NMparam <- function(gene , NM=NULL, CCDS=NULL){
     dplyr::select (NM, NC, CCDS)
   assertthat::assert_that(nrow(nm.nc)!=0, msg= "Gene not found in the database.")
   if (!is.null(NM)){
-    assertthat::assert_that(is.character(nm.info) & stringr::str_detect(nm.info,"NM_[0-9]+\\.[0-9]"), msg="Invalid NM entered")
+    assertthat::assert_that(is.character(NM) & stringr::str_detect(NM,"NM_[0-9]+\\.[0-9]"), msg="Invalid NM entered")
     NC <- nm.nc$NC
     assertthat::assert_that(stringr::str_detect(NC,"NC_[0-9]+\\.[0-9]"), msg="Invalid NC entered")
     assertthat::assert_that(!is.null(CCDS), msg="You must provide the CCDS id.")
@@ -48,9 +43,6 @@ NMparam <- function(gene , NM=NULL, CCDS=NULL){
 #' @author Elisabet Munté Roca
 #' @references
 #' "Lefter M et al. (2021). Mutalyzer 2: Next Generation HGVS Nomenclature Checker. Bioinformatics, btab051" (direct link)
-#' @examples
-#' correctHgvsMutalyzer(NM="NM_000051.3", gene="ATM", variant="c.3436G>A")
-#' correctHgvsMutalyzer(NM="NM_007294.3", NC="NC_000017.10", gene="BRCA1", variant="c.-19-85C>G")
 #' @noRd
 
 correctHgvsMutalyzer <- function(NM, NC, gene, variant, skip.pred=FALSE){
@@ -66,59 +58,6 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant, skip.pred=FALSE){
 
   #Changing between equivalent versions, to avoid mutalyzer errors.
   message.mutalyzer <- NA
-  #MSH2
-  # if(NM=="NM_000251.2"){
-  #   variant.mutalyzer <- URLencode(paste0(NC, "(NM_000251.3):",variant),reserved=TRUE)
-  #   message.mutalyzer <- "No NM_000251.2 selector found in reference, to continue NM_000251.3 has been used instead. "
-  #   }
-  # #NTHL1
-  # if(NM=="NM_002528.5"){
-  #   variant.mutalyzer <- URLencode(paste0(NC, "(NM_002528.3):",variant),reserved=TRUE)
-  #   message.mutalyzer <- "No NM_002528.5 selector found in reference, to continue NM_002528.3 has been used instead. "
-  # 
-  #   }
-  # #BRCA1
-  # if(NM=="NM_007294.3"){
-  #   variant.mutalyzer <- URLencode(paste0(NC, "(NM_007294.4):",variant),reserved=TRUE)
-  #   message.mutalyzer <- "No NM_007294.3 selector found in reference, to continue NM_007294.4 has been used instead. "
-  # }
-  # 
-  # #PMS2
-  # if(NM=="NM_000535.5"){
-  #   variant.mutalyzer <- URLencode(paste0(NC, "(NM_000535.7):",variant),reserved=TRUE)
-  #   message.mutalyzer <- "No NM_000535.5 selector found in reference, to continue NM_000535.7 has been used instead. "
-  #   }
-  # 
-  # #CHEK2
-  # if(NM=="NM_007194.3"){
-  #   variant.mutalyzer <- URLencode(paste0(NC, "(NM_007194.4):",variant),reserved=TRUE)
-  #   message.mutalyzer <- "No NM_007194.3 selector found in reference, to continue NM_007194.4 has been used instead. "
-  #   }
-  # #BRIP1
-  # if(NM=="NM_032043.2"){
-  #   variant.mutalyzer <- URLencode(paste0(NC, "(NM_032043.3):",variant),reserved=TRUE)
-  #   message.mutalyzer <- "No NM_032043.2 selector found in reference, to continue NM_032043.3 has been used instead. "
-  #   }
-  # #UNC93B1
-  # if(NM=="NM_030930.2")variant.mutalyzer <- URLencode(paste0("NG_007581.1", "(", NM,"):",variant),reserved=TRUE)
-  # #TRAF3
-  # if(NM=="NM_145725.2"){
-  #   variant.mutalyzer <-URLencode(paste0(NC, "(NM_145725.3):",variant),reserved=TRUE)
-  #   message.mutalyzer <- "No NM_145725.2 selector found in reference, to continue NM_145725.3 has been used instead. "
-  # }
-  # #TYK2
-  # if(NM=="NM_003331.4"){
-  #   variant.mutalyzer <- URLencode(paste0(NC, "(NM_003331.5):",variant),reserved=TRUE)
-  #   message.mutalyzer <- "No NM_003331.4 selector found in reference, to continue NM_003331.5 has been used instead. "
-  # }
-  # 
-  # #PTEN (99.96% identity)
-  # if(NM=="NM_000314.6"){
-  #   variant.mutalyzer <- URLencode(paste0(NC, "(NM_000314.8):",variant),reserved=TRUE)
-  #   message.mutalyzer <- "No NM_000314.6 selector found in reference, to continue NM_000314.8 has been used instead. Be careful, they share 99.96% identity."
-  # }
-
-  # if (intronic == TRUE) assertthat::assert_that(!is.null(NC), msg="'NC' argument must be given")
 
   ext.mutalyzer.v3 <- paste0("normalize/", variant.mutalyzer)
   mutalyzerv3 <- api2(server.mutalyzerv3, ext.mutalyzer.v3)
@@ -159,10 +98,6 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant, skip.pred=FALSE){
     mutalyzer.genomic <- liftOverhg38_hg19(mutalyzer.genomic)
     
   }
-  
-  # exons.mut <- cbind(tibble::as_tibble(mutalyzerv3$selector_short$exon$g),
-  #                      tibble::as_tibble(mutalyzerv3$selector_short$exon$c))
-  # names(exons.mut) <- c("gStart", "gStop", "cStart", "cStop")
   
   exons.mut <-  tibble::as_tibble(mutalyzerv3$selector_short$exon$c)
   names(exons.mut) <- c("cStart", "cStop")
@@ -218,7 +153,6 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant, skip.pred=FALSE){
 }
 
 
-
 #' Variant info from Ensembl VEP
 #'
 #' @param NM Accession number of the transcrit and mRNA from RefSeq
@@ -233,14 +167,6 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant, skip.pred=FALSE){
 #' variant consequence and if the variant is located in a protein domain
 #' @author Elisabet Munté Roca
 #' @references McLaren W, Gil L, Hunt SE, Riat HS, Ritchie GR, Thormann A, Flicek P, Cunningham F. The Ensembl Variant Effect Predictor. Genome Biology Jun 6;17(1):122. (2016) doi:10.1186/s13059-016-0974-4
-#' @examples
-#' NM <- "NM_007294.3"
-#' NC <- "NC_000017.10"
-#' gene <- "BRCA1"
-#' CCDS <- "CCDS11453.1"
-#' variant <- "c.211A>G"
-#' mutalyzer.info <- correctHgvsMutalyzer(NM, NC,  gene, variant)
-#' varDetails(NM,NC, CCDS, gene, mutalyzer.info, skip.pred=FALSE)
 #' @noRd
 
 varDetails <- function (NM, NC=NULL, CCDS, gene, variant, variant.mutalyzer=NULL, skip.pred=FALSE){
@@ -530,10 +456,7 @@ protsyn2 <- function(object, var.mut){
 }
 
 toGenomic <- function(NM, NC, cor.variant, gene){
-  mutalyzer <- vaRHC:::correctHgvsMutalyzer(NM = NM, NC = NC, gene = gene, variant = cor.variant)
-  #server.mutalyzer <- "https://mutalyzer.nl/json/"
-  #ext.mut.convert <- paste0("numberConversion?build=hg19&variant=", NM, ":", cor.variant, "&gene=", gene)
-  #ext.mut.convert <- gsub("\\+", "%2B", ext.mut.convert)
+  mutalyzer <- correctHgvsMutalyzer(NM = NM, NC = NC, gene = gene, variant = cor.variant)
   return(mutalyzer$genomic)
 }
 

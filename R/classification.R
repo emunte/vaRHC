@@ -2,13 +2,6 @@
 #' @param all.information obtained with the getVaRinfo function
 #' @return the classification of the variant  and the criteria given following ACMG updated rules and gene specific for BRCA1, BRCA2, PALB2, ATM, MMR
 #' @author Elisabet Munté Roca
-#' @examples
-#' assembly <- "hg19"
-#' gene <- "BRCA1"
-#' variant <- "c.211A>G"
-#' gene.specific.df <- read.csv ("./gen_specific.csv")
-#' variant.info <- getVaRinfo(assembly, gene, variant, nm.info = NULL, gene.specific.df)
-#' vaRclass (variant.info)
 vaRclass <- function (all.information){
   criteria.res <- matrix ("NC",nrow=29, ncol=4)
   colnames(criteria.res) <- c("very_strong", "strong", "moderate", "supporting")

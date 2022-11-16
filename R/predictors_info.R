@@ -513,7 +513,7 @@ spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precom
       stringr::str_replace_all("-|:| ", "_")
     
     if (is.null(annotation.splice)){
-      data("gencode_spliceai_hg19")
+      data("gencode_spliceai_hg19", , envir = environment())
       write.table(gencode_spliceai_hg19, file.path(.tmp, "gencode_spliceai_hg19.txt"), col.names=TRUE, row.names = FALSE )
       annotation.splice <- file.path(.tmp, "gencode_spliceai_hg19.txt")
     }

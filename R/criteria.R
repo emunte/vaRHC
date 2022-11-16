@@ -604,7 +604,7 @@ PM5 <- function (all.information, final.criteria){
     }
   }else if (all.information$Variant.Info$most.severe.consequence=="missense_variant"){
     if (length(clinvar.evidence.calc) > 0){
-      data(BLOSUM62, package="Biostrings")
+      data(BLOSUM62, package="Biostrings", envir = environment())
       prot.look <- stringr::str_sub(all.information$Variant.Info$protein, 4, -2)
       pm5.df <- clinvar.evidence.calc %>%
                                       t() %>%

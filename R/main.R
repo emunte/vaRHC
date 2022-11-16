@@ -23,6 +23,30 @@
 #' @import rtracklayer
 #' @importFrom GenomicRanges GRanges
 #' @importFrom IRanges IRanges
+#' @importFrom utils URLencode data write.table
+#' @importFrom seqinr write.fasta
+NULL
+
+#' @name gencode_spliceai_hg19
+#' @title gencode_spliceai_hg19
+#' @docType data
+#' @references adapted from SpliceAI-lookup \url{https://github.com/broadinstitute/SpliceAI-lookup/blob/master/annotations/gencode.v38lift37.annotation.txt.gz}
+#' @keywords data
+NULL
+
+#' @name gene_specific
+#' @title gene_specific
+#' @docType data
+#' @author Elisabet Munté Roca \email{emunte@@idibell.cat}
+#' @references \url{https://github.com/emunte/vaRHC/blob/main/data/gene_specific.txt}
+NULL
+
+#' @name example_input_vaRbatch
+#' @title example_input_vaRbatch
+#' @docType data
+#' @author Elisabet Munté Roca \email{emunte@@idibell.cat}
+#' @references \url{https://github.com/emunte/vaRHC/blob/main/data/example_input_vaRbatch.txt}
+#' @keywords data
 NULL
 
 #' vaR()
@@ -31,7 +55,6 @@ NULL
 #' @param gene gene of interest
 #' @param variant variant of interest in cdna
 #' @param NM Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM,  NC and CCDS must also be provided.
-#' @param NC Accession number of the chromosome RefSeq. It can be ommited if the variant is exonic. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NC, NM and CCDS must also be provided.
 #' @param CCDS Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM and NC must also be provided. Current version only works for hg19.
 #' @param gene.specific.df By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv or in the package extdata folder and some parameters can be modified taking into account your preferences
 #' @param remote Logical. Connect remotely to RSelenium server? By default is TRUE and will start Rselenium server.If it is FALSE vaRHC will not connect to insight database.
@@ -47,8 +70,7 @@ NULL
 #' @param output.dir By default is NULL. output.dir must provide the folder to store the results. If not provided it will be saved in the working directory.
 #' @author Elisabet Munté Roca
 #' @examples
-#' vaR (gene= "BRCA1", variant= "c.211A>G",  excel.results=TRUE, outpur.dir="./results/")
-#' vaR.all <- vaR (gene = "BRCA1", variant = "c.692C>T", spliceai.program = TRUE, spliceai.reference = "./hg19.fa", excel.results = TRUE)
+#' vaR (gene= "BRCA1", variant= "c.211A>G",  excel.results=TRUE)
 #' @references
 #' Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17(5), 405–424. https://doi.org/10.1038/gim.2015.30
 #' Tavtigian, S. V., Harrison, S. M., Boucher, K. M., & Biesecker, L. G. (2020). Fitting a naturally scaled point system to the ACMG/AMP variant classification guidelines. Human mutation, 41(10), 1734–1737. https://doi.org/10.1002/humu.24088
@@ -105,9 +127,7 @@ vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote
 #' @param output.dir By default is NULL. output.dir must provide the folder to store the results. If not provided it will be saved in the working directory.
 #' @author Elisabet Munté Roca
 #' @examples
-#' all.variants.eg <- data.frame(gene=c("BRCA1", "MLH1"), variant="c.211A>G", "c.1A>G")
-#' all <- vaRbatch( all.variants = all.variants.eg, spliceai.program = TRUE, spliceai.reference= "./hg19.fa", excel.results = TRUE)
-#' lbrary(vaRHC)
+#' library(vaRHC)
 #' data("example_input_vaRbatch")
 #' example_input_vaRbatch[] <- lapply(example_input_vaRbatch, as.character) #convert to character
 #' all <- vaRbatch( all.variants = example_input_vaRbatch, spliceai.program = FALSE, excel.results = TRUE)

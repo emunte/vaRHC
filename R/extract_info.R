@@ -6,6 +6,7 @@
 #' @param NM refSeq nomenclature. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM,  NC and CCDS must also be provided.
 #' @param CCDS Consensus CD id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM must also be provided. Current version only works for hg19.
 #' @param gene.specific.df By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv and some parameters can be modified taking into account your preferences
+#' @param remote Logical. Connect remotely to RSelenium server? By default is TRUE and will start Rselenium server.If it is FALSE vaRHC will not connect to insight database.
 #' @param browser Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".
 #' @param spliceai.program Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.
 #' @param spliceai.reference Path to the Reference genome hg19 fasta file. Can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
@@ -16,9 +17,6 @@
 #' @param provean.sh Path to provean.sh. By default is NULL and will only be taken into account if provean.program is set to TRUE.
 #' @return information about the variant.
 #' @author Elisabet Munté Roca
-#' @examples
-#' vaRinfo("hg19", "MLH1", "c.1AG>")
-#' vaRinfo("hg19", "MSH6", "c.211A>G", spliceai.program = TRUE, spliceai.reference = "./hg19.fa")
 #' @references
 #' Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17, 405–424. https://doi.org/10.1038/gim.2015.30
 vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote = TRUE, browser="firefox",  spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation =  NULL , spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL){
@@ -257,18 +255,6 @@ queriesGnomad <- function (track, gnom){
 #' @return The name of the gene if there are special ACMG rules for it and if not it returns general ACMG rules.
 #' if it follows general ACMG rules (only for hereditary cancer related genes)
 #' @author Elisabet Munté Roca
-#' @examples
-#' #using the default
-#' geneSpecific("BRCA1")
-#' geneSpecific("RAD51C")
-#' geneSpecific("ERCC5")
-#'
-#' #changing the csv file
-#' file1 <- file.path("./gene_specific.csv")
-#' gene.specific.df <- read.csv(file1, sep=",", header=TRUE,row.names=1, stringsAsFactors = FALSE)
-#' geneSpecific("BRCA1", gene.specific.df)
-#' geneSpecific("RAD51C", gene.specific.df)
-#' geneSpecific("ERCC5", gene.specific.df)
 #' @references
 #' Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17(5), 405–424. https://doi.org/10.1038/gim.2015.30
 #' Tavtigian, S. V., Harrison, S. M., Boucher, K. M., & Biesecker, L. G. (2020). Fitting a naturally scaled point system to the ACMG/AMP variant classification guidelines. Human mutation, 41(10), 1734–1737. https://doi.org/10.1002/humu.24088
@@ -572,20 +558,11 @@ flossiesInfo <- function(nomen.flossies, nomen.gnomAD=NULL, gene){
 #' @references
 #' https://clinicaltables.nlm.nih.gov/apidoc/variants/v4/doc.html
 #' @noRd
-#' @examples
-#' NM <- "NM_007294.3"
-#' NC <- "NC_000017.10"
-#' gene <- "BRCA1"
-#' CCDS <- "CCDS11453.1"
-#' variant <- "c.211A>G"
-#' mutalyzer.info <- vaRHC:::correctHgvsMutalyzer(NM, NC,  gene, variant)
-#' variant.info <- vaRHC:::varDetails(NM,NC, CCDS, gene, mutalyzer.info, skip.pred=FALSE)
-#' clinVarIds(variant.info)
 clinVarIds <- function(object){
   clinvar.info <- data.frame()
   server.clinvar <- "https://clinicaltables.nlm.nih.gov/api/variants/v3/search?"
   if (object$most.severe.consequence == "missense_variant"){
-    data(BLOSUM62, package="Biostrings")
+    data(BLOSUM62, package="Biostrings", envir = environment())
     aa.search <- paste0("p.", toProtein(object$protein)$aa.ref, toProtein(object$protein)$aa.pos)
     variant.clinvar <- stringr::str_replace(object$variant, "\\+", "\\\\+" )
     ext.clinvar.all <- paste0("terms=(", object$gene,")", aa.search, "{1}")
@@ -660,16 +637,6 @@ clinVarIds <- function(object){
 #' @references
 #' Landrum MJ, Lee JM, Benson M, Brown GR, Chao C, Chitipiralla S, Gu B, Hart J, Hoffman D, Jang W, Karapetyan K, Katz K, Liu C, Maddipatla Z, Malheiro A, McDaniel K, Ovetsky M, Riley G, Zhou G, Holmes JB, Kattman BL, Maglott DR. ClinVar: improving access to variant interpretations and supporting evidence. Nucleic Acids Res . 2018 Jan 4. PubMed PMID: 29165669 .
 #' @noRd
-#' @examples
-#' NM <- "NM_007294.3"
-#' NC <- "NC_000017.10"
-#' gene <- "BRCA1"
-#' CCDS <- "CCDS11453.1"
-#' variant <- "c.211A>G"
-#' mutalyzer.info <- vaRHC:::correctHgvsMutalyzer(NM, NC,  gene, variant)
-#' variant.info <- vaRHC:::varDetails(NM,NC, CCDS, gene, mutalyzer.info, skip.pred=FALSE)
-#' clinvar.ids <- vaRHC:::clinVarIds (variant.info)
-#' vaRHC:::clinvarDetails(clinvar.id= clinvar.ids)
 
 clinVarInfo <- function (clinvar.id, object){
   if (clinvar.id$message!="Warning: It is not a missense variant."& clinvar.id$message!="Warning: There are not variants reported in clinvar at this codon"){
@@ -1019,22 +986,6 @@ insightInfo <- function (object, remote, browser){
 #' @param bbdd obtained with extractBBDD and connectionDB functions
 #' @returns   If the variants has undergone some of the following  multifactorial studies or functional assays, it returns the information: Parsons et al.(2019); Lyra et al. (2021); Jia et al.(2021), Drost et al. (2018).
 #' @author Elisabet Munté Roca
-#' @examples
-#' #' #' NM <- "NM_007294.3"
-#' NC <- "NC_000017.10"
-#' gene <- "BRCA1"
-#' CCDS <- "CCDS11453.1"
-#' variant <- "c.211A>G"
-#'
-#' #Correct variant nomenclature
-#' mutalyzer.info <- vaRHC:::correctHgvsMutalyzer(NM, NC,  gene, variant)
-#'
-#'#variant information
-#' variant.info <- vaRHC:::varDetails(NM,NC, CCDS, gene, mutalyzer.info, skip.pred=FALSE)
-#'
-#' gnom <- vaRHC:::gnomADnomen(object = variant.info)
-#' bbdd.info <- vaRHC:::extractBBDD(mutalyzer = mutalyzer.info, object = variant.info, gnom = gnom) %>% vaRHC:::connectionDB()
-#' articlesInfo(object = variant.info, variant.cor = mutalyzer.info, ddbb = bbdd.info)
 #' @references
 #' Parsons, M. T., Tudini, E., Li, H., Hahnen, E., Wappenschmidt, B., Feliubadaló, L., ... & Pohl‐Rescigno, E. (2019). Large scale multifactorial likelihood quantitative analysis of BRCA1 and BRCA2 variants: An ENIGMA resource to support clinical variant classification. Human mutation, 40(9), 1557-1578.
 #' Lyra, P. C., Nepomuceno, T. C., de Souza, M. L., Machado, G. F., Veloso, M. F., Henriques, T. B., ... & Monteiro, A. N. (2021). Integration of functional assay data results provides strong evidence for classification of hundreds of BRCA1 variants of uncertain significance. Genetics in Medicine, 23(2), 306-315.
