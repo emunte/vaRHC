@@ -18,19 +18,6 @@ if it follows general ACMG rules (only for hereditary cancer related genes)
 \description{
 Know if the gene has special ACMG rules
 }
-\examples{
-#using the default
-geneSpecific("BRCA1")
-geneSpecific("RAD51C")
-geneSpecific("ERCC5")
-
-#changing the csv file
-file1 <- file.path("./gene_specific.csv")
-gene.specific.df <- read.csv(file1, sep=",", header=TRUE,row.names=1, stringsAsFactors = FALSE)
-geneSpecific("BRCA1", gene.specific.df)
-geneSpecific("RAD51C", gene.specific.df)
-geneSpecific("ERCC5", gene.specific.df)
-}
 \references{
 Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17(5), 405–424. https://doi.org/10.1038/gim.2015.30
 Tavtigian, S. V., Harrison, S. M., Boucher, K. M., & Biesecker, L. G. (2020). Fitting a naturally scaled point system to the ACMG/AMP variant classification guidelines. Human mutation, 41(10), 1734–1737. https://doi.org/10.1002/humu.24088

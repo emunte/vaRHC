@@ -15,14 +15,6 @@ the classification of the variant  and the criteria given following ACMG updated
 \description{
 vaRclass
 }
-\examples{
-assembly <- "hg19"
-gene <- "BRCA1"
-variant <- "c.211A>G"
-gene.specific.df <- read.csv ("./gen_specific.csv")
-variant.info <- getVaRinfo(assembly, gene, variant, nm.info = NULL, gene.specific.df)
-vaRclass (variant.info)
-}
 \author{
 Elisabet Munté Roca
 }

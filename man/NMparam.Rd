@@ -20,12 +20,6 @@ The NM, NC and CCDS for that gene
 \description{
 Get transcript information
 }
-\examples{
-library(vaRHC)
-vaRHC:::NMparam(gene="BRCA1")
-vaRHC:::NMparam(gene="TP53")
-vaRHC:::NMparam(gene="TP53", NM = "NM_001126113.2", CCDS= "CCDS45606")
-}
 \author{
 Elisabet Munté Roca
 }

@@ -4,9 +4,9 @@
 \name{vaRHC-package}
 \alias{vaRHC}
 \alias{vaRHC-package}
-\title{vaRHC: Variant Classification in Hereditary Cancer Following Specific ACMG guidelines}
+\title{vaRHC: Variant Classification in Hereditary Cancer Following Specific ACMG Guidelines}
 \description{
-automate, as far as possible, the variant classification process for hereditary cancer genes following specific ACMG guidelines
+Automate, as far as possible, the variant classification process for hereditary cancer genes following specific ACMG guidelines.
 }
 \seealso{
 Useful links:
