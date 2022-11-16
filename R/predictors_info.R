@@ -316,7 +316,7 @@ priorUtahProb <- function(object, gene=NULL, variant =NULL){
 
 proveanR <- function(object, provean.sh, bbdd, cores=1){
   score.provean <- bbdd$provean
-  if(is.na(score.provean)){
+  if(nrow(score.provean)==0){
   prot.cor <- object$protein
   score.provean <- NA
   if(object$most.severe.consequence %in% c("missense_variant", "synonymous_variant")){

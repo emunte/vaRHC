@@ -129,7 +129,7 @@ extractBBDD <- function(mutalyzer, object, gnom){
   ####spliceAI
   spliceai <- paste0("SELECT *  from spliceAI  WHERE var_chr= '", gnom ,"'AND max_dis= 1000 AND transcript='", object$ensembl.id,"' AND masked='",TRUE,"';")
   ### provean
-  provean <- paste0("SELECT provean_score from provean WHERE variant_g'", gnom, "' AND gene='", object$gene,"';")
+  provean <- paste0("SELECT provean_score from provean WHERE variant_g ='", gnom, "' AND gene='", object$gene,"';")
 
   #geneLrgCoord
   #gene.LRG <- paste0("SELECT  l.transcript, l.namegene,l.coordinates, l.transcript2, l.cds_start, l.cds_end, l.strand,  c.exon, c.cStart, c.cStop FROM LRG l LEFT JOIN  transcript t ON t.ensembltranscriptID=l.transcript_id LEFT JOIN LRG_cds c ON l.transcript = c.LRG_id WHERE l.namegene= '",object$gene ,"' AND t.NM='", object$NM, "'; ")
