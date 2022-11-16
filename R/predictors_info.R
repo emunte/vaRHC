@@ -469,7 +469,7 @@ spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precom
   if((cond==F || (cond==T && nrow(spliceai.score)==0)) && spliceai.program == TRUE){
     assertthat::assert_that(!is.null(reference.splice), msg="Reference file must be provided if spliceAI has to be computed")
     assertthat::assert_that(file.exists(reference.splice) & stringr::str_detect(reference.splice, ".fa"), msg="Please enter a valid reference file")
-    assertthat::assert_that(is.null(annotation.splice)| file.exists(annotation.splice) , msg="Reference file does not exist, please enter a valid one or keep it null")
+    assertthat::assert_that(is.null(annotation.splice) || file.exists(annotation.splice) , msg="Reference file does not exist, please enter a valid one or keep it null")
     assertthat::assert_that(file.exists(annotation.splice), msg="Please enter a valid annotation file")
 
     #NM exeptions
