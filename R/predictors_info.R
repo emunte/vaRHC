@@ -469,8 +469,7 @@ spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precom
   if((cond==F || (cond==T && nrow(spliceai.score)==0)) && spliceai.program == TRUE){
     assertthat::assert_that(!is.null(reference.splice), msg="Reference file must be provided if spliceAI has to be computed")
     assertthat::assert_that(file.exists(reference.splice) & stringr::str_detect(reference.splice, ".fa"), msg="Please enter a valid reference file")
-    assertthat::assert_that(is.null(annotation.splice) || file.exists(annotation.splice) , msg="Reference file does not exist, please enter a valid one or keep it null")
-    assertthat::assert_that(file.exists(annotation.splice), msg="Please enter a valid annotation file")
+    if(!is.null(annotation.splice)) assertthat::assert_that(file.exists(annotation.splice) , msg="Reference file does not exist, please enter a valid one or keep it null")
 
     #NM exeptions
     if(object$NM=="NM_007194.3"){#CHEK2
@@ -513,8 +512,9 @@ spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precom
       stringr::str_replace_all("-|:| ", "_")
     
     if (is.null(annotation.splice)){
-      data("gencode_spliceai_hg19", , envir = environment())
-      write.table(gencode_spliceai_hg19, file.path(.tmp, "gencode_spliceai_hg19.txt"), col.names=TRUE, row.names = FALSE )
+      data("gencode_spliceai_hg19",  envir = environment())
+      names(gencode_spliceai_hg19) <- c("#NAME",	"CHROM",	"STRAND",	"TX_START",	"TX_END",	"EXON_START",	"EXON_END")
+      write.table(gencode_spliceai_hg19, file.path(.tmp, "gencode_spliceai_hg19.txt"), sep="\t", col.names=TRUE, row.names = FALSE, quote = FALSE)
       annotation.splice <- file.path(.tmp, "gencode_spliceai_hg19.txt")
     }
     
