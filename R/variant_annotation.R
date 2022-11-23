@@ -74,7 +74,7 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant, skip.pred=FALSE){
    NC.hg38 <- connectionDB(query)[[1]] %>%
      as.character
     variant.mutalyzer <- URLencode(paste0(NC.hg38, "(",NM, "):",variant),reserved=TRUE)
-    if(NM="NM_000535.5")  variant.mutalyzer <- URLencode(paste0(NC.hg38, "(","NM_000535.6", "):",variant),reserved=TRUE)
+    if(NM=="NM_000535.5")  variant.mutalyzer <- URLencode(paste0(NC.hg38, "(","NM_000535.6", "):",variant),reserved=TRUE)
     ext.mutalyzer.v3 <- paste0("normalize/", variant.mutalyzer)
     mutalyzerv3 <- api2(server.mutalyzerv3, ext.mutalyzer.v3)
     as <- "hg38"
