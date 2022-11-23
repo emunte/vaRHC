@@ -502,7 +502,12 @@ liftOverhg38_hg19  <- function (genomic){
   lift <- rtracklayer::liftOver(variantGR, ch)
   start <- lift[[1]]@ranges@start
   
+  query <- paste0("SELECT * FROM NCs WHERE chr='", chr, "'")
+  NC.table <- connectionDB(query)[[1]]
+  
+  
  genomichg19 <- stringr::str_replace(genomic, pos1 %>% as.character(), start %>% as.character())
+ genomichg19 <- stringr::str_replace(genomichg19, NC.table$NC_hg38 %>% as.character(), NC.table$NC_hg19 %>% as.character())
  if(large>=2) genomichg19 <-  stringr::str_replace(genomichg19, (pos1 +large-1 ) %>% as.character(), (start + large -1) %>% as.character())
   return (genomichg19)
 }
