@@ -54,10 +54,9 @@ vaRbatch(
 vaRbatch function allows to perform vaR function in batch. It also returns a logfile.
 }
 \examples{
-library(vaRHC)
-data("example_input_vaRbatch")
-example_input_vaRbatch[] <- lapply(example_input_vaRbatch, as.character) #convert to character
-all <- vaRbatch( all.variants = example_input_vaRbatch, spliceai.program = FALSE, excel.results = TRUE)
+data("ex_vaRbatch")
+ex_vaRbatch[] <- lapply(ex_vaRbatch, as.character) #convert to character
+all <- vaRbatch( all.variants = ex_vaRbatch, spliceai.program = FALSE, excel.results = TRUE)
 }
 \author{
 Elisabet Munté Roca
