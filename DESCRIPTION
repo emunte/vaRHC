@@ -38,7 +38,9 @@ Imports:
     rtracklayer,
     seqinr,
     rlang,
-    tidyselect
+    tidyselect,
+    graphics,
+    liftOver
 Suggests: 
     knitr,
     rmarkdown,
