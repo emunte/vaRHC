@@ -33,17 +33,16 @@ Imports:
     XML,
     readr,
     tidyr,
-    GenomicRanges,
-    IRanges,
-    rtracklayer,
-    seqinr,
     rlang,
     tidyselect,
-    graphics,
     liftOver
 Suggests: 
     knitr,
     rmarkdown,
-    XLConnect
+    XLConnect,
+    seqinr,
+    GenomicRanges,
+    IRanges,
+    rtracklayer
 VignetteBuilder: knitr
 BugReports: https://github.com/emunte/vaRHC/issues
