@@ -71,9 +71,9 @@ ensemblTranscript <- function(NM, gene){
 
 calculateGrantham <- function(a1, a2) {
   grantham <- readr::read_tsv("https://gist.githubusercontent.com/danielecook/501f03650bca6a3db31ff3af2d413d2a/raw/5583a134b36b60762be6cd54002a0f4044338cd0/grantham.tsv", show_col_types = FALSE) %>%
-              tidyr:: gather(SECOND,SCORE, -FIRST) %>%
-              dplyr::filter(SCORE > 0)
-  (grantham %>% dplyr::filter(FIRST == a1|FIRST==a2, SECOND == a2 |SECOND==a1))$SCORE
+              tidyr:: gather("SECOND", "SCORE", -"FIRST") %>%
+              dplyr::filter(.data$SCORE > 0)
+  (grantham %>% dplyr::filter(.data$FIRST == a1|.data$FIRST==a2, .data$SECOND == a2 |.data$SECOND==a1))$SCORE
 }
 
 

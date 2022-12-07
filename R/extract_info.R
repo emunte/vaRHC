@@ -418,7 +418,7 @@ gnomADinfo <- function(track, gnomAD.ID, porc, bbdd){
   AN <- rep(0,20)
   if (all(!is.na(positions[["position.to.check"]]))){
     AN <- positions[["info.gnomad"]] %>%
-          dplyr::select (all_of(AN_columns))
+          dplyr::select (tidyselect ::all_of(AN_columns))
     AN<-apply(AN, 2, mean)}
   AF <- AC/AN
   #IC interval
@@ -497,8 +497,8 @@ gnomADtotal <- function (datasetA, datasetB, porc){
   total <- datasetA + datasetB %>% as.data.frame()
   total <- tibble::rownames_to_column(total) %>%
     dplyr::rowwise() %>%
-    dplyr::mutate (AF= AC/AN) %>%
-    dplyr::mutate (CI=ifelse(is.na(porc), NA, CI(AC,AN,porc)))
+    dplyr::mutate (AF= .data$AC/.data$AN) %>%
+    dplyr::mutate (CI=ifelse(is.na(porc), NA, CI(.data$AC,.data$AN,porc)))
   return(total)
 }
 
@@ -539,7 +539,7 @@ flossiesInfo <- function(nomen.flossies, nomen.gnomAD=NULL, gene){
                             hete=as.numeric(flossies$Heterozygotes),
                             total=as.numeric(flossies$`Total Subjects`),
                             freq=as.numeric(flossies$`Carrier Frequency`))
-    all_flossies <- cbind(population="all", dplyr::summarise(flossies2, carrier=sum(carrier), homo=sum(homo), hete=sum(hete), total=sum(total), freq=mean(freq)))
+    all_flossies <- cbind(population="all", dplyr::summarise(flossies2, carrier=sum(.data$carrier), homo=sum(.data$homo), hete=sum(.data$hete), total=sum(.data$total), freq=mean(.data$freq)))
   } else {
     flossies2 <- data.frame(population = c("European American","African American"),carrier=c(0,0), homo=c(0,0), hete=c(0,0), total=c(0,0), freq=c(0,0))
     all_flossies <- data.frame(population="all", carrier=0, homo=0, hete=0, total=0, freq=0)
@@ -562,22 +562,24 @@ clinVarIds <- function(object){
   clinvar.info <- data.frame()
   server.clinvar <- "https://clinicaltables.nlm.nih.gov/api/variants/v3/search?"
   if (object$most.severe.consequence == "missense_variant"){
-    data(BLOSUM62, package="Biostrings", envir = environment())
+    data("BLOSUM62", package="Biostrings", envir = environment())
     aa.search <- paste0("p.", toProtein(object$protein)$aa.ref, toProtein(object$protein)$aa.pos)
     variant.clinvar <- stringr::str_replace(object$variant, "\\+", "\\\\+" )
     ext.clinvar.all <- paste0("terms=(", object$gene,")", aa.search, "{1}")
     clinvar.info <- api2(server.clinvar, ext.clinvar.all)[[4]] %>% tibble::as_tibble()
     if(nrow(clinvar.info)>0){
       clinvar.info <- clinvar.info %>%
-                      dplyr::filter((stringr::str_detect(V2, paste0(aa.search, "[A-Z]+")) | stringr::str_detect(V2, paste0(aa.search, "[a-z]+"))) &
-                                      stringr::str_detect(V2,object$gene) & !stringr::str_detect(V2, "del")& !stringr::str_detect(V2, "Ter") &!stringr::str_detect(V2, "fs"))
+                      dplyr::filter((stringr::str_detect(.data$V2, paste0(aa.search, "[A-Z]+")) | stringr::str_detect(.data$V2, paste0(aa.search, "[a-z]+"))) &
+                                      stringr::str_detect(.data$V2,object$gene) & !stringr::str_detect(.data$V2, "del")& !stringr::str_detect(.data$V2, "Ter") &!stringr::str_detect(.data$V2, "fs"))
     }
     if(nrow(clinvar.info)>0){
       clinvar.info <- clinvar.info %>%
                       dplyr::rowwise() %>%
-                      dplyr::mutate(variant =as.character(purrr::map(stringr::str_split(V2, " \\(|\\):"),2)), protein=as.character(purrr::map(stringr::str_split(V2, "\\(|\\)"),4))) %>%
-                      dplyr::mutate(a1=aaShort(toProtein(protein)$aa.ref), a2=aaShort(toProtein(protein)$aa.alt )) %>%
-                      dplyr::mutate (blosum = BLOSUM62[a1, a2], grantham=calculateGrantham(a1,a2))
+                      dplyr::mutate(variant =as.character(purrr::map(stringr::str_split(.data$V2, " \\(|\\):"),2)), 
+                                    protein=as.character(purrr::map(stringr::str_split(.data$V2, "\\(|\\)"),4))) %>%
+                      dplyr::mutate(a1= aaShort(toProtein(.data$protein)$aa.ref), 
+                                    a2=aaShort(toProtein(.data$protein)$aa.alt )) %>%
+                      dplyr::mutate (blosum = BLOSUM62[.data$a1, .data$a2], grantham=calculateGrantham(.data$a1, .data$a2))
       for (i in 1:nrow(clinvar.info)){
         prior.pm5 <- priorUtahProb(object=NULL, gene=object$gene, variant =clinvar.info$variant[i])[[3]] %>% unlist
         clinvar.info$prior[i] <- ifelse(length(prior.pm5)==0, NA, prior.pm5)
@@ -618,7 +620,7 @@ clinVarIds <- function(object){
     }
     if(nrow(clinvar.info)>0){
       clinvar.info <- clinvar.info%>%
-                      dplyr::filter(stringr::str_detect(V2,object$variant)&stringr::str_detect(V2,object$gene))
+                      dplyr::filter(stringr::str_detect(.data$V2,object$variant) & stringr::str_detect(.data$V2,object$gene))
       names(clinvar.info) <- c("V1", "V2")
     }
   }
@@ -642,7 +644,7 @@ clinVarInfo <- function (clinvar.id, object){
   if (clinvar.id$message!="Warning: It is not a missense variant."& clinvar.id$message!="Warning: There are not variants reported in clinvar at this codon"){
     clinvar.ids <- clinvar.id$table %>%
       tibble::as_tibble() %>%
-      dplyr::mutate(url = paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", V1))
+      dplyr::mutate(url = paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", .data$V1))
     b <- clinVarTable(clinvar.ids)
     names(b) <- clinvar.ids$V2
     for (i in 1:nrow(clinvar.ids)){
@@ -740,26 +742,26 @@ clinVarTable <- function(table){
       colnames(table.ex[[4]]) <- c("Interpretation", "Review_status",  "Condition", "Submitter", "More_information", "more")
       interpret <- table.ex[[4]][1] %>%
                    as.data.frame() %>%
-                   dplyr::mutate (Interpretation= purrr::map(stringr::str_split(Interpretation, "\\n"),1))
+                   dplyr::mutate (Interpretation= purrr::map(stringr::str_split(.data$Interpretation, "\\n"),1))
       date.clin <- table.ex[[4]][1] %>%
                    as.data.frame() %>%
-                   dplyr::mutate (date= purrr::map(stringr::str_split(Interpretation, "\\(|\\)"),2))
+                   dplyr::mutate (date= purrr::map(stringr::str_split(.data$Interpretation, "\\(|\\)"),2))
       review <- table.ex[[4]][2] %>%
                 as.data.frame() %>%
-                dplyr::mutate (review= purrr::map(stringr::str_split(Review_status, "\\n"),1)) %>%
-                dplyr::select(review)
+                dplyr::mutate (review= purrr::map(stringr::str_split(.data$Review_status, "\\n"),1)) %>%
+                dplyr::select("review")
       review.mode <- table.ex[[4]][2] %>%
                      as.data.frame() %>%
-                     dplyr::mutate (review2= purrr::map(stringr::str_split(Review_status, "\\n"),3)) %>%
-                     dplyr::select(review2)
+                     dplyr::mutate (review2= purrr::map(stringr::str_split(.data$Review_status, "\\n"),3)) %>%
+                     dplyr::select("review2")
       table.ex[[4]][1] <- unlist(interpret$Interpretation)
       table.ex[[4]][2] <- unlist(review)
       table.ex[[4]][6] <- unlist(date.clin$date)
       table.ex[[4]]$review_mode <- unlist(review.mode)
       table.ex[[4]] <- table.ex[[4]] %>%
                        dplyr::rowwise() %>%
-                       dplyr::mutate(More_information=stringr::str_replace_all(More_information, "\n", "") %>%
-                       stringr::str_replace_all("  ", ""), Condition=stringr::str_replace_all(Condition, "\n", ""))
+                       dplyr::mutate(More_information=stringr::str_replace_all(.data$More_information, "\n", "") %>%
+                       stringr::str_replace_all("  ", ""), Condition=stringr::str_replace_all(.data$Condition, "\n", ""))
       summary <- reviewStatus(as.data.frame(table.ex[[4]]))
       text.ex <- rvest::html_nodes(page, "dd")
       interpret <- stringr::str_replace_all(rvest::html_text(text.ex)[1], "  |\\n","")
@@ -798,17 +800,19 @@ secondMet <- function(variant.mutalyzer, object, assembly){
     clinvar.pvs1.info <- api2(paste0(server.ucsc, "genome=", assembly,";"), ext.clinvar.pvs1)[["clinvarMain"]] %>%
       tibble::as_tibble() %>%
                   dplyr::mutate (reviewStatus = purrr::map(stringr::str_split(reviewStatus, ":"),2),
-                                 url = paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", purrr::map(stringr::str_split(origName, "\\|"),1)),
-                                 origNames = purrr::map(stringr::str_split(origName, "\\|"),2),
-                                 clinSign = unlist(clinSign)) %>%
-                  dplyr::select(origName,clinSign, reviewStatus, type, molConseq, '_hgvsProt', chromStart, chromEnd,phenotype, url ) %>%
-                  dplyr::mutate(reviewStatus = stringr::str_sub(reviewStatus, 2, -9)) %>%
-                  dplyr::group_by(clinSign) %>%
-                  dplyr::arrange(dplyr::desc(clinSign))
+                                 url = paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", purrr::map(stringr::str_split(.data$origName, "\\|"),1)),
+                                 origNames = purrr::map(stringr::str_split(.data$origName, "\\|"),2),
+                                 clinSign = unlist(.data$clinSign)) %>%
+                  dplyr::select("origName", "clinSign", "reviewStatus", "type", "molConseq", '_hgvsProt', "chromStart", "chromEnd", "phenotype", "url" ) %>%
+                  dplyr::mutate(reviewStatus = stringr::str_sub(.data$reviewStatus, 2, -9)) %>%
+                  dplyr::group_by("clinSign") %>%
+                  dplyr::arrange(dplyr::desc("clinSign"))
 
     pvs1.start.significance <- clinvar.pvs1.info %>%
-                                                 dplyr::count(clinSign, reviewStatus) %>%
-                                                 dplyr::arrange(clinSign, reviewStatus)
+                                                 dplyr::count(.data$clinSign, 
+                                                              .data$reviewStatus) %>%
+                                                 dplyr::arrange(.data$clinSign, 
+                                                                .data$reviewStatus)
     table(unlist(clinvar.pvs1.info$clinSign), clinvar.pvs1.info$reviewStatus)
   }
   return (list(start.lost.variants= list(pos.second.met = pos.second.met,
@@ -842,7 +846,8 @@ stopCodon <- function(object, variant.mutalyzer){
   if(object$most.severe.consequence =="frameshift_variant"|
      object$most.severe.consequence =="stop_gained"){
     variant.exon <- exons %>%
-                    dplyr::filter( V1 <= object$start, V2 >= object$end) %>%
+                    dplyr::filter( .data$V1 <= object$start, 
+                                   .data$V2 >= object$end) %>%
                     dplyr::mutate( cdna.var.pos = fs.window$dntp.pos)
   }else if (object$most.severe.consequence =="splice_donor_variant"|
             object$most.severe.consequence =="splice_acceptor_variant"){
@@ -852,20 +857,20 @@ stopCodon <- function(object, variant.mutalyzer){
                      object$start,
                      object$start)
       variant.exon <- exons %>%
-                            dplyr::filter((V1 == (object$start+pos.sum)&object$strand==-1) | (V2 == (object$start-pos.sum)&object$strand==1)) %>%
+                            dplyr::filter((.data$V1 == (object$start+pos.sum)&object$strand==-1) | (.data$V2 == (object$start-pos.sum)&object$strand==1)) %>%
                             dplyr::mutate( cdna.var.pos=fs.window$dntp.pos)
     }else if (object$most.severe.consequence == "splice_acceptor_variant"){
       posi <- ifelse(object$start==object$end,
                      object$start,
                      object$end)
       variant.exon <- exons %>%
-                            dplyr::filter((V2 == (posi-pos.sum) & object$strand == -1) | (V1 == (posi+pos.sum)&object$strand==1)) %>%
+                            dplyr::filter((.data$V2 == (posi-pos.sum) & object$strand == -1) | (.data$V1 == (posi+pos.sum)&object$strand==1)) %>%
                             dplyr::mutate( cdna.var.pos=fs.window$dntp.pos)
     }
     if (nrow(variant.exon)==0){
       value.close <- DescTools::Closest(c(as.numeric(exons$V1),as.numeric(exons$V2)), as.numeric(posi))
       variant.exon <- exons %>%
-                            dplyr::filter (V1==value.close|V2==value.close)
+                            dplyr::filter (.data$V1==value.close| .data$V2==value.close)
     }
     if (variant.exon$exon !=1 &
         variant.exon$exon != nrow(exons) &
@@ -877,24 +882,27 @@ stopCodon <- function(object, variant.mutalyzer){
       skipping.info <- varDetails(NM=object$NM, NC=NC, CCDS=object$CCDS, gene=NULL, variant=NULL, variant.mutalyzer=correct.skipping, skip.pred=TRUE)
       fs.window <- fsWindow (skipping.info)
       canonical.skipping <- skipping.info %>%
-                                          dplyr::select (variant, protein, most.severe.consequence) %>%
+                                          dplyr::select ("variant", "protein", "most.severe.consequence") %>%
                                           tibble::remove_rownames()
       if (skipping.info$most.severe.consequence=="inframe_deletion"){
         porc.prot.splicing <- abs(as.numeric(variant.exon$V1)-as.numeric(variant.exon$V2))/length.transcript
       }
       canonical.skipping <- skipping.info %>%
-                                          dplyr::select (variant, protein, most.severe.consequence) %>%
+                                          dplyr::select ("variant", "protein", "most.severe.consequence") %>%
                                           dplyr::mutate (porc.prot.splicing=porc.prot.splicing) %>%
                                           tibble::remove_rownames()
     }
   }
   if (!is.na(fs.window$dntp.stop)){
     stop.pos.all <- exons %>%
-                          dplyr::mutate (cStop = stringr::str_replace(cStop, "\\*[0-9]*", "1000000000"), cStart = stringr::str_replace(cStart, "\\*[0-9]*", "NA")) %>%
-                          dplyr::mutate (cStart =as.numeric(cStart), cStop=as.numeric(cStop)) %>%
-                          dplyr::filter(cStop >= fs.window$dntp.stop, cStart <= fs.window$dntp.stop) %>%
-                          dplyr::mutate(bp=ifelse(cStop==1000000000, 0, as.numeric(cStop)-as.numeric(fs.window$dntp.stop))) %>%
-                          dplyr::select (exon, bp) %>%
+                          dplyr::mutate (cStop = stringr::str_replace(.data$cStop, "\\*[0-9]*", "1000000000"), 
+                                         cStart = stringr::str_replace(.data$cStart, "\\*[0-9]*", "NA")) %>%
+                          dplyr::mutate (cStart =as.numeric(.data$cStart), 
+                                         cStop=as.numeric(.data$cStop)) %>%
+                          dplyr::filter(.data$cStop >= fs.window$dntp.stop, 
+                                        .data$cStart <= fs.window$dntp.stop) %>%
+                          dplyr::mutate(bp=ifelse(.data$cStop==1000000000, 0, as.numeric(.data$cStop)-as.numeric(fs.window$dntp.stop))) %>%
+                          dplyr::select ("exon", "bp") %>%
                           dplyr::mutate (num.codon.stop = fs.window$salt.fs, cDNA.stop.pos = fs.window$dntp.stop)
     porc.prot<-(length.transcript-as.numeric(fs.window$dntp.pos))/length.transcript
   }
@@ -929,8 +937,8 @@ fsWindow <- function(object){
 
 lenCodingTranscriptCds <- function(coordinates.exon){
   coordinates.cdna <- as.numeric(coordinates.exon[1:nrow(coordinates.exon)-1,] %>%
-                                   dplyr::mutate(exon=as.numeric(end)-as.numeric(start)) %>%
-                                   dplyr::summarise(sum(exon)))
+                                   dplyr::mutate(exon=as.numeric(.data$end)-as.numeric(.data$start)) %>%
+                                   dplyr::summarise(sum(.data$exon)))
   return(coordinates.cdna)
 
 }
@@ -1010,10 +1018,10 @@ articlesInfo <- function (object, variant.cor, bbdd){
   if (object$gene == "BRCA1"){
     query <- "SELECT * from lyra_db;"
     lyra <- bbdd$lyra %>%
-                      dplyr::mutate (Wild_type = Biostrings::AMINO_ACID_CODE[Wild_type],
-                            Variant = Biostrings::AMINO_ACID_CODE[Variant],
-                            prote = paste0("p.", Wild_type, Codon,Variant)) %>%
-                      dplyr::filter(prote== prot.cor)
+                      dplyr::mutate (Wild_type = Biostrings::AMINO_ACID_CODE[.data$Wild_type],
+                            Variant = Biostrings::AMINO_ACID_CODE[.data$Variant],
+                            prote = paste0("p.", .data$Wild_type, .data$Codon, .data$Variant)) %>%
+                      dplyr::filter(.data$prote== prot.cor)
     adam.fayer <- bbdd$adamovich
   }
 
@@ -1027,7 +1035,7 @@ articlesInfo <- function (object, variant.cor, bbdd){
   if (object$gene== "MSH2" & object$most.severe.consequence=="missense_variant"){
     query3 <- "SELECT * from jia_db;"
     jia <- bbdd$jia %>%
-                    dplyr::filter(Variant == paste0(aaShort(prot$aa.ref),prot$aa.pos,aaShort(prot$aa.alt)))
+                    dplyr::filter(.data$Variant == paste0(aaShort(prot$aa.ref),prot$aa.pos,aaShort(prot$aa.alt)))
   }
 
 
@@ -1041,7 +1049,7 @@ articlesInfo <- function (object, variant.cor, bbdd){
 
   if (object$gene == "TP53"){
     tp53.functionals.Kato <- bbdd$tp53.1 %>%
-                                         dplyr::select(c_description, Kato_TransactivationClass, StructureFunctionClass, DNEclass, Giacomelli_DNE_LOFclass)
+                                         dplyr::select("c_description", "Kato_TransactivationClass", "StructureFunctionClass", "DNEclass", "Giacomelli_DNE_LOFclass")
     tp53.functionals.kotler <- bbdd$tp53.2
     tp53.functionals <- data.frame(variant=object$variant,
                                    Kato=ifelse(nrow(tp53.functionals.Kato)==0,
@@ -1278,9 +1286,12 @@ cancerHotspots <- function (object, variant.cor, bbdd){
     aa.alt <- ifelse(object$most.severe.consequence=="stop_gained", "*", purrr::map(stringr::str_extract_all(prot.cor, "[A-z]+"),3)) %>%
                                                                                                                                       unlist
    cancer.hotspots <- bbdd$cancer.hotspots %>%
-                                            dplyr::mutate (Wild_type = Biostrings::AMINO_ACID_CODE[REF],
-              Variant =ifelse(ALT=="*", ALT, Biostrings::AMINO_ACID_CODE[ALT])) %>%
-      dplyr::filter(Wild_type== aa.ref, Variant==aa.alt, Amino_Acid_Position==as.numeric(aa.pos) )
+                                            dplyr::mutate (Wild_type = Biostrings::AMINO_ACID_CODE[.data$REF],
+              Variant = ifelse(.data$ALT=="*", .data$ALT, Biostrings::AMINO_ACID_CODE[.data$ALT])) %>%
+      dplyr::filter(.data$Wild_type== aa.ref, 
+                    .data$Variant==aa.alt, 
+                    .data$Amino_Acid_Position==as.numeric(aa.pos) )
+   
     cancer.hotspots.final <- list(variant = cancer.hotspots[,2:11], cancer.type=NA)
     if (nrow(cancer.hotspots)>0){
       cancer.hotspots.type <- cancer.hotspots$Samples %>%

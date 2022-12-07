@@ -6,11 +6,11 @@
 PVS1 <- function (all.information, final.criteria){
   PVS1.message <- NULL
   spli.loss.pvs1.df <- all.information$predictors$predictor.table %>%
-    dplyr::filter(grepl("Loss", predictor),
-                  classification %in% c("Pathogenic" ,"Grey"))
+    dplyr::filter(grepl("Loss", .data$predictor),
+                  .data$classification %in% c("Pathogenic" ,"Grey"))
   spli.gain.pvs1.df <- all.information$predictors$predictor.table %>%
-    dplyr::filter(grepl("Gain", predictor),
-                  classification == "Pathogenic")
+    dplyr::filter(grepl("Gain", .data$predictor),
+                  .data$classification == "Pathogenic")
   gene <- all.information$Variant.Info$gene
   #For frameshifts, nonsense and canonicals(except from CDH1 and ATM splice donor and acceptors)
   ###1. SpliceAi gains are pat -> supporting check manually
@@ -22,7 +22,7 @@ PVS1 <- function (all.information, final.criteria){
   if(gene %in% "CDH1" && !is.na(all.information$Variant.Info$most.severe.consequence.1) && all.information$Variant.Info$most.severe.consequence.1 %in% c("splice_region_variant")){
     pos <- stringr::str_extract(all.information$Variant.Info$variant, "[0-9]+")
     donor <- all.information$codon.stop$exons %>%
-      dplyr::filter(cStop==pos) %>%
+      dplyr::filter(.data$cStop==pos) %>%
       nrow()
     final.criteria$criteria.res["PVS1", 1:4][donor>0&all.information$Variant.Info$ref=="G"] <- c(0,0,1,0)
     PVS1.message[donor>0 & all.information$Variant.Info$ref=="G"] <- "PVS1_moderate is assigned because it is a G to non-G variant disrupting the last nucleotide of an exon."
@@ -183,7 +183,7 @@ startVariants <- function (all.information, final.criteria){
   pos.second.met <- all.information$second.met$start.lost.variants$pos.second.met
   if (!is.na(pos.second.met)){
     pathogenic.second.met <- all.information$second.met$start.lost.variants$clinvar.pvs1.info %>%
-      dplyr::filter(clinSign=="Pathogenic"& reviewStatus=="reviewed by expert panel")
+      dplyr::filter(.data$clinSign=="Pathogenic" & .data$reviewStatus=="reviewed by expert panel")
     #General rules
     gene <- all.information$Variant.Info$gene
     final.criteria$criteria.res["PVS1", 1:4] <- ifelse( rep(nrow(pathogenic.second.met)>0, 4),
@@ -234,21 +234,21 @@ PS1 <- function (all.information, final.criteria){
       ps1.df <- clinvar.evidence.calc %>%
         t() %>% as.data.frame %>%
         dplyr::mutate(variants.name=colnames(clinvar.evidence.calc)) %>%
-        dplyr::filter (stringr::str_detect(variants.name,all.information$Variant.Info$protein), !stringr::str_detect(variants.name, all.information$Variant.Info$variant) & ((all.information$Variant.Info$gene!="TP53" & (pat_guideline>0|ppat_guideline>0|pat_expert>0|ppat_expert>0))| (all.information$Variant.Info$gene=="TP53" &(pat_guideline>0|pat_expert>0))))  %>%
-        dplyr::mutate (ext_vep_ps1 = paste0("/vep/human/hgvs/",all.information$Variant.Info$NM,":", stringr::str_sub(purrr::map(stringr::str_split(variants.name, "\\(|\\):"),3),1,-2)))
+        dplyr::filter (stringr::str_detect(.data$variants.name,all.information$Variant.Info$protein), !stringr::str_detect(.data$variants.name, all.information$Variant.Info$variant) & ((all.information$Variant.Info$gene!="TP53" & (.data$pat_guideline>0|.data$ppat_guideline>0|.data$pat_expert>0|.data$ppat_expert>0))| (all.information$Variant.Info$gene=="TP53" &(.data$pat_guideline>0|.data$pat_expert>0))))  %>%
+        dplyr::mutate (ext_vep_ps1 = paste0("/vep/human/hgvs/", all.information$Variant.Info$NM,":", stringr::str_sub(purrr::map(stringr::str_split(.data$variants.name, "\\(|\\):"),3),1,-2)))
 
 
       if (nrow(ps1.df)>0){
         NC <- stringr::str_extract(all.information$Variant.Info$genomic, "NC_[0-9]+.[0-9]+")
         ps1.df <- ps1.df %>%
           dplyr::rowwise %>%
-          dplyr::mutate(genomic=toGenomic(all.information$Variant.Info$NM, NC, stringr::str_sub(purrr::map(stringr::str_split(variants.name, "\\(|\\):"),3),1,-2) ,all.information$Variant.Info$gene) ) %>%
-          dplyr::mutate(ext.spliceai.ps1= paste0(all.information$Variant.Info$chr, "-", purrr::map(stringr::str_split(genomic, "g\\.|[A-Z]"),4),"-", stringr::str_sub(genomic, -3,-3), "-", stringr::str_sub(genomic,-1,-1) )) %>%
-          dplyr::mutate(scores.spliceai =  connectionDB( paste0("SELECT *  from spliceAI  WHERE var_chr= '", ext.spliceai.ps1 ,"'AND max_dis= 1000 AND transcript='", all.information$Variant.Info$ensembl.id,"' AND masked='",TRUE,"';"))%>% purrr::map(., function(x) c(x[[8]], x[[10]],x[[12]],x[[14]]))) %>%
-          dplyr::mutate(score.spliceai= max(unlist(scores.spliceai), na.rm=FALSE))
+          dplyr::mutate(genomic=toGenomic(all.information$Variant.Info$NM, NC, stringr::str_sub(purrr::map(stringr::str_split(.data$variants.name, "\\(|\\):"),3),1,-2) ,all.information$Variant.Info$gene) ) %>%
+          dplyr::mutate(ext.spliceai.ps1= paste0(all.information$Variant.Info$chr, "-", purrr::map(stringr::str_split(.data$genomic, "g\\.|[A-Z]"),4),"-", stringr::str_sub(.data$genomic, -3,-3), "-", stringr::str_sub(.data$genomic,-1,-1) )) %>%
+          dplyr::mutate(scores.spliceai =  connectionDB( paste0("SELECT *  from spliceAI  WHERE var_chr= '", .data$ext.spliceai.ps1 ,"'AND max_dis= 1000 AND transcript='", all.information$Variant.Info$ensembl.id,"' AND masked='",TRUE,"';"))%>% purrr::map(.data, function(x) c(x[[8]], x[[10]],x[[12]],x[[14]]))) %>%
+          dplyr::mutate(score.spliceai= max(unlist(.data$scores.spliceai), na.rm=FALSE))
 
         ps1.no.splicing <- ps1.df %>%
-          dplyr::filter (as.numeric(score.spliceai ) < 0.5)
+          dplyr::filter (as.numeric(.data$score.spliceai ) < 0.5)
 
 
 
@@ -256,14 +256,15 @@ PS1 <- function (all.information, final.criteria){
         #MMR
         if (gene %in% c("MLH1", "MSH2", "MSH6", "PMS2")){
           ps1.mmr.pat <- ps1.df %>%
-            dplyr::filter (as.numeric(score.spliceai)< 0.5, (pat_guideline>0|pat_expert>0))
+            dplyr::filter (as.numeric(.data$score.spliceai)< 0.5, (.data$pat_guideline>0| .data$pat_expert>0))
           final.criteria$criteria.res["PS1", "strong"] <- ifelse(nrow(ps1.mmr.pat)>0,
                                                                  1,
                                                                  0)
           PS1.message[nrow(ps1.mmr.pat)>0] <-  paste("PS1 is assigned because it exists the variant", ps1.mmr.pat$variants.name, "in ClinVar classified as pathogenic by at least expert panel and it is not predicted to alter splicing.")
           if (nrow(ps1.mmr.pat)==0){
             ps1.mmr.ppat <- ps1.df %>%
-              dplyr::filter (as.numeric(score.spliceai)< 0.5, (ppat_guideline>0|ppat_expert>0))
+              dplyr::filter (as.numeric(.data$score.spliceai)< 0.5, 
+                             (.data$ppat_guideline>0|.data$ppat_expert>0))
             final.criteria$criteria.res["PS1", "moderate"] <- ifelse(nrow(ps1.mmr.ppat)>0,
                                                                      0,
                                                                      0)
@@ -413,15 +414,15 @@ PM2 <- function (all.information, final.criteria){
 
       if(all.information$gnomAD$coverage$exomes >= 20 & all.information$gnomAD$coverage$genomes >=20 ){
         selected <- all.information$gnomAD$info$exomes.genomes$non.cancer$subpopulations  %>%
-          dplyr::filter(rowname %in% subpopu.to.look,
-                        AC > 1,
-                        AF >= 0.00002)
+          dplyr::filter(.data$rowname %in% subpopu.to.look,
+                        .data$AC > 1,
+                        .data$AF >= 0.00002)
       }else{
         selected <- all.information$gnomAD$info$exomes$non.cancer$subpopulations %>%
           tibble::rownames_to_column %>%
-          dplyr::filter(rowname %in% subpopu.to.look,
-                        AC > 1,
-                        AF >= 0.00002)
+          dplyr::filter(.data$rowname %in% subpopu.to.look,
+                        .data$AC > 1,
+                        .data$AF >= 0.00002)
       }
       final.criteria$criteria.res["PM2",3] <- ifelse( sel.PM2==TRUE & nrow(selected) ==0,
                                                       1,
@@ -443,16 +444,16 @@ PM2 <- function (all.information, final.criteria){
         subpopu.to.look <- c("non_cancer_nfe", "non_cancer_amr", "non_cancer_afr", "non_cancer_sas", "non_cancer_eas")
         if (all.information$gnomAD$coverage$exomes >= 20 & all.information$gnomAD$coverage$genomes >= 20){
           selected.sup <- all.information$gnomAD$info$exomes.genomes$non.cancer$subpopulations  %>%
-            dplyr::filter(rowname %in% subpopu.to.look,
-                          AC > 1,
-                          AF >= 0.00002)
+            dplyr::filter(.data$rowname %in% subpopu.to.look,
+                          .data$AC > 1,
+                          .data$AF >= 0.00002)
 
         }else{
           selected.sup <- all.information$gnomAD$info$exomes$non.cancer$subpopulations %>%
             tibble::rownames_to_column %>%
-            dplyr::filter(rowname %in% subpopu.to.look,
-                          AC > 1,
-                          AF >= 0.00002)
+            dplyr::filter(.data$rowname %in% subpopu.to.look,
+                          .data$AC > 1,
+                          .data$AF >= 0.00002)
 
         }
         final.criteria$criteria.res["PM2",4] <- ifelse( !is.na(PM2.sup.cutoff)&&sel.PM2.sup==TRUE & nrow(selected.sup) ==0,
@@ -604,18 +605,18 @@ PM5 <- function (all.information, final.criteria){
     }
   }else if (all.information$Variant.Info$most.severe.consequence=="missense_variant"){
     if (length(clinvar.evidence.calc) > 0){
-      data(BLOSUM62, package="Biostrings", envir = environment())
+      data("BLOSUM62", package="Biostrings", envir = environment())
       prot.look <- stringr::str_sub(all.information$Variant.Info$protein, 4, -2)
       pm5.df <- clinvar.evidence.calc %>%
                                       t() %>%
                                       as.data.frame %>%
                                       dplyr::mutate(variants.name = colnames(clinvar.evidence.calc)) %>%
-                                      dplyr::mutate (variant = unlist(purrr::map(stringr::str_split(variants.name,":| \\("),2)),
-                                                     protein = unlist(purrr::map(stringr::str_split(variants.name,"\\(|\\)"),4))) %>%
-                                      dplyr::filter ((pat_guideline>0|ppat_guideline>0|pat_expert>0|ppat_expert>0)&!(stringr::str_detect(protein, prot.look)))
+                                      dplyr::mutate (variant = unlist(purrr::map(stringr::str_split(.data$variants.name,":| \\("),2)),
+                                                     protein = unlist(purrr::map(stringr::str_split(.data$variants.name,"\\(|\\)"),4))) %>%
+                                      dplyr::filter ((.data$pat_guideline>0 | .data$ppat_guideline>0 | .data$pat_expert>0 | .data$ppat_expert>0)&!(stringr::str_detect(.data$protein, prot.look)))
       if(gene=="TP53"){
         pm5.df <- pm5.df %>%
-                         dplyr::filter(pat_guideline > 0 | pat_expert > 0)
+                         dplyr::filter(.data$pat_guideline > 0 | .data$pat_expert > 0)
       }
 
       if (nrow(pm5.df) > 0){
@@ -626,15 +627,15 @@ PM5 <- function (all.information, final.criteria){
         NC <- stringr::str_extract(all.information$Variant.Info$genomic, "NC_[0-9]+.[0-9]+")
         pm5.df <- pm5.df %>%
           dplyr::rowwise() %>%
-          dplyr::mutate (a1 = toProtein(protein)$aa.ref %>%
-                           aaShort(), a2 = toProtein(protein)$aa.alt %>%
+          dplyr::mutate (a1 = toProtein(.data$protein)$aa.ref %>%
+                           aaShort(), a2 = toProtein(.data$protein)$aa.alt %>%
                            aaShort()) %>%
-          dplyr::mutate (blosum = BLOSUM62[a1, a2], prior = NA, grantham = calculateGrantham(a1,a2)) %>%
-          dplyr::mutate(genomic = toGenomic(all.information$Variant.Info$NM, NC, stringr::str_sub(purrr::map(stringr::str_split(variants.name, "\\(|\\):"),3),1,-2) ,all.information$Variant.Info$gene) ) %>%
+          dplyr::mutate (blosum = BLOSUM62[.data$a1, .data$a2], prior = NA, grantham = calculateGrantham(.data$a1, .data$a2)) %>%
+          dplyr::mutate(genomic = toGenomic(all.information$Variant.Info$NM, NC, stringr::str_sub(purrr::map(stringr::str_split(.data$variants.name, "\\(|\\):"),3),1,-2) ,all.information$Variant.Info$gene) ) %>%
           #dplyr::mutate(genomic=toGenomic(all.information$Variant.Info$NM, NC, stringr::str_sub(purrr::map(stringr::str_split(variants.name, "\\(|\\):"),3),1,-2) , all.information$Variant.Info$gene) ) %>%
-          dplyr::mutate(ext.spliceai.pm5= paste0(all.information$Variant.Info$chr, "-", purrr::map(stringr::str_split(genomic, "g\\.|[A-Z]"),4),"-", stringr::str_sub(genomic, -3,-3), "-", stringr::str_sub(genomic,-1,-1) )) %>%
-          dplyr::mutate(scores.spliceai =  connectionDB( paste0("SELECT *  from spliceAI  WHERE var_chr= '", ext.spliceai.pm5 ,"'AND max_dis= 1000 AND transcript='", all.information$Variant.Info$ensembl.id,"' AND masked='",TRUE,"';"))%>% purrr::map(., function(x) c(x[[8]], x[[10]],x[[12]],x[[14]]))) %>%
-          dplyr::mutate(score.spliceai = max(unlist(scores.spliceai), na.rm=FALSE))
+          dplyr::mutate(ext.spliceai.pm5= paste0(all.information$Variant.Info$chr, "-", purrr::map(stringr::str_split(.data$genomic, "g\\.|[A-Z]"),4),"-", stringr::str_sub(.data$genomic, -3,-3), "-", stringr::str_sub(.data$genomic,-1,-1) )) %>%
+          dplyr::mutate(scores.spliceai =  connectionDB( paste0("SELECT *  from spliceAI  WHERE var_chr= '", .data$ext.spliceai.pm5 ,"'AND max_dis= 1000 AND transcript='", all.information$Variant.Info$ensembl.id,"' AND masked='",TRUE,"';"))%>% purrr::map(.data, function(x) c(x[[8]], x[[10]],x[[12]],x[[14]]))) %>%
+          dplyr::mutate(score.spliceai = max(unlist(.data$scores.spliceai), na.rm=FALSE))
 
         for (i in 1:nrow(pm5.df)){
           prior.pm5 <- priorUtahProb(object=NULL, gene=all.information$Variant.Info$gene, variant =pm5.df$variant[i])[[3]] %>%
@@ -647,13 +648,13 @@ PM5 <- function (all.information, final.criteria){
         if (gene %in% c("MLH1", "MSH2", "MSH6", "PMS2")){
           if(all.information$predictors$predictor.table$values[11]>0.68){
             pm5.mmr.pat <- pm5.df %>%
-              dplyr::filter(pat_guideline>0 | pat_expert>0)
+              dplyr::filter(.data$pat_guideline>0 | .data$pat_expert>0)
             PM5.message[nrow(pm5.mmr.pat)>0] <-  paste("PM5 is assigned because because the prior value of the variant achieves PP3 and there are other variants at the same codon : ", pm5.mmr.pat$variants.name, "in ClinVar classified as pathogenic by at least expert panel (with a prior value", round(as.numeric(pm5.df$prior),6), " )", collapse=".")
             final.criteria$criteria.res["PM5","moderate"][nrow(pm5.mmr.pat)>0] <- 1
 
             if (nrow(pm5.mmr.pat)==0){
               pm5.mmr.ppat <- pm5.df %>%
-                dplyr::filter(ppat_guideline>0 | ppat_expert>0)
+                dplyr::filter(.data$ppat_guideline>0 | .data$ppat_expert>0)
               final.criteria$criteria.res["PM5", "supporting"] <- ifelse(nrow(pm5.mmr.ppat) > 0,
                                                                          1,
                                                                          0)
@@ -671,7 +672,7 @@ PM5 <- function (all.information, final.criteria){
         }else if(gene %in% c("TP53")){
           grantham.variant <- calculateGrantham(aa.ref, aa.our.variant)
           pm5.df.gratham <- pm5.df %>%
-            dplyr::filter (grantham <= grantham.variant && score.spliceai<=0.2)
+            dplyr::filter (.data$grantham <= grantham.variant && .data$score.spliceai<=0.2)
           final.criteria$criteria.res["PM5", c("moderate","supporting")] <- ifelse(rep(nrow(pm5.df.gratham)>1,2),
                                                                                    c(1,0),
                                                                                    ifelse(rep(nrow(pm5.df.gratham)==1,2),
@@ -692,7 +693,7 @@ PM5 <- function (all.information, final.criteria){
 
           blosum62.variant <- BLOSUM62[aa.ref, aa.our.variant]
           pm5.df.blosum <- pm5.df %>%
-            dplyr::filter (blosum >= blosum62.variant)
+            dplyr::filter (.data$blosum >= blosum62.variant)
           final.criteria$criteria.res["PM5", "moderate"] <- ifelse(nrow(pm5.df.blosum)>0,
                                                                    1,
                                                                    0)
@@ -767,8 +768,8 @@ PP3 <- function (all.information, final.criteria){
   final.criteria$criteria.res["PP3", 1:3] <- NA
   gene <- all.information$Variant.Info$gene
   variant.exon <- all.information$codon.stop$exons %>%
-    dplyr::filter( V1 <= all.information$Variant.Info$start,
-                   V2 >= all.information$Variant.Info$end)
+    dplyr::filter( .data$V1 <= all.information$Variant.Info$start,
+                   .data$V2 >= all.information$Variant.Info$end)
   exceptions <- 1 %in% c(final.criteria$criteria.res["PVS1",],
                          final.criteria$criteria.res["PS1",],
                          final.criteria$criteria.res["PM4",])
@@ -1019,13 +1020,14 @@ ba1_bs1_df <- function (dataset, all.information, criterion){
   subpopu.to.look <- c("non_cancer_nfe", "non_cancer_amr", "non_cancer_afr", "non_cancer_sas", "non_cancer_eas", ".", "1")
   if(!is.na(ic)){
     selected <- dataset %>%
-      dplyr::filter(rowname %in% subpopu.to.look,
+      dplyr::filter(.data$rowname %in% subpopu.to.look,
                     CI >= as.numeric(cutoff))
   }else{
     selected <- dataset %>%
-      dplyr::filter(rowname %in% subpopu.to.look,
-                    AF >=as.numeric(cutoff),
-                    AN >= num.AN, AC>= 5)
+      dplyr::filter(.data$rowname %in% subpopu.to.look,
+                    .data$AF >=as.numeric(cutoff),
+                    .data$AN >= num.AN, 
+                    .data$AC>= 5)
   }
   return(selected)
 }
@@ -1059,8 +1061,8 @@ BA1 <- function (all.information, final.criteria){
   max.subpop <- all.information$gnomAD$info$exomes.genomes$non.cancer$subpopulations %>%
                                                                                      dplyr::filter(CI==max(all.information$gnomAD$info$exomes.genomes$non.cancer$subpopulations$CI))
   popu <- max.subpop %>%
-                      dplyr::select(rowname) %>%
-                      dplyr::mutate(rowname = stringr::str_sub(rowname, -3,-1)) %>%
+                      dplyr::select("rowname") %>%
+                      dplyr::mutate(rowname = stringr::str_sub(.data$rowname, -3,-1)) %>%
                       as.character()
   sentence <- paste0("Freq gnomAD all non-cancer v2.1.1 = ", round(as.numeric(all.information$gnomAD$info$exomes.genomes$non.cancer$overall$AF)*100,5), "% (MCAF ",  as.numeric(all.information$gene.specific.info$IC)*100,
                      "% = ", round(as.numeric(all.information$gnomAD$info$exomes.genomes$non.cancer$overall$AF)*100,5), "%).",
@@ -1147,12 +1149,12 @@ BS2 <- function (all.information, final.criteria){
     #information from db
     #healthy individuals from flossies
     homo.healthy <- all.information$flossies.db %>%
-      dplyr::filter (population == "all") %>%
-      dplyr::select (homo) %>%
+      dplyr::filter (.data$population == "all") %>%
+      dplyr::select ("homo") %>%
       as.numeric()
     hete.healthy <- all.information$flossies.db %>%
-      dplyr::filter (population == "all") %>%
-      dplyr::select (hete, homo) %>%
+      dplyr::filter (.data$population == "all") %>%
+      dplyr::select ("hete", "homo") %>%
       as.numeric() %>%
       sum()
     #homo from gnomad
@@ -1160,10 +1162,10 @@ BS2 <- function (all.information, final.criteria){
                           NA,
                           ifelse(BS2.sup.db == "GNOMAD_non_cancer",
                                  all.information$gnomAD$info$exomes.genomes$non.cancer$overall %>%
-                                   dplyr::select(nhomalt) %>%
+                                   dplyr::select("nhomalt") %>%
                                    as.numeric(),
                                  all.information$gnomAD$info$exomes.genomes$non.neuro$overall %>%
-                                   dplyr::select(nhomalt) %>%
+                                   dplyr::select("nhomalt") %>%
                                    as.numeric()))
 
     BS2.strong.select <- (!is.na(BS2.strong.db)&& ((zigosity=="homo_healthy" & homo.healthy >= BS2.strong) |(zigosity=="hete_healthy" & hete.healthy >= BS2.strong)))

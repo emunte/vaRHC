@@ -12,10 +12,10 @@ predicInfo <- function(object, gene.specific, bbdd, gnomad, spliceai.program=FAL
   phastcons <- ucscRPredictor(track = "phastCons100way",object)
   gerp <- ucscRPredictor(track = "allHg19RS_BW", object)
   dbnsfp <- bbdd$dbnsfp %>%
-                        dplyr::select(REVEL_score, VEST4_score, PROVEAN_score, BayesDel_noAF_score)
+                        dplyr::select("REVEL_score", "VEST4_score", "PROVEAN_score", "BayesDel_noAF_score")
   if(nrow(dbnsfp)==0){
     dbnsfp <- dbnsfp %>%
-                     dplyr::add_row (REVEL_score=NA, VEST4_score=NA, PROVEAN_score=NA, BayesDel_noAF_score=NA)
+                     dplyr::add_row ("REVEL_score"=NA, "VEST4_score"=NA, "PROVEAN_score"=NA, "BayesDel_noAF_score"=NA)
   }
 
   if (object$most.severe.consequence %in% c("inframe_deletion", "inframe_insertion") && provean.program == TRUE){
@@ -27,22 +27,22 @@ predicInfo <- function(object, gene.specific, bbdd, gnomad, spliceai.program=FAL
   #   spliceai.score <-  spliceaiR(object, ensembl.id)
   # }
   prior.utah <- bbdd$prior %>%
-                           dplyr::select(Polyphen, MAPP, prior)
+                           dplyr::select("Polyphen", "MAPP", "prior")
   prior.utah.splice <- bbdd$prior %>%
-                                  dplyr::select(refsplice_prior, splice_severity, de_novo_prior, dn_severity, protein_prior, applicable_prior) %>%
-                                  dplyr::mutate(splice_severity=ifelse(splice_severity=="",
+                                  dplyr::select("refsplice_prior", "splice_severity", "de_novo_prior", "dn_severity", "protein_prior", "applicable_prior") %>%
+                                  dplyr::mutate(splice_severity=ifelse(.data$splice_severity=="",
                                                                        "not applicable",
-                                                                       splice_severity),
-                                                dn_severity= ifelse(dn_severity=="",
+                                                                       .data$splice_severity),
+                                                dn_severity= ifelse(.data$dn_severity=="",
                                                                     "not applicable",
-                                                                    dn_severity))
+                                                                    .data$dn_severity))
   if(nrow(prior.utah)==0){
     prior.utah <-prior.utah %>%
-      dplyr::add_row (Polyphen=NA, MAPP=NA, prior=NA)
+      dplyr::add_row ("Polyphen"=NA, "MAPP"=NA, "prior"=NA)
   }
   if(nrow(prior.utah.splice)==0){
     prior.utah.splice <- prior.utah.splice %>%
-                                           dplyr::add_row(refsplice_prior = NA, splice_severity = NA, de_novo_prior = NA, dn_severity = NA, protein_prior = NA , applicable_prior = NA)
+                                           dplyr::add_row("refsplice_prior" = NA, "splice_severity" = NA, "de_novo_prior" = NA, "dn_severity" = NA, "protein_prior" = NA , "applicable_prior" = NA)
   }
   if(nrow(prior.utah.splice)>0){
     prior.utah.splice.denovo <- c(prior.utah.splice$dn_severity[1], prior.utah.splice$de_novo_prior[1])
@@ -61,30 +61,30 @@ predicInfo <- function(object, gene.specific, bbdd, gnomad, spliceai.program=FAL
 
   #cut offs
   op.ben <- c(gene.specific %>%
-                dplyr::select(op_phylop_ben,
-                              op_phastcons_ben,
-                              op_gerp_ben,
-                              op_revel_ben,
-                              op_VEST4_ben,
-                              op_provean_ben,
-                              op_bayesDel_noAF_ben,
-                              op_agvgd_ben,
-                              op_polyphen_ben,
-                              op_MAPP_ben,
-                              op_prior_utah_prot_ben) %>%
+                dplyr::select("op_phylop_ben",
+                              "op_phastcons_ben",
+                              "op_gerp_ben",
+                              "op_revel_ben",
+                              "op_VEST4_ben",
+                              "op_provean_ben",
+                              "op_bayesDel_noAF_ben",
+                              "op_agvgd_ben",
+                              "op_polyphen_ben",
+                              "op_MAPP_ben",
+                              "op_prior_utah_prot_ben") %>%
                 as.matrix() %>%
-                c(), NA, NA, rep(gene.specific %>% dplyr::select(op_spliceai_ben) %>% as.matrix() %>% c(), 4),  gene.specific %>% dplyr::select(op_trap_ben) %>% as.matrix() %>% c())
+                c(), NA, NA, rep(gene.specific %>% dplyr::select("op_spliceai_ben") %>% as.matrix() %>% c(), 4),  gene.specific %>% dplyr::select("op_trap_ben") %>% as.matrix() %>% c())
 
-  op.pat <- c(gene.specific %>% dplyr::select(op_phylop_pat, op_phastcons_pat, op_gerp_pat,
-                                       op_revel_pat, op_VEST4_pat, op_provean_pat, op_bayesDel_noAF_pat,op_agvgd_pat, op_polyphen_pat, op_MAPP_pat, op_prior_utah_prot_pat_sup)
-              %>% as.matrix() %>%c(), NA, NA, rep(gene.specific %>% dplyr::select(op_spliceai_pat) %>% as.matrix() %>% c(), 4),  gene.specific %>% dplyr::select(op_trap_pat) %>% as.matrix() %>% c())
+  op.pat <- c(gene.specific %>% dplyr::select("op_phylop_pat", "op_phastcons_pat", "op_gerp_pat",
+                                       "op_revel_pat", "op_VEST4_pat", "op_provean_pat", "op_bayesDel_noAF_pat", "op_agvgd_pat", "op_polyphen_pat", "op_MAPP_pat", "op_prior_utah_prot_pat_sup")
+              %>% as.matrix() %>%c(), NA, NA, rep(gene.specific %>% dplyr::select("op_spliceai_pat") %>% as.matrix() %>% c(), 4),  gene.specific %>% dplyr::select("op_trap_pat") %>% as.matrix() %>% c())
 
-  cut.ben <- c(gene.specific %>% dplyr::select(phylop_ben, phastcons_ben, gerp_ben,
-                                        revel_ben, VEST4_ben, provean_ben, bayesDel_noAF_ben,agvgd_ben, polyphen_ben, MAPP_ben, prior_utah_prot_ben)
-               %>% as.matrix() %>%c(), NA, NA, rep(gene.specific %>% dplyr::select(spliceai_ben) %>% as.matrix() %>% c(), 4),  gene.specific %>% dplyr::select(trap_ben) %>% as.matrix() %>% c())
-  cut.pat <- c(gene.specific %>% dplyr::select(phylop_pat, phastcons_pat, gerp_pat,
-                                        revel_pat, VEST4_pat, provean_pat, bayesDel_noAF_pat,agvgd_pat, polyphen_pat, MAPP_pat, prior_utah_prot_pat_sup)
-               %>% as.matrix() %>%c(), NA, NA, rep(gene.specific %>% dplyr::select(spliceai_pat) %>% as.matrix() %>% c(), 4),   gene.specific %>% dplyr::select(trap_pat) %>% as.matrix() %>% c())
+  cut.ben <- c(gene.specific %>% dplyr::select("phylop_ben", "phastcons_ben", "gerp_ben",
+                                        "revel_ben", "VEST4_ben", "provean_ben", "bayesDel_noAF_ben", "agvgd_ben", "polyphen_ben", "MAPP_ben", "prior_utah_prot_ben")
+               %>% as.matrix() %>%c(), NA, NA, rep(gene.specific %>% dplyr::select("spliceai_ben") %>% as.matrix() %>% c(), 4),  gene.specific %>% dplyr::select("trap_ben") %>% as.matrix() %>% c())
+  cut.pat <- c(gene.specific %>% dplyr::select("phylop_pat", "phastcons_pat", "gerp_pat",
+                                        "revel_pat", "VEST4_pat", "provean_pat", "bayesDel_noAF_pat", "agvgd_pat", "polyphen_pat", "MAPP_pat", "prior_utah_prot_pat_sup")
+               %>% as.matrix() %>%c(), NA, NA, rep(gene.specific %>% dplyr::select("spliceai_pat") %>% as.matrix() %>% c(), 4),   gene.specific %>% dplyr::select("trap_pat") %>% as.matrix() %>% c())
 
   #table
   predictors.table <- data.frame(
@@ -286,7 +286,7 @@ dbnsfpDbQuery <- function(object, ensembl.id, bbdd){
   vest4.score <- dbnsfp.variant[1,"VEST4_score"] %>%
                                                  as.numeric()#the value
   bayesDel.score <-dbnsfp.variant[1,"BayesDel_noAF_score"] %>%
-                                                  as_numeric()#the value
+                                                  as.numeric()#the value
 
   dbnsfp.scores <- list(revel=revel.score,
                         vest4=vest4.score,
@@ -319,6 +319,9 @@ proveanR <- function(object, provean.sh, bbdd, cores=1){
   if(nrow(score.provean)==0){
   prot.cor <- object$protein
   score.provean <- NA
+  if(!requireNamespace("seqinr", quietly=TRUE)){
+    warning("Please install package 'seqinr' to compute provean'")}
+  else{
   if(object$most.severe.consequence %in% c("missense_variant", "synonymous_variant")){
     prot <- purrr::map(stringr::str_split(prot.cor, "\\(|\\)"),2)  %>%
       stringr::str_extract_all( "[A-z]+") %>%
@@ -445,7 +448,7 @@ proveanR <- function(object, provean.sh, bbdd, cores=1){
   #
   #
 
-
+}
   return(score.provean)
 }
 
@@ -475,24 +478,24 @@ spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precom
     if(object$NM=="NM_007194.3"){#CHEK2
       ensembl.id <- api ("http://rest.ensembl.org", "/xrefs/symbol/homo_sapiens/NM_007194.4?content-type=application/json") %>%
                                                                                                                             dplyr::filter(type=="transcript") %>%
-                                                                                                                            dplyr::select(id) %>%
+                                                                                                                            dplyr::select("id") %>%
                                                                                                                             unlist() %>%
                                                                                                                             as.character()
     } else if (object$gene=="MUTYH"){ #MUTYH
       ensembl.id <- api ("http://rest.ensembl.org", "/xrefs/symbol/homo_sapiens/NM_001128425.2?content-type=application/json") %>%
                                                                                                                                dplyr::filter(type=="transcript") %>%
-                                                                                                                               dplyr::select(id) %>%
+                                                                                                                               dplyr::select("id") %>%
                                                                                                                                unlist() %>%
                                                                                                                               as.character()
     }else if (object$gene=="ERCC5"){ #ERCC5
       ensembl.id <- api ("http://rest.ensembl.org", "/xrefs/symbol/homo_sapiens/NM_000123.4?content-type=application/json") %>%
                                                                                                                             dplyr::filter(type=="transcript") %>%
-                                                                                                                            dplyr::select(id) %>%
+                                                                                                                            dplyr::select("id") %>%
                                                                                                                             as.character()
     }else if (object$NM=="NM_004448.2"){ #ERBB2
       ensembl.id <- api ("http://rest.ensembl.org", "/xrefs/symbol/homo_sapiens/NM_004448.4?content-type=application/json") %>%
                                                                                                                             dplyr::filter(type=="transcript") %>%
-                                                                                                                            dplyr::select(id) %>%
+                                                                                                                            dplyr::select("id") %>%
                                                                                                                             unlist() %>%
                                                                                                                             as.character()
     }
@@ -563,9 +566,9 @@ spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precom
 
 insilico <- function (predictors.df, predictor.type, veredict ){
   in.silico <- predictors.df %>%
-    dplyr::filter(type %in% predictor.type,
-                  stringr::str_detect(classification, veredict),
-                  use %in% "yes")
+    dplyr::filter(.data$type %in% predictor.type,
+                  stringr::str_detect(.data$classification, veredict),
+                  .data$use %in% "yes")
   return (in.silico)
 }
 

@@ -21,7 +21,7 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
 
   ###-----------------Load workbook; creating if not existing``
   wb <- XLConnect::loadWorkbook(file.path(output.dir.excels,file.name), create = FALSE)
-  XLConnect::setStyleAction(wb,XLConnect:::XLC$"STYLE_ACTION.NONE")
+  XLConnect::setStyleAction(wb,XLConnect::XLC$"STYLE_ACTION.NONE")
 
   ###-----------------Every sheet ----
   gene <- vaRinfo$Variant.Info$gene
@@ -344,7 +344,7 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
   if(nrow(vaRinfo$clinVar$clinVar.ids$table)>0){
     id.variant <- vaRinfo$clinVar$clinVar.ids$table %>%
                                                     dplyr::filter(variant==vaRinfo$Variant.Info$variant) %>%
-                                                    dplyr::select(V1)
+                                                    dplyr::select("V1")
   }
 
   if(exists("id.variant")&&nrow(id.variant)>0 &&length(vaRinfo$clinVar$clinVar.info$variant)>0){
@@ -370,12 +370,12 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
                               header=FALSE, rownames= FALSE)
     var.clin <- ifelse( exists("vaRinfo$clinVar$clinVar.ids$table$blosum"),
                         vaRinfo$clinVar$clinVar.ids$table %>%
-                                                          dplyr::mutate(url=paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", V1))  %>%
-                                                          dplyr::filter(stringr::str_detect(V2, vaRinfo$Variant.Info$variant)) %>%
-                                                          dplyr::select(V2,url, blosum, grantham, prior), vaRinfo$clinVar$clinVar.ids$table %>%
-                                                          dplyr::mutate(url=paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", V1))  %>%
-                                                          dplyr::filter(stringr::str_detect(V2, vaRinfo$Variant.Info$variant)) %>%
-                                                          dplyr::select(V2,url))
+                                                          dplyr::mutate(url=paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", .data$V1))  %>%
+                                                          dplyr::filter(stringr::str_detect(.data$V2, vaRinfo$Variant.Info$variant)) %>%
+                                                          dplyr::select("V2","url", "blosum", "grantham", "prior"), vaRinfo$clinVar$clinVar.ids$table %>%
+                                                          dplyr::mutate(url=paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", .data$V1))  %>%
+                                                          dplyr::filter(stringr::str_detect(.data$V2, vaRinfo$Variant.Info$variant)) %>%
+                                                          dplyr::select("V2","url"))
 
     XLConnect::writeWorksheet(wb, var.clin , sheet="ClinVar Variants",
                               startRow=9, startCol=1,
@@ -404,21 +404,21 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
       }
       XLConnect::cloneSheet(wb, 6, name=sheet.name)#we create sheets for each variant in the same codon found in clinvar
       XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.ids$table %>%
-                                                                      dplyr::filter(stringr::str_detect(V2, vaRinfo$Variant.Info$variant)) %>%
-                                                                      dplyr::select(blosum, prior, grantham) %>%
+                                                                      dplyr::filter(stringr::str_detect(.data$V2, vaRinfo$Variant.Info$variant)) %>%
+                                                                      dplyr::select("blosum", "prior", "grantham") %>%
                                                                       t(),
                                 sheet=sheet.name,
                                 startRow=4, startCol=2,
                                 header=FALSE, rownames= FALSE)
       XLConnect::setSheetPos(wb, sheet.name, 6+j)
       id.variant <- vaRinfo$clinVar$clinVar.ids$table %>%
-                                                      dplyr::filter(variant==var) %>%
-                                                      dplyr::select(V1)
+                                                      dplyr::filter(.data$variant==var) %>%
+                                                      dplyr::select("V1")
       num <- which(stringr::str_detect(as.character(vaRinfo$clinVar$clinVar.ids$table$V2), var))
       XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.ids$table %>%
-                                                                      dplyr::filter(stringr::str_detect(V2, var)) %>%
-                                                                      dplyr::mutate(url=paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", V1))  %>%
-                                                                      dplyr::select(V2,url, blosum, grantham, prior) %>% as.data.frame(), sheet="ClinVar Variants",
+                                                                      dplyr::filter(stringr::str_detect(.data$V2, var)) %>%
+                                                                      dplyr::mutate(url=paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", .data$V1))  %>%
+                                                                      dplyr::select("V2", "url", "blosum", "grantham", "prior") %>% as.data.frame(), sheet="ClinVar Variants",
                                 startRow=9+j, startCol=1,
                                 header=FALSE, rownames= FALSE)
       XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$same_codon[[j]][7]$Classification , sheet="ClinVar Variants",
@@ -433,8 +433,8 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
                                 header=FALSE, rownames= FALSE)
       if(vaRinfo$Variant.Info$most.severe.consequence=="missense_variant"){
         XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.ids$table %>%
-                                                                        dplyr::filter(stringr::str_detect(variant, vaRinfo$Variant.Info$variant)) %>%
-                                                                        dplyr::select(blosum, prior, grantham) %>%
+                                                                        dplyr::filter(stringr::str_detect(.data$variant, vaRinfo$Variant.Info$variant)) %>%
+                                                                        dplyr::select("blosum", "prior", "grantham") %>%
                                                                         t(),
                                   sheet=sheet.name,
                                   startRow=6, startCol=5,

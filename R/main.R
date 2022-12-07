@@ -5,6 +5,7 @@
 #' @import Biostrings
 #' @import RMySQL
 #' @import stringr
+#' @import liftOver
 #' @importFrom assertthat assert_that
 #' @importFrom tibble as_tibble
 #' @importFrom tibble rownames_to_column
@@ -20,12 +21,13 @@
 #' @importFrom purrr map
 #' @importFrom xml2 read_html
 #' @importFrom XML readHTMLTable
-#' @import rtracklayer
-#' @importFrom GenomicRanges GRanges
-#' @importFrom IRanges IRanges
 #' @importFrom utils URLencode data write.table
-#' @importFrom seqinr write.fasta
 NULL
+
+# #' @import rtracklayer
+# #' @importFrom GenomicRanges GRanges
+# #' @importFrom IRanges IRanges
+# #' @importFrom seqinr write.fasta
 
 #' @name gencode_spliceai_hg19
 #' @title gencode_spliceai_hg19
@@ -41,11 +43,11 @@ NULL
 #' @references \url{https://github.com/emunte/vaRHC/blob/main/data/gene_specific.txt}
 NULL
 
-#' @name example_input_vaRbatch
+#' @name ex_vaRbatch
 #' @title example_input_vaRbatch
 #' @docType data
 #' @author Elisabet Munté Roca \email{emunte@@idibell.cat}
-#' @references \url{https://github.com/emunte/vaRHC/blob/main/data/example_input_vaRbatch.txt}
+#' @references \url{https://github.com/emunte/vaRHC/blob/main/data/ex_vaRbatch.txt}
 #' @keywords data
 NULL
 
@@ -127,10 +129,9 @@ vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote
 #' @param output.dir By default is NULL. output.dir must provide the folder to store the results. If not provided it will be saved in the working directory.
 #' @author Elisabet Munté Roca
 #' @examples
-#' library(vaRHC)
-#' data("example_input_vaRbatch")
-#' example_input_vaRbatch[] <- lapply(example_input_vaRbatch, as.character) #convert to character
-#' all <- vaRbatch( all.variants = example_input_vaRbatch, spliceai.program = FALSE, excel.results = TRUE)
+#' data("ex_vaRbatch")
+#' ex_vaRbatch[] <- lapply(ex_vaRbatch, as.character) #convert to character
+#' all <- vaRbatch( all.variants = ex_vaRbatch, spliceai.program = FALSE, excel.results = TRUE)
 #' @export
 vaRbatch <- function (all.variants, gene.specific.df=NULL, remote = TRUE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, print.data.frame = TRUE, excel.results = FALSE, output.dir = NULL){
   time <-  Sys.time() %>%
@@ -218,7 +219,7 @@ vaRbatch <- function (all.variants, gene.specific.df=NULL, remote = TRUE, browse
         dataframe.folder<- checkDir (output.dir, "dataframe")
         write.table(x = df.variants2,
                     file = file.path(dataframe.folder, paste0(time, "variants.txt")),
-                    row.names = F)
+                    row.names = F, sep="\t")
       }
 
       time.end <- Sys.time()
