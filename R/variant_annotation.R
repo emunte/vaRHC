@@ -185,6 +185,7 @@ varDetails <- function (NM, NC=NULL, CCDS, gene, variant, variant.mutalyzer=NULL
   ext.vep <-  paste0("/vep/human/hgvs/",NM,":",variant.mutalyzer$variant)
   if(NM=="NM_000314.6")ext.vep <- paste0("/vep/human/hgvs/NM_000314.8:",variant.mutalyzer$variant)
   if(NM=="NM_005228.4")ext.vep <- paste0("/vep/human/hgvs/NM_005228.5:",variant.mutalyzer$variant) #100% of identity
+  if(NM=="NM_030930.3")ext.vep <- paste0("/vep/human/hgvs/NM_030930.4:",variant.mutalyzer$variant) #100% of identity
   coordinates <- api2(server.ensembl, ext.vep)
   assertthat::assert_that(length(coordinates$error)==0, msg=coordinates$error)
   chr<-unlist(coordinates$seq_region_name)
@@ -297,9 +298,7 @@ geneLrgCoord <- function (object){
   query<- paste0("SELECT  l.transcript, l.namegene,l.coordinates, l.transcript2, l.cds_start, l.cds_end, l.strand FROM LRG l LEFT JOIN  transcript t ON t.ensembltranscriptID=l.transcript_id WHERE l.namegene= '",object$gene ,"' AND t.NM='", object$NM, "'; ")
   lrg.gene <- connectionDB(query)[[1]]
   if(nrow(lrg.gene)==0){
-    query <- paste0("SELECT l.transcript_id, l.coordinates, l.strand
-                  FROM transcript t INNER JOIN noLRG l ON t.ensembltranscriptID=l.transcript_id
-                  WHERE l.namegene= '",object$gene ,"' AND t.NM='", object$NM, "'; ")
+    query <- paste0("SELECT l.transcript_id, l.coordinates, l.strand FROM transcript t INNER JOIN noLRG l ON t.ensembltranscriptID=l.transcript_id WHERE l.namegene= '",object$gene ,"' AND t.NM='", object$NM, "'; ")
     lrg.gene <- connectionDB(query)[[1]]
     names(lrg.gene)[1]<-"transcript"
   }
