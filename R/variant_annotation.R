@@ -184,6 +184,7 @@ varDetails <- function (NM, NC=NULL, CCDS, gene, variant, variant.mutalyzer=NULL
   server.ensembl <- "http://grch37.rest.ensembl.org" #Ensembl's REST API
   ext.vep <-  paste0("/vep/human/hgvs/",NM,":",variant.mutalyzer$variant)
   if(NM=="NM_000314.6")ext.vep <- paste0("/vep/human/hgvs/NM_000314.8:",variant.mutalyzer$variant)
+  if(NM=="NM_005228.4")ext.vep <- paste0("/vep/human/hgvs/NM_005228.5:",variant.mutalyzer$variant) #100% of identity
   coordinates <- api2(server.ensembl, ext.vep)
   assertthat::assert_that(length(coordinates$error)==0, msg=coordinates$error)
   chr<-unlist(coordinates$seq_region_name)
