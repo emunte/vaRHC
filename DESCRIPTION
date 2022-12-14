@@ -1,6 +1,6 @@
 Package: vaRHC
 Title: Variant Classification in Hereditary Cancer Following Specific ACMG Guidelines
-Version: 0.0.0.9000
+Version: 0.0.9
 Authors@R: 
     person("Elisabet", 
            "Munté Roca", 
@@ -35,7 +35,6 @@ Imports:
     tidyr,
     rlang,
     tidyselect,
-    liftOver
 Suggests: 
     knitr,
     rmarkdown,
