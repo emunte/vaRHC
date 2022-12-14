@@ -59,6 +59,12 @@ if(!require("remotes", quietly = TRUE)) install.packages('remotes') ## Only the 
 library(remotes)
 devtools::install_github("emunte/vaRHC")
 ```
+If you use this option an extra step must be done: 
+https://github.com/emunte/vaRHC/blob/main/extdata/hg38ToHg19.over.chain document must be downloaded and stored in extdata folder. 
+To see the path of the folder paste in R the following command:
+```{r, eval=FALSE}
+path = system.file(package="vaRHC", "extdata")
+```
 
 
 Next, it has to be loaded into the workspace:
@@ -287,9 +293,10 @@ The input is a data frame containing gene and variant column. See and example be
 
 ```{r eval=FALSE}
 #Example 1
-data("example_input_vaRbatch")
-example_input_vaRbatch[] <- lapply(example_input_vaRbatch, as.character) #convert to character
-all <- vaRbatch( all.variants = example_input_vaRbatch, spliceai.program = TRUE, splieai.reference= "./hg19.fa", excel.results = TRUE)
+data("ex_vaRbatch")
+ex_vaRbatch[] <- lapply(ex_vaRbatch, as.character) #convert to character
+genome.reference <- "path_to_hg19.fa"
+all <- vaRbatch( all.variants = ex_vaRbatch, spliceai.program = TRUE, splieai.reference= genome.reference, excel.results = TRUE)
 
 #Example2
 eg.variants <- data.frame(gene=c("ATM", "MSH6", "BRCA1"), variants = c("c.8420A>T", "c.1559G>A", "c.211A>G"))
