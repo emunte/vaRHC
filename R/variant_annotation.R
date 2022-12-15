@@ -480,7 +480,7 @@ liftOverhg38_hg19  <- function (genomic){
   assertthat::assert_that(requireNamespace("rtracklayer", quietly=TRUE), msg = "Please install  'rtracklayer' package to be able to compute this variant'")
   assertthat::assert_that(requireNamespace("GenomicRanges", quietly=TRUE), msg = "Please install  'GenomicRanges' package to be able to compute this variant'")
   assertthat::assert_that(requireNamespace("IRanges", quietly=TRUE), msg = "Please install  'IRanges' package to be able to compute this variant'")
-  
+  assertthat::assert_that(requireNamespace("liftOver", quietly=TRUE), msg = "Please install  'liftOver' package to be able to compute this variant'")
   chr <- stringr::str_split(genomic, "\\.") %>% 
     purrr::map(1) %>% 
     stringr::str_extract("[0-9]+") %>% 
@@ -501,7 +501,7 @@ liftOverhg38_hg19  <- function (genomic){
          1,
          coord[2] - coord[1] +1)
   
-  path = system.file(package="vaRHC", "extdata", "hg38ToHg19.over.chain")
+  path = system.file(package="liftOver", "extdata", "hg38ToHg19.over.chain")
   ch = rtracklayer::import.chain(path)
   variantGR <- GenomicRanges::GRanges(seqnames = paste0("chr", chr),
                        IRanges::IRanges(pos1, width = large)
