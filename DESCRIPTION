@@ -1,5 +1,5 @@
 Package: vaRHC
-Title: Variant Classification in Hereditary Cancer Following Specific ACMG Guidelines
+Title: Variant Classification in Hereditary Cancer Following Specific ACMG/AMP Guidelines
 Version: 0.0.9
 Authors@R: 
     person("Elisabet", 
@@ -7,12 +7,12 @@ Authors@R:
            role = c("aut", "cre"), 
            email = "emunte@idibell.cat",
            comment = c(ORCID = "0000-0001-8396-8284"))
-Description: Automate, as far as possible, the variant classification process for hereditary cancer genes following specific ACMG guidelines.
+Description: Automate, as far as possible, the variant classification process following the updated American College of Medical Genetics (ACMG)  and Association for Molecular Pathology (AMP) gene-specific criteria for **ATM**, **CDH1**, **CHEK2**, **MLH1**, **MSH2**, **MSH6**, **PMS2**, **PTEN** and **TP53** and general criteria for other genes. From the input of a gene and a variant (in coding DNA nomenclature) or a variant caller format (vcf) file, functions are provided to gather relevant information from diverse sources (local queries and real-time queries), to assign classification criteria and finally to combine them to give a final classification of the variant. All this information is returned in a list object, but it can be saved additionally as a tabulated or excel file. 
 License: CC BY 4.0 + file LICENSE
 URL: https://github.com/emunte/vaRHC
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Imports:
     Biostrings,
     DBI,
@@ -27,22 +27,26 @@ Imports:
     DescTools,
     RCurl,
     purrr,
-    RSelenium,
     tibble,
-    vcfR,
     XML,
     readr,
     tidyr,
     rlang,
-    tidyselect
+    tidyselect,
+    R.utils,
+    testthat
 Suggests: 
     knitr,
+    utils,
     rmarkdown,
     XLConnect,
     seqinr,
     GenomicRanges,
     IRanges,
     rtracklayer,
-    liftOver
-VignetteBuilder: knitr
+    RSelenium,
+    vcfR,
+    methods
+VignetteBuilder: 
+    knitr
 BugReports: https://github.com/emunte/vaRHC/issues
