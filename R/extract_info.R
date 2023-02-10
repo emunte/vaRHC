@@ -6,6 +6,7 @@
 #' @param NM refSeq nomenclature. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM,  NC and CCDS must also be provided.
 #' @param CCDS Consensus CD id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM must also be provided. Current version only works for hg19.
 #' @param gene.specific.df By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv and some parameters can be modified taking into account your preferences
+#' @param output.dir output.dir must provide the folder to store the results. By default is NULL.
 #' @param remote Logical. Connect remotely to RSelenium server? By default is TRUE and will start Rselenium server.If it is FALSE vaRHC will not connect to insight database.
 #' @param browser Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".
 #' @param spliceai.program Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.
@@ -15,16 +16,18 @@
 #' @param spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
 #' @param provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
 #' @param provean.sh Path to provean.sh. By default is NULL and will only be taken into account if provean.program is set to TRUE.
+#' @param google.search Logical. By default is FALSE and it will not look for variant results in google.
+#' @param verbose logic. By default is FALSE and it will not show intermediate process messages
 #' @return information about the variant.
 #' @author Elisabet Munté Roca
 #' @references
 #' Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17, 405–424. https://doi.org/10.1038/gim.2015.30
-vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote = TRUE, browser="firefox",  spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation =  NULL , spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL){
+vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, output.dir = NULL, remote = TRUE, browser="firefox",  spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation =  NULL , spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL, google.search = FALSE, verbose = FALSE){
   assembly = "hg19"
   nm.nc <- NMparam(gene, NM = NM,  CCDS = CCDS)
-  cat("0% completed... correcting variant nomenclature \n")
+  cat("0% completed ... correcting variant nomenclature \n")
   variant.mutalyzer <- correctHgvsMutalyzer (NM = nm.nc$NM, NC = nm.nc$NC, gene = gene, variant = variant)
-  cat("10% completed... getting variant coordinates\n")
+  cat("10% completed ... getting variant coordinates\n")
   variant.info <- varDetails(NM=nm.nc$NM, NC=nm.nc$NC, CCDS=nm.nc$CCDS, gene = gene, variant = variant, variant.mutalyzer, skip.pred=FALSE)
   variant.info.other <- list()
   if (!is.na(variant.mutalyzer$other.important.transcripts[1]) && length(variant.mutalyzer$other.important.transcripts)>0){
@@ -37,7 +40,7 @@ vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, re
       CCDS.other <- connectionDB(query)[[1]] %>%
                     tibble::as_tibble() %>%
                     dplyr::select (CCDS)
-      variant.info.other[[NM.other[i]]]<- varDetails(NM = NM.other.b, NC = nm.nc$NC, CCDS = CCDS.other, gene, variant.other[i])
+      try(variant.info.other[[NM.other[i]]]<- varDetails(NM = NM.other.b, NC = nm.nc$NC, CCDS = CCDS.other, gene, variant.other[i]))
       }
   }
 
@@ -53,23 +56,25 @@ vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, re
   genomes <- gnomADcov(assembly=assembly, track="Genomes", gnomAD.nomenclature=gnom)
   gnomad.info <- gnomADmerge(gnom, gene.specific, bbdd= bbdd.info)
 
-  cat ("30% completed ... getting information from flossiesdb\n")
+  cat("30% completed ... getting information from flossiesdb\n")
   flossies <- flossiesInfo(nomen.flossies= NULL, nomen.gnomAD=gnom, gene=variant.info$gene)
-  cat ("40% completed ... getting clinVar information\n")
+  cat("40% completed ... getting clinVar information\n")
   clinvar.ids <- clinVarIds(object = variant.info)
-  clinvar.info <- clinVarInfo(clinvar.ids, object= variant.info)
-  cat("50% completed ...  getting predictors information\n")
+  clinvar.info <- clinVarInfo(clinvar.ids, object= variant.info, verbose = verbose)
+  cat("50% completed ... getting predictors information\n")
   predictor.table <- predicInfo(object = variant.info,
                                 gene.specific =  gene.specific,
                                 bbdd = bbdd.info,
                                 gnomad = gnom,
-                                spliceai.program=spliceai.program,
+                                output.dir = output.dir,
+                                spliceai.program = spliceai.program,
                                 spliceai.reference = spliceai.reference,
                                 spliceai.annotation =  spliceai.annotation,
                                 spliceai.distance = spliceai.distance,
                                 spliceai.masked = spliceai.masked,
                                 provean.program = provean.program,
-                                provean.sh = provean.sh
+                                provean.sh = provean.sh,
+                                verbose = verbose
                                 )
   cat("60% completed ... getting loss of function information\n")
   codon.stop <- stopCodon(object = variant.info, variant.mutalyzer = variant.mutalyzer)
@@ -77,13 +82,14 @@ vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, re
   cat("70% completed ... getting start codon information\n")
   second.met <- secondMet(variant.mutalyzer = variant.mutalyzer, object = variant.info, assembly=assembly)
   cat("80% completed ... getting functional studies information\n")
-  insight.info <- insightInfo(variant.info, remote,  browser)
+  insight.info <- insightInfo(variant.info, remote,  browser, verbose = verbose)
   articles <- articlesInfo(object = variant.info, variant.mutalyzer, bbdd = bbdd.info)
-  references.google.30 = biblioScholar(variant.info, c(0,10,20))
+  references.google.30 = biblioScholar(variant.info, c(0,10,20), google.search)
   cat("90% completed ... getting cancerhotspots information\n")
   cancer.hotspots <- cancerHotspots(object = variant.info, variant.cor = variant.mutalyzer, bbdd = bbdd.info)
   cat("100% completed!!\n")
-  out<- list(Variant.Info = variant.info, Variant.Info.other= variant.info.other,
+  out<- list(Variant.Info = variant.info,
+             Variant.Info.other= variant.info.other,
              variant.correction = variant.mutalyzer,
              gene.specific.info = gene.specific,
              gnomAD = list(
@@ -575,13 +581,14 @@ clinVarIds <- function(object){
     if(nrow(clinvar.info)>0){
       clinvar.info <- clinvar.info %>%
                       dplyr::rowwise() %>%
-                      dplyr::mutate(variant =as.character(purrr::map(stringr::str_split(.data$V2, " \\(|\\):"),2)), 
+                      dplyr::mutate(variant =as.character(purrr::map(stringr::str_split(.data$V2, " \\(|\\):"),2)),
                                     protein=as.character(purrr::map(stringr::str_split(.data$V2, "\\(|\\)"),4))) %>%
-                      dplyr::mutate(a1= aaShort(toProtein(.data$protein)$aa.ref), 
+                      dplyr::mutate(a1= aaShort(toProtein(.data$protein)$aa.ref),
                                     a2=aaShort(toProtein(.data$protein)$aa.alt )) %>%
                       dplyr::mutate (blosum = BLOSUM62[.data$a1, .data$a2], grantham=calculateGrantham(.data$a1, .data$a2))
       for (i in 1:nrow(clinvar.info)){
         prior.pm5 <- priorUtahProb(object=NULL, gene=object$gene, variant =clinvar.info$variant[i])[[3]] %>% unlist
+        clinvar.info$prior <- NA
         clinvar.info$prior[i] <- ifelse(length(prior.pm5)==0, NA, prior.pm5)
       }
     }
@@ -640,12 +647,12 @@ clinVarIds <- function(object){
 #' Landrum MJ, Lee JM, Benson M, Brown GR, Chao C, Chitipiralla S, Gu B, Hart J, Hoffman D, Jang W, Karapetyan K, Katz K, Liu C, Maddipatla Z, Malheiro A, McDaniel K, Ovetsky M, Riley G, Zhou G, Holmes JB, Kattman BL, Maglott DR. ClinVar: improving access to variant interpretations and supporting evidence. Nucleic Acids Res . 2018 Jan 4. PubMed PMID: 29165669 .
 #' @noRd
 
-clinVarInfo <- function (clinvar.id, object){
+clinVarInfo <- function (clinvar.id, object, verbose = FALSE){
   if (clinvar.id$message!="Warning: It is not a missense variant."& clinvar.id$message!="Warning: There are not variants reported in clinvar at this codon"){
     clinvar.ids <- clinvar.id$table %>%
       tibble::as_tibble() %>%
       dplyr::mutate(url = paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", .data$V1))
-    b <- clinVarTable(clinvar.ids)
+    b <- clinVarTable(clinvar.ids, verbose = verbose)
     names(b) <- clinvar.ids$V2
     for (i in 1:nrow(clinvar.ids)){
       if(!is.null(b[[i]])){
@@ -734,8 +741,8 @@ reviewStatus <- function(table.clinvar){
   return(total)}
 
 #' @noRd
-clinVarTable <- function(table){
-  a <- lapply(table$url, function(g){
+clinVarTable <- function(table, verbose = FALSE){
+  a <- lapply(table$url, function(g, verbose){
     page <- readUrl(g)
     if (!is.na(page)){
       table.ex <- rvest::html_table(page, fill=TRUE)
@@ -786,8 +793,8 @@ secondMet <- function(variant.mutalyzer, object, assembly){
   pos.second.met <- NA
   if(object$most.severe.consequence == "start_lost"){
     pos.second.met <- unlist(stringr::str_locate_all(variant.mutalyzer$protein_predicted, "M"))[2]
-    coordinates.exon <- CodingTranscriptCds(object)
-
+    #coordinates.exon <- CodingTranscriptCds(object)
+    coordinates.exon<- variant.mutalyzer$cds[1,1:2]
     start.sec <- ifelse (object$strand == 1,
                          coordinates.exon[1,1],
                          as.numeric(coordinates.exon[nrow(coordinates.exon),2])-(pos.second.met-1)*3)
@@ -798,22 +805,27 @@ secondMet <- function(variant.mutalyzer, object, assembly){
     ext.clinvar.pvs1 <- paste0("track=clinvarMain;chrom=chr", object$chr,";start=",start.sec, ";end=", end.sec)
     server.ucsc <- "http://api.genome.ucsc.edu/getData/track?" #UCSC's REST API
     clinvar.pvs1.info <- api2(paste0(server.ucsc, "genome=", assembly,";"), ext.clinvar.pvs1)[["clinvarMain"]] %>%
-      tibble::as_tibble() %>%
-                  dplyr::mutate (reviewStatus = purrr::map(stringr::str_split(reviewStatus, ":"),2),
-                                 url = paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", purrr::map(stringr::str_split(.data$origName, "\\|"),1)),
-                                 origNames = purrr::map(stringr::str_split(.data$origName, "\\|"),2),
-                                 clinSign = unlist(.data$clinSign)) %>%
-                  dplyr::select("origName", "clinSign", "reviewStatus", "type", "molConseq", '_hgvsProt', "chromStart", "chromEnd", "phenotype", "url" ) %>%
-                  dplyr::mutate(reviewStatus = stringr::str_sub(.data$reviewStatus, 2, -9)) %>%
-                  dplyr::group_by("clinSign") %>%
-                  dplyr::arrange(dplyr::desc("clinSign"))
+      tibble::as_tibble()
+    if(length(clinvar.pvs1.info)>0){
+      clinvar.pvs1.info <- clinvar.pvs1.info %>%
+        dplyr::mutate (reviewStatus = purrr::map(stringr::str_split(.data$reviewStatus, ":"),2),
+                     url = paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", purrr::map(stringr::str_split(.data$origName, "\\|"),1)),
+                     origNames = purrr::map(stringr::str_split(.data$origName, "\\|"),2),
+                     clinSign = unlist(.data$clinSign)) %>%
+        dplyr::select("origName", "clinSign", "reviewStatus", "type", "molConseq", '_hgvsProt', "chromStart", "chromEnd", "phenotype", "url" ) %>%
+        dplyr::mutate(reviewStatus = stringr::str_sub(.data$reviewStatus, 2, -9)) %>%
+        dplyr::group_by("clinSign") %>%
+        dplyr::arrange(dplyr::desc("clinSign"))
 
-    pvs1.start.significance <- clinvar.pvs1.info %>%
-                                                 dplyr::count(.data$clinSign, 
-                                                              .data$reviewStatus) %>%
-                                                 dplyr::arrange(.data$clinSign, 
-                                                                .data$reviewStatus)
-    table(unlist(clinvar.pvs1.info$clinSign), clinvar.pvs1.info$reviewStatus)
+      pvs1.start.significance <- clinvar.pvs1.info %>%
+        dplyr::count(.data$clinSign,
+                     .data$reviewStatus) %>%
+        dplyr::arrange(.data$clinSign,
+                       .data$reviewStatus)
+      table(unlist(clinvar.pvs1.info$clinSign), clinvar.pvs1.info$reviewStatus)
+    }
+
+
   }
   return (list(start.lost.variants= list(pos.second.met = pos.second.met,
                                          clinvar.pvs1.info=clinvar.pvs1.info,
@@ -836,17 +848,17 @@ stopCodon <- function(object, variant.mutalyzer){
   exons <- coordNonCoding(variant.mutalyzer , object)
   canonical.skipping <- NA
   stop.pos.all <- NA
-  length.transcript <- tryCatch({
-    CodingTranscriptCds(object) %>% lenCodingTranscriptCds()
-  },
-  error=function(cond){
-    return(NA)
-  })
-
+  # length.transcript <- tryCatch({
+  #   CodingTranscriptCds(object) %>% lenCodingTranscriptCds()
+  # },
+  # error=function(cond){
+  #   return(NA)
+  # })
+length.transcript <- variant.mutalyzer$cds$v2.cds.c %>% as.numeric()
   if(object$most.severe.consequence =="frameshift_variant"|
      object$most.severe.consequence =="stop_gained"){
     variant.exon <- exons %>%
-                    dplyr::filter( .data$V1 <= object$start, 
+                    dplyr::filter( .data$V1 <= object$start,
                                    .data$V2 >= object$end) %>%
                     dplyr::mutate( cdna.var.pos = fs.window$dntp.pos)
   }else if (object$most.severe.consequence =="splice_donor_variant"|
@@ -859,6 +871,7 @@ stopCodon <- function(object, variant.mutalyzer){
       variant.exon <- exons %>%
                             dplyr::filter((.data$V1 == (object$start+pos.sum)&object$strand==-1) | (.data$V2 == (object$start-pos.sum)&object$strand==1)) %>%
                             dplyr::mutate( cdna.var.pos=fs.window$dntp.pos)
+
     }else if (object$most.severe.consequence == "splice_acceptor_variant"){
       posi <- ifelse(object$start==object$end,
                      object$start,
@@ -876,8 +889,10 @@ stopCodon <- function(object, variant.mutalyzer){
         variant.exon$exon != nrow(exons) &
         !stringr::str_detect(exons$cStop[exons$exon==variant.exon$exon], "-") &
         !stringr::str_detect(exons$cStart[exons$exon==variant.exon$exon], "-")){
+
       pvs1.mutalyzer.cdna <- paste0("c.", variant.exon$cStart, "_", variant.exon$cStop, "del")
       NC <- NMparam(object$gene)$NC
+
       correct.skipping <- correctHgvsMutalyzer(NM=object$NM, NC=NC, gene=object$gene, variant=pvs1.mutalyzer.cdna, skip.pred=TRUE )
       skipping.info <- varDetails(NM=object$NM, NC=NC, CCDS=object$CCDS, gene=NULL, variant=NULL, variant.mutalyzer=correct.skipping, skip.pred=TRUE)
       fs.window <- fsWindow (skipping.info)
@@ -895,11 +910,11 @@ stopCodon <- function(object, variant.mutalyzer){
   }
   if (!is.na(fs.window$dntp.stop)){
     stop.pos.all <- exons %>%
-                          dplyr::mutate (cStop = stringr::str_replace(.data$cStop, "\\*[0-9]*", "1000000000"), 
+                          dplyr::mutate (cStop = stringr::str_replace(.data$cStop, "\\*[0-9]*", "1000000000"),
                                          cStart = stringr::str_replace(.data$cStart, "\\*[0-9]*", "NA")) %>%
-                          dplyr::mutate (cStart =as.numeric(.data$cStart), 
+                          dplyr::mutate (cStart =as.numeric(.data$cStart),
                                          cStop=as.numeric(.data$cStop)) %>%
-                          dplyr::filter(.data$cStop >= fs.window$dntp.stop, 
+                          dplyr::filter(.data$cStop >= fs.window$dntp.stop,
                                         .data$cStart <= fs.window$dntp.stop) %>%
                           dplyr::mutate(bp=ifelse(.data$cStop==1000000000, 0, as.numeric(.data$cStop)-as.numeric(fs.window$dntp.stop))) %>%
                           dplyr::select ("exon", "bp") %>%
@@ -959,21 +974,21 @@ CodingTranscriptCds <- function(object){
 ## insight
 ################################################################################
 #' @noRd
-insightUrl <- function (object, list.genes, database, browser){
+insightUrl <- function (object, list.genes, database, browser, verbose = FALSE){
   insight <- NA
-  if(object$gene %in% list.genes)insight <- readTableUrlJavascript(paste0("http://www.insight-database.org/classifications/",database, ".html?gene=", object$gene, "&variant=", URLencode(object$variant), "&protein="), browser = browser)
+  if(object$gene %in% list.genes)insight <- readTableUrlJavascript(paste0("http://www.insight-database.org/classifications/",database, ".html?gene=", object$gene, "&variant=", URLencode(object$variant), "&protein="), browser = browser, verbose = verbose)
   return (insight)
 }
 
 #' @noRd
-insightInfo <- function (object, remote, browser){
+insightInfo <- function (object, remote, browser, verbose = FALSE){
   index <- NA
-  functional <- NA
+  multifactorial <- NA
   list.genes1 <- c("APC", "MLH1", "MSH2", "MSH6", "PMS2", "EPCAM", "MUTYH", "CDH1", "GALNT12")
   list.genes2 <- c("MLH1", "MSH2", "MSH6", "PMS2")
   if (remote == TRUE){
-  index <- insightUrl (object, list.genes2, "index", browser)
-  multifactorial <- insightUrl (object, list.genes2, "mmr_integrative_eval", browser)
+  index <- insightUrl (object, list.genes2, "index", browser, verbose = verbose)
+  multifactorial <- insightUrl (object, list.genes2, "mmr_integrative_eval", browser, verbose = verbose)
   } else{
     index <- "Not working"
   }
@@ -1092,49 +1107,52 @@ articlesInfo <- function (object, variant.cor, bbdd){
 ## google scholar
 ################################################################################
 #' @noRd
-biblioScholar <- function(object, first.article){
+biblioScholar <- function(object, first.article, google.search = FALSE){
   articles.summary <- tibble::tibble()
   nomenclature.google <-  nomenclatureScholaR(object)
-  articles.summary <- "Error 429: too many requests, please do the search manually."
+  articles.summary <- NA
+if(google.search == TRUE){
+  for (i in first.article){
+    url <- paste0("https://scholar.google.com/scholar?hl=en&start=", i, "&as_vis=1&as_sdt=0%252C5&q=", URLencode(nomenclature.google))
 
-for (i in first.article){
-  url <- paste0("https://scholar.google.com/scholar?hl=en&start=", i, "&as_vis=1&as_sdt=0%252C5&q=", URLencode(nomenclature.google))
-  information <- NA
-  try(information <- readUrl(url))
-  if (!is.na(information)){
-    articles.page <- information %>%
+    try(information <- readUrl(url))
+    if(is.null(information)) information<- NA
+    if (!is.na(information)){
+      articles.page <- information %>%
                                 rvest::html_nodes("h3") %>%
                                 rvest::html_nodes("a") %>%
                                 rvest::html_text() %>%
                                 tibble::as_tibble(.name_repair=~c("Article"))
-    articles.link <- information %>%
+      articles.link <- information %>%
                                 rvest::html_nodes("h3") %>%
                                 rvest::html_nodes("a") %>%
                                 rvest::html_attrs() %>%
                                 purrr::map(2) %>%
                                 unlist() %>%
                                 tibble::as_tibble(.name_repair=~c("Link"))
-    if(ncol(articles.link)==0){articles.link <- tibble::tibble("Link"=character(0), .name_repair=~c("Link"))}
-    articles.author <- information %>%
+      if(ncol(articles.link)==0){articles.link <- tibble::tibble("Link"=character(0), .name_repair=~c("Link"))}
+      articles.author <- information %>%
                                    rvest::html_elements(".gs_a") %>%
                                    rvest::html_text() %>%
                                    tibble::as_tibble(.name_repair=~c("Authors_date"))
-    #articles.cited <- information %>% html_elements(".gs_fl") %>% html_nodes("a") %>% html_text() %>% as_tibble() %>% filter(str_detect(value,"Cited by"))
-    articles.cited <- information %>%
+      #articles.cited <- information %>% html_elements(".gs_fl") %>% html_nodes("a") %>% html_text() %>% as_tibble() %>% filter(str_detect(value,"Cited by"))
+      articles.cited <- information %>%
                                   rvest::html_elements (".gs_ri") %>%
                                   rvest::html_text() %>%
                                   unlist() %>%
                                   stringr::str_extract ("Cited by [0-9]*")   %>%
                                   tibble::as_tibble(.name_repair=~c("Cited_by"))
-    articles.all <- cbind(articles.page, articles.author, articles.link, articles.cited) %>%
+      articles.all <- cbind(articles.page, articles.author, articles.link, articles.cited) %>%
                                                                                          tibble::as_tibble()
-    articles.summary <- rbind(articles.summary, articles.all)
+      articles.summary <- rbind(articles.summary, articles.all)
   }else{
     #articles.summary= NA
-    articles.summary= information
+    articles.summary = "Error 429: too many requests, please do the search manually."
   }
 }
-
+}else{
+  articles.summary = "Error 429: too many requests, please do the search manually."
+}
   return(list(google.scholar.search=nomenclature.google, articles=articles.summary))
 }
 
@@ -1155,6 +1173,7 @@ nomenclatureScholaR <- function(object){
                                                                                                    rvest::html_nodes("span") %>%
                                                                                                    rvest::html_nodes("a") %>%
                                                                                                    rvest::html_text()
+
   rs <- ifelse(stringr::str_detect(resuweb[1], "rs[0-9]+"),resuweb[1], "")
   if (object$most.severe.consequence %in% c("synonymous_variant", "missense_variant", "stop_retained_variant")){
     protein <- ifelse(object$most.severe.consequence=="missense_variant",
@@ -1205,9 +1224,9 @@ nomenclatureScholaR <- function(object){
 
   }else if(object$most.severe.consequence=="frameshift_variant"){
 
-    web.mutalyzer <- xml2::read_html(URLencode(paste0("https://mutalyzer.nl/name-checker?description=",object$genomic)))
+    web.mutalyzer <- xml2::read_html(URLencode(paste0("https://v2.mutalyzer.nl/name-checker?description=",object$genomic)))
     bases <- web.mutalyzer %>%
-                           rvest::html_nodes("pre") %>%
+                           rvest::html_nodes("pre") %>% as.character %>%
                            stringr::str_extract(" [A-Z]+ ") %>%
                            stringr::str_extract("[A-Z]+")
     no.c.4 <- stringr::str_replace(no.c, "_", "-")
@@ -1288,10 +1307,10 @@ cancerHotspots <- function (object, variant.cor, bbdd){
    cancer.hotspots <- bbdd$cancer.hotspots %>%
                                             dplyr::mutate (Wild_type = Biostrings::AMINO_ACID_CODE[.data$REF],
               Variant = ifelse(.data$ALT=="*", .data$ALT, Biostrings::AMINO_ACID_CODE[.data$ALT])) %>%
-      dplyr::filter(.data$Wild_type== aa.ref, 
-                    .data$Variant==aa.alt, 
+      dplyr::filter(.data$Wild_type== aa.ref,
+                    .data$Variant==aa.alt,
                     .data$Amino_Acid_Position==as.numeric(aa.pos) )
-   
+
     cancer.hotspots.final <- list(variant = cancer.hotspots[,2:11], cancer.type=NA)
     if (nrow(cancer.hotspots)>0){
       cancer.hotspots.type <- cancer.hotspots$Samples %>%

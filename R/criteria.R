@@ -5,6 +5,11 @@
 ################################################################################
 PVS1 <- function (all.information, final.criteria){
   PVS1.message <- NULL
+  if ( all.information$Variant.Info$gene %in% c("POLE", "POLD1", "ALK", "EGFR", "ERBB2", "MET", "RET")){
+    PVS1.message <- "PVS1 does not apply because loss of function is not the known disease mechanism for this gene."
+    final.criteria$criteria.res["PVS1", 1:4] <- c(NA, NA ,NA, NA)
+    final.criteria[["PVS1.message"]] <- PVS1.message
+  }else{
   spli.loss.pvs1.df <- all.information$predictors$predictor.table %>%
     dplyr::filter(grepl("Loss", .data$predictor),
                   .data$classification %in% c("Pathogenic" ,"Grey"))
@@ -16,7 +21,7 @@ PVS1 <- function (all.information, final.criteria){
   ###1. SpliceAi gains are pat -> supporting check manually
   sel.vars <- all.information$Variant.Info$most.severe.consequence %in% c("frameshift_variant", "stop_gained", "splice_donor_variant", "splice_acceptor_variant")
   final.criteria$criteria.res["PVS1", 1:4][nrow(spli.gain.pvs1.df)>0 & sel.vars ] <- c(0,0,0,1)
-  PVS1.message[nrow(spli.gain.pvs1.df)>0 & sel.vars] <- paste("SpliceAI predicts a Gain, PVS1_supporting is assigned because it is a", all.information$Variant.Info$most.severe.consequence, "but please check PVS1 strength manually.")
+  PVS1.message[nrow(spli.gain.pvs1.df)>0 & sel.vars] <- paste("SpliceAI predicts that the variant generates a splice [acceptor/donor], whose consequences in all predictive criteria should be manually reassessed according to it (PVS1_Variable). Splicing assays may be recommended to confirm any prediction..")
 
   ##Last exon variants, only ATM, CDH1 and MMR
   if(gene %in% "CDH1" && !is.na(all.information$Variant.Info$most.severe.consequence.1) && all.information$Variant.Info$most.severe.consequence.1 %in% c("splice_region_variant")){
@@ -72,7 +77,7 @@ PVS1 <- function (all.information, final.criteria){
           stringr::str_detect(all.information$codon.stop$exons$cStop[all.information$codon.stop$exons$exon==all.information$codon.stop$variant.exon$exon], "-") |
           stringr::str_detect(all.information$codon.stop$exons$cStart[all.information$codon.stop$exons$exon==all.information$codon.stop$variant.exon$exon], "-")){
 
-        PVS1.message <-  "PVS1 must be calculated manually: Skipping of the first (coding) or last exon cannot be calculated automatically. "
+        PVS1.message <-  "PVS1 must be calculated manually: Skipping of the first (coding) or last exon cannot be calculated automatically (PVS1_NA). "
 
       }else
       {  #B
@@ -84,8 +89,8 @@ PVS1 <- function (all.information, final.criteria){
                                                               c(0, 1, "NC", "NC"),
                                                               c(0, 0, 1, "NC"))
           PVS1.message <- ifelse (rep(sel.prot == TRUE),
-                                  paste("PVS1_strong is met because the predicted exon skipping produced by the variant is inframe and the % of the protein lost is", round(as.numeric(all.information$codon.stop$canonical.skip.pred$porc.prot.splicing), 3), "which is > 0.1."),
-                                  paste("PVS1_moderate is met because the predicted exon skipping produced by the variant is inframe and the % of the protein lost is",round( as.numeric(all.information$codon.stop$canonical.skip.pred$porc.prot.splicing),3), "which is <0.1. Check if it is a critical domain in order to achieve PVS1_strong."))
+                                  paste("This alteration would cause a deletion in frame of", nrExtract(all.information)$nr.aa, "aminoacids in a region critical for the function of the protein/, which is more than the 10% of the protein (", round(as.numeric(all.information$codon.stop$canonical.skip.pred$porc.prot.splicing), 3), "which is > 0.1) (PVS1_Strong)."),
+                                  paste("This alteration would cause a deletion in frame of", nrExtract(all.information)$nr.aa, "aminoacids which is less than the 10% of the protein (", round( as.numeric(all.information$codon.stop$canonical.skip.pred$porc.prot.splicing),3), "which is <0.1) (PVS1_Moderate). Check if it is a critical domain in order to achieve PVS1_strong."))
         }
       }
     }
@@ -98,7 +103,7 @@ PVS1 <- function (all.information, final.criteria){
 
   final.criteria <- NMD(all.information, final.criteria, spli.loss.pvs1.df, spli.gain.pvs1.df)
   final.criteria <- startVariants(all.information, final.criteria)
-
+}
   return(final.criteria)
 }
 NMD <- function (all.information, final.criteria, spli.loss.pvs1.df,  spli.gain.pvs1.df){
@@ -163,13 +168,20 @@ NMD <- function (all.information, final.criteria, spli.loss.pvs1.df,  spli.gain.
       ##For ATM variants in the FATKIN domain (codons 1893-3056) its always PVS1_strong (when NMD==NO) no matter the % of protein
       final.criteria$criteria.res["PVS1", 1:4][gene=="ATM" & codon>=1893 & codon<=3056] <- c(0,1,0, "NC")
     }
-    PVS1.message[NMD=="YES"] <-  paste("It exists NMD so PVS1 is met with a very strong strength. A stop codon is generated", all.information$codon.stop$premature.ter.codon$num.codon.stop, "codons since the variant, at the exon", all.information$codon.stop$premature.ter.codon$exon, "out of", nrow(all.information$codon.stop$exons),".")
-    PVS1.message[NMD=="NO" && porc.prot > 0.1] <- paste("It does not exist NMD so PVS1 is not met with a very strong strength  because the stop codon is generated", all.information$codon.stop$premature.ter.codon$num.codon.stop, "codons since the variant at exon ", all.information$codon.stop$premature.ter.codon$exon, " out of", nrow(all.information$codon.stop$exons), ". PVS1_strong is met because variant removes >10% of protein.")
-    PVS1.message[NMD=="NO" && porc.prot < 0.1] <- paste("It does not exist NMD so PVS1 is not met with a very strong strength  because the stop codon is generated", all.information$codon.stop$premature.ter.codon$num.codon.stop, "codons since the variant at exon ",all.information$codon.stop$premature.ter.codon$exon, " out of", nrow(all.information$codon.stop$exons), ". PVS1_moderate is met because variant removes <10% of protein.")
+
+
+    PVS1.message[NMD=="YES" && all.information$Variant.Info$most.severe.consequence %in% c("stop_gained")] <-  paste("predicted to result in a  protein truncation or nonsense mediated decay in a gene for which loss-of-function is a known mechanism of disease (PVS1).")
+    PVS1.message[NMD=="YES" && all.information$Variant.Info$most.severe.consequence %in% c("frameshift_variant")] <-  paste("This alteration is expected to result in a protein truncation or nonsense mediated decay in a gene for which loss-of-function is a known mechanism of disease (PVS1).")
+    PVS1.message[NMD=="YES" && all.information$Variant.Info$most.severe.consequence %in% c("splice_donor_variant", "splice_acceptor_variant")] <-  paste( "This alteration would cause a  protein truncation or nonsense mediated decay in a gene for which loss-of-function is a known mechanism of disease (PVS1).")
+
+    #PVS1.message[NMD=="YES" && all.information$Variant.Info$most.severe.consequence %in% c("frameshift_variant")] <-  paste("It exists NMD so PVS1 is met with a very strong strength. A stop codon is generated", all.information$codon.stop$premature.ter.codon$num.codon.stop, "codons since the variant, at the exon", all.information$codon.stop$premature.ter.codon$exon, "out of", nrow(all.information$codon.stop$exons),".")
+
+    PVS1.message[NMD=="NO" && porc.prot > 0.1] <- paste("This alteration is expected to result in a deletion in frame of ", nrExtract(all.information)$nr.aa, "aminoacids in a region critical for the function of the protein/, which is more than the 10% of the protein (PVS1_Strong).")
+    PVS1.message[NMD=="NO" && porc.prot < 0.1] <- paste("This alteration is expected to result in a deletion in frame of ", nrExtract(all.information)$nr.aa, "aminoacids, which is less than the 10% of the protein (PVS1_Moderate).")
     PVS1.message[NMD== "No_alternate_transcript"] <- paste ("The stop codon is generated", all.information$codon.stop$premature.ter.codon$num.codon.stop, "codons since the variant at exon", all.information$codon.stop$premature.ter.codon$exon, "out of", nrow(all.information$codon.stop$exons), " There is an alternate transcript without exons 8 and 9 so PVS1 is not met with a very strong strength.")
     PVS1.message[NMD== "NO_effect"] <- paste("It does not exist NMD so PVS1 is not met because the codon stop is at position", codon, ".")
-    PVS1.message[NMD== "PVS1_moderate"] <- paste("It  exist NMD but PVS1 ony mets a PVS1_moderate strength because the codon stop is at position", codon, ".")
-    PVS1.message[NMD== "PVS1_strong"] <- paste("It  exist NMD but PVS1 ony mets a PVS1_strong strength because the codon stop is at position", codon, ".")
+    PVS1.message[NMD== "PVS1_moderate"] <- paste("It  exist NMD but PVS1 only meets a PVS1_moderate strength because the codon stop is at position", codon, "(PVS1_moderate). Check if it is a critical domain in order to achieve PVS1_strong.")
+    PVS1.message[NMD== "PVS1_strong"] <- paste("It  exist NMD but PVS1 only mets a PVS1_strong strength because the codon stop is at position", codon, "(PVS1_strong).")
     final.criteria[["PVS1.message"]] <- PVS1.message
     final.criteria[["NMD"]] <- NMD
 
@@ -181,7 +193,7 @@ NMD <- function (all.information, final.criteria, spli.loss.pvs1.df,  spli.gain.
 startVariants <- function (all.information, final.criteria){
   message.second.met <- NULL
   pos.second.met <- all.information$second.met$start.lost.variants$pos.second.met
-  if (!is.na(pos.second.met)){
+  if (!is.na(pos.second.met) && nrow( all.information$second.met$start.lost.variants$clinvar.pvs1.info)>0){
     pathogenic.second.met <- all.information$second.met$start.lost.variants$clinvar.pvs1.info %>%
       dplyr::filter(.data$clinSign=="Pathogenic" & .data$reviewStatus=="reviewed by expert panel")
     #General rules
@@ -233,7 +245,7 @@ PS1 <- function (all.information, final.criteria){
       #server.mutalyzer <- "https://mutalyzer.nl/json/"
       ps1.df <- clinvar.evidence.calc %>%
         t() %>% as.data.frame %>%
-        dplyr::mutate(variants.name=colnames(clinvar.evidence.calc)) %>%
+        dplyr::mutate(variants.name = colnames(clinvar.evidence.calc)) %>%
         dplyr::filter (stringr::str_detect(.data$variants.name,all.information$Variant.Info$protein), !stringr::str_detect(.data$variants.name, all.information$Variant.Info$variant) & ((all.information$Variant.Info$gene!="TP53" & (.data$pat_guideline>0|.data$ppat_guideline>0|.data$pat_expert>0|.data$ppat_expert>0))| (all.information$Variant.Info$gene=="TP53" &(.data$pat_guideline>0|.data$pat_expert>0))))  %>%
         dplyr::mutate (ext_vep_ps1 = paste0("/vep/human/hgvs/", all.information$Variant.Info$NM,":", stringr::str_sub(purrr::map(stringr::str_split(.data$variants.name, "\\(|\\):"),3),1,-2)))
 
@@ -242,9 +254,9 @@ PS1 <- function (all.information, final.criteria){
         NC <- stringr::str_extract(all.information$Variant.Info$genomic, "NC_[0-9]+.[0-9]+")
         ps1.df <- ps1.df %>%
           dplyr::rowwise %>%
-          dplyr::mutate(genomic=toGenomic(all.information$Variant.Info$NM, NC, stringr::str_sub(purrr::map(stringr::str_split(.data$variants.name, "\\(|\\):"),3),1,-2) ,all.information$Variant.Info$gene) ) %>%
-          dplyr::mutate(ext.spliceai.ps1= paste0(all.information$Variant.Info$chr, "-", purrr::map(stringr::str_split(.data$genomic, "g\\.|[A-Z]"),4),"-", stringr::str_sub(.data$genomic, -3,-3), "-", stringr::str_sub(.data$genomic,-1,-1) )) %>%
-          dplyr::mutate(scores.spliceai =  connectionDB( paste0("SELECT *  from spliceAI  WHERE var_chr= '", .data$ext.spliceai.ps1 ,"'AND max_dis= 1000 AND transcript='", all.information$Variant.Info$ensembl.id,"' AND masked='",TRUE,"';"))%>% purrr::map(.data, function(x) c(x[[8]], x[[10]],x[[12]],x[[14]]))) %>%
+          dplyr::mutate(genomic = toGenomic(all.information$Variant.Info$NM, NC, stringr::str_sub(purrr::map(stringr::str_split(.data$variants.name, "\\(|\\):"),3),1,-2) ,all.information$Variant.Info$gene) ) %>%
+          dplyr::mutate(ext.spliceai.ps1 = paste0(all.information$Variant.Info$chr, "-", purrr::map(stringr::str_split(.data$genomic, "g\\.|[A-Z]"),4),"-", stringr::str_sub(.data$genomic, -3,-3), "-", stringr::str_sub(.data$genomic,-1,-1) )) %>%
+          dplyr::mutate(scores.spliceai =  purrr::map( connectionDB( paste0("SELECT *  from spliceAI  WHERE var_chr= '", .data$ext.spliceai.ps1 ,"'AND max_dis= 1000 AND transcript='", all.information$Variant.Info$ensembl.id,"' AND masked='",TRUE,"';")), function(x) c(x[[8]], x[[10]],x[[12]],x[[14]]))) %>%
           dplyr::mutate(score.spliceai= max(unlist(.data$scores.spliceai), na.rm=FALSE))
 
         ps1.no.splicing <- ps1.df %>%
@@ -263,7 +275,7 @@ PS1 <- function (all.information, final.criteria){
           PS1.message[nrow(ps1.mmr.pat)>0] <-  paste("PS1 is assigned because it exists the variant", ps1.mmr.pat$variants.name, "in ClinVar classified as pathogenic by at least expert panel and it is not predicted to alter splicing.")
           if (nrow(ps1.mmr.pat)==0){
             ps1.mmr.ppat <- ps1.df %>%
-              dplyr::filter (as.numeric(.data$score.spliceai)< 0.5, 
+              dplyr::filter (as.numeric(.data$score.spliceai)< 0.5,
                              (.data$ppat_guideline>0|.data$ppat_expert>0))
             final.criteria$criteria.res["PS1", "moderate"] <- ifelse(nrow(ps1.mmr.ppat)>0,
                                                                      0,
@@ -342,7 +354,7 @@ PM1 <- function (all.information, final.criteria){
     final.criteria$criteria.res["PM1",c(3,4)] <- NA
     PM1.message <- "As PS1 is assigned by functional domain, PM1 is not calculated"
   }else{
-    pos.aa <- stringr::str_extract(all.information$Variant.Info$prot, "[0-9]+") #we get the position of the aa
+    pos.aa <- stringr::str_extract(all.information$Variant.Info$protein, "[0-9]+") #we get the position of the aa
 
     if (!is.null(hot.spots[[all.information$Variant.Info$gene]])&
         (all.information$Variant.Info$most.severe.consequence %in% c("missense_variant"))){
@@ -523,7 +535,7 @@ PM4 <- function (all.information, final.criteria){
       PM4.message <- "PM4 is assigned because the trucation is 3 prime to c.1121(NM_000314.6)."
     }}else if (!is.null(hot.spots[[all.information$Variant.Info$gene]])&
                (all.information$Variant.Info$most.severe.consequence %in% c("inframe_deletion"))){
-      pos.aa.del <- stringr::str_extract_all(all.information$Variant.Info$prot, "[0-9]+") %>%
+      pos.aa.del <- stringr::str_extract_all(all.information$Variant.Info$protein, "[0-9]+") %>%
         unlist %>%
         as.numeric #we get the position of the aa
       suma.mod.del <- hotSp("moderate", pos.aa.del, hot.spots, all.information) #we use the hot_sp function
@@ -634,7 +646,7 @@ PM5 <- function (all.information, final.criteria){
           dplyr::mutate(genomic = toGenomic(all.information$Variant.Info$NM, NC, stringr::str_sub(purrr::map(stringr::str_split(.data$variants.name, "\\(|\\):"),3),1,-2) ,all.information$Variant.Info$gene) ) %>%
           #dplyr::mutate(genomic=toGenomic(all.information$Variant.Info$NM, NC, stringr::str_sub(purrr::map(stringr::str_split(variants.name, "\\(|\\):"),3),1,-2) , all.information$Variant.Info$gene) ) %>%
           dplyr::mutate(ext.spliceai.pm5= paste0(all.information$Variant.Info$chr, "-", purrr::map(stringr::str_split(.data$genomic, "g\\.|[A-Z]"),4),"-", stringr::str_sub(.data$genomic, -3,-3), "-", stringr::str_sub(.data$genomic,-1,-1) )) %>%
-          dplyr::mutate(scores.spliceai =  connectionDB( paste0("SELECT *  from spliceAI  WHERE var_chr= '", .data$ext.spliceai.pm5 ,"'AND max_dis= 1000 AND transcript='", all.information$Variant.Info$ensembl.id,"' AND masked='",TRUE,"';"))%>% purrr::map(.data, function(x) c(x[[8]], x[[10]],x[[12]],x[[14]]))) %>%
+          dplyr::mutate(scores.spliceai = purrr::map(connectionDB( paste0("SELECT *  from spliceAI  WHERE var_chr= '", .data$ext.spliceai.pm5 ,"'AND max_dis= 1000 AND transcript='", all.information$Variant.Info$ensembl.id,"' AND masked='",TRUE,"';")), function(x) c(x[[8]], x[[10]],x[[12]],x[[14]]))) %>%
           dplyr::mutate(score.spliceai = max(unlist(.data$scores.spliceai), na.rm=FALSE))
 
         for (i in 1:nrow(pm5.df)){
@@ -1026,7 +1038,7 @@ ba1_bs1_df <- function (dataset, all.information, criterion){
     selected <- dataset %>%
       dplyr::filter(.data$rowname %in% subpopu.to.look,
                     .data$AF >=as.numeric(cutoff),
-                    .data$AN >= num.AN, 
+                    .data$AN >= num.AN,
                     .data$AC>= 5)
   }
   return(selected)
@@ -1065,9 +1077,9 @@ BA1 <- function (all.information, final.criteria){
                       dplyr::mutate(rowname = stringr::str_sub(.data$rowname, -3,-1)) %>%
                       as.character()
   sentence <- paste0("Freq gnomAD all non-cancer v2.1.1 = ", round(as.numeric(all.information$gnomAD$info$exomes.genomes$non.cancer$overall$AF)*100,5), "% (MCAF ",  as.numeric(all.information$gene.specific.info$IC)*100,
-                     "% = ", round(as.numeric(all.information$gnomAD$info$exomes.genomes$non.cancer$overall$AF)*100,5), "%).",
+                     "% = ", round(as.numeric(all.information$gnomAD$info$exomes.genomes$non.cancer$overall$AF)*100,5), "%). ",
                      ifelse(nrow(max.subpop)==8, "",
-                            paste0(".Max freq in ",  popu, " subpopulation ", round(as.numeric(max.subpop$AF)*100,5), "% (MCAF ", as.numeric(all.information$gene.specific.info$IC)*100, "% = ", round(as.numeric(max.subpop$CI)*100,5), "%).", collapse=" and ") ))
+                            paste0("Max freq in ",  popu, " subpopulation ", round(as.numeric(max.subpop$AF)*100,5), "% (MCAF ", as.numeric(all.information$gene.specific.info$IC)*100, "% = ", round(as.numeric(max.subpop$CI)*100,5), "%).", collapse=" and ") ))
   BA1.message <- paste(sentence, BA1.message)
 
   final.criteria[["BA1.message"]] <- BA1.message
@@ -1348,7 +1360,7 @@ BP7 <- function (all.information, final.criteria){
     final.criteria$criteria.res["BP7", 4] <-0
 
     BP7.message <- ifelse(!gene %in% c( "ATM", "PALB2", "CHEK2", "TP53"),
-                          "BP7 is denied bc.1399T>Cecause variants must be positioned at or beyond  +7/-21.",
+                          "BP7 is denied because variants must be positioned at or beyond  +7/-21.",
                           ifelse(gene %in% c("ATM"),
                                  "BP7 is denied because variants must be positioned beyond (but not including)  +7/-40.",
                                  ifelse(gene %in% c("PALB2"),

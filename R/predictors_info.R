@@ -4,7 +4,7 @@
 
 ## General
 #' @noRd
-predicInfo <- function(object, gene.specific, bbdd, gnomad, spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation = NULL, spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL){
+predicInfo <- function(object, gene.specific, bbdd, gnomad, output.dir, spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation = NULL, spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL, verbose){
   httr::set_config(httr::config(ssl_verifypeer = 0L))
   ensembl.id <- ensemblTranscript(object$NM, object$gene)
   #scores
@@ -19,10 +19,10 @@ predicInfo <- function(object, gene.specific, bbdd, gnomad, spliceai.program=FAL
   }
 
   if (object$most.severe.consequence %in% c("inframe_deletion", "inframe_insertion") && provean.program == TRUE){
-      dbnsfp$PROVEAN_score <- proveanR(object, provean.sh , bbdd)
+      dbnsfp$PROVEAN_score <- proveanR(object = object, provean.sh = provean.sh , bbdd = bbdd, output.dir = output.dir)
   }
   align.gvgd <- alignGvgd(object, bbdd)
-  spliceai.score <- spliceaiR(object = object, ext.spliceai = gnomad, bbdd = bbdd, spliceai.program = spliceai.program, reference.splice = spliceai.reference, annotation.splice = spliceai.annotation, distance = spliceai.distance, mask = spliceai.masked)
+  spliceai.score <- spliceaiR(object = object, ext.spliceai = gnomad, output.dir = output.dir, bbdd = bbdd, spliceai.program = spliceai.program, reference.splice = spliceai.reference, annotation.splice = spliceai.annotation, distance = spliceai.distance, mask = spliceai.masked, verbose = verbose)
   # while(is.na(spliceai.score$Acceptor_Gain)[1]){
   #   spliceai.score <-  spliceaiR(object, ensembl.id)
   # }
@@ -87,7 +87,7 @@ predicInfo <- function(object, gene.specific, bbdd, gnomad, spliceai.program=FAL
                %>% as.matrix() %>%c(), NA, NA, rep(gene.specific %>% dplyr::select("spliceai_pat") %>% as.matrix() %>% c(), 4),   gene.specific %>% dplyr::select("trap_pat") %>% as.matrix() %>% c())
 
   #table
-  predictors.table <- data.frame(
+  predictors.table <- suppressWarnings(data.frame(
     type = c(rep("Nucleotide conservation", 3),
              rep("Protein effect", 8),
              rep("Splicing Predictor",7)
@@ -109,7 +109,7 @@ predicInfo <- function(object, gene.specific, bbdd, gnomad, spliceai.program=FAL
     BE.cut.off = cut.ben,
     operator.pathogenic= op.pat,
     TD.cut.off = cut.pat, stringsAsFactors = FALSE
-  )
+  ))
   row.names(predictors.table) <- c("Phylop", "Phastcons", "Gerp", "Revel",
                                    "VEST4", "Provean", "BayesDel_noAF","aGVGD_zebrafish", "PolyPhen", "MAPP",
                                    "Prior_utah(MAPP/PP2)", "Prior_utah_splicing_reference","Prior_utah_splicing_de_novo", "SpliceAI-AcceptorGain", "SpliceAI-AcceptorLoss",
@@ -314,7 +314,11 @@ priorUtahProb <- function(object, gene=NULL, variant =NULL){
 #' @references Choi Y, Sims GE, Murphy S, Miller JR, Chan AP. Predicting the functional effect of amino acid substitutions and indels. PloS one. 2012-01-01; 7.3: e46688. PMID: 23056405
 #' @noRd
 
-proveanR <- function(object, provean.sh, bbdd, cores=1){
+proveanR <- function(object, provean.sh, bbdd, output.dir, verbose, cores=1){
+  ignore <- ifelse(isTRUE(verbose),
+                   FALSE,
+                   TRUE)
+
   score.provean <- bbdd$provean
   if(nrow(score.provean)==0){
   prot.cor <- object$protein
@@ -407,12 +411,12 @@ proveanR <- function(object, provean.sh, bbdd, cores=1){
     server.ensembl <- "http://grch37.rest.ensembl.org"
      ext.ensembl <- paste0("/sequence/id/", ensemblTranscript(object$NM, object$gene)$id ,"?multiple_sequences=0;content-type=text/x-seqxml%2Bxml;type=protein")
      prot.seq <- api(server.ensembl, ext.ensembl)$seq
-     .tmp <- file.path(getwd(), ".tmp")
+     .tmp <- file.path(output.dir, ".tmp")
      dir.create(.tmp, showWarnings = FALSE)
      seqinr::write.fasta(sequences = prot.seq, names=object$gene, file.out = file.path(.tmp, "provean.fasta"), as.string= TRUE)
      write.table(protein, file.path(.tmp, "variants.var"), row.names = FALSE, col.names = FALSE, quote=FALSE )
      cmd <- paste(provean.sh, "-q", file.path(.tmp, "provean.fasta"), "-v", file.path(.tmp, "variants.var"), "--num_threads", cores)
-     print(cmd); a <- try(system(cmd, intern=TRUE))
+     a <- try(system(cmd, ignore.stderr = ignore))
      score.provean <- stringr::str_split(a[12], "\t") %>% purrr::map(2) %>% unlist() %>% as.numeric()
      unlink(.tmp, recursive=TRUE)
    }
@@ -456,7 +460,10 @@ proveanR <- function(object, provean.sh, bbdd, cores=1){
 #' SpliceaiR
 #' @references Jaganathan, K., Panagiotopoulou, S. K., McRae, J. F., Darbandi, S. F., Knowles, D., Li, Y. I., ... & Farh, K. K. H. (2019). Predicting splicing from primary sequence with deep learning. Cell, 176(3), 535-548.
 #' @noRd
-spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precomputed = 1, mask = 1, bbdd, spliceai.program = FALSE,  reference.splice = NULL, annotation.splice = NULL) {
+spliceaiR <- function(object, ext.spliceai, output.dir, genome = 37, distance = 1000, precomputed = 1, mask = 1, bbdd, spliceai.program = FALSE,  reference.splice = NULL, annotation.splice = NULL, verbose) {
+  ignore <- ifelse(isTRUE(verbose),
+                   FALSE,
+                   TRUE)
   assertthat::assert_that(is.logical(spliceai.program), msg="spliceai.program param must be TRUE or FALSE")
   cond <- precomputed==1 & genome==37 & distance==1000 & mask==1
   ensembl.id <- object$ensembl.id
@@ -502,10 +509,8 @@ spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precom
 
     #SPLICEAI PROGRAM
     #temporarly directory to store spliceAI output
-    .tmp <- file.path(getwd(), ".tmp")
+    .tmp <- file.path(output.dir, ".tmp")
     dir.create(.tmp, showWarnings = FALSE)
-    
-
     var.tros <- stringr::str_split(ext.spliceai, "-") %>%
       unlist()
     var.tros2 <- c(var.tros[1:2], object$variant, var.tros[3:4], ".", ".", ".")  %>%
@@ -513,14 +518,14 @@ spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precom
       t()
     time <-  Sys.time() %>%
       stringr::str_replace_all("-|:| ", "_")
-    
+
     if (is.null(annotation.splice)){
       data("gencode_spliceai_hg19",  envir = environment())
       names(gencode_spliceai_hg19) <- c("#NAME",	"CHROM",	"STRAND",	"TX_START",	"TX_END",	"EXON_START",	"EXON_END")
       write.table(gencode_spliceai_hg19, file.path(.tmp, "gencode_spliceai_hg19.txt"), sep="\t", col.names=TRUE, row.names = FALSE, quote = FALSE)
       annotation.splice <- file.path(.tmp, "gencode_spliceai_hg19.txt")
     }
-    
+
     write.table(var.tros2,
                 file  = file.path(.tmp, paste0("var_splice", time, ".txt")),
                 col.names=FALSE,
@@ -529,7 +534,7 @@ spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precom
                 quote=FALSE)
     vcf.header <- system.file("extdata", "vcf_spliceAI.vcf", package="vaRHC")
     cmd <- paste0("cat ", vcf.header, " ", file.path(.tmp, paste0("var_splice", time, ".txt"))," > ", file.path(.tmp, paste0("spliceAI_R",time,".vcf")))
-    print(cmd); try(system(cmd))
+    try(system(cmd))
     inputVCF <- file.path(.tmp, paste0("spliceAI_R",time,".vcf"))
     outputFile <-file.path(.tmp, paste0("outputR",time,".vcf"))
 
@@ -537,16 +542,17 @@ spliceaiR <- function(object, ext.spliceai, genome = 37, distance = 1000, precom
     cp.splice.directory <- file.path(.tmp, paste0("runSpliceAI.sh"))
     run.splice.copy <- paste("cp", run.splice, cp.splice.directory)
     try(system(run.splice.copy))
-    try(system(paste("chmod  +x", cp.splice.directory)))
+    try(system(paste("chmod  +x", cp.splice.directory),  intern = FALSE))
     cmd2 <- paste(cp.splice.directory, "spiceAI_env/bin/activate", inputVCF, outputFile, distance, mask, reference.splice, annotation.splice)
-    print(cmd2); try(system(cmd2))
-    vcf <- vcfR::read.vcfR(outputFile, "hg19")
+    try(system(cmd2, ignore.stderr = ignore))
+    vcf <- vcfR::read.vcfR(outputFile, "hg19", verbose = verbose)
     splice <- vcf@fix [,8] %>%
       stringr::str_split (paste0(",[A-z]\\|", object$gene, "| [A-Z]\\|", object$gene, "|", object$gene)) %>%
       unlist()
     #delete intermediate files and directory
     unlink(.tmp, recursive=TRUE)
     spliceai.score <- splice[stringr::str_detect(splice, ensembl.id)==T]
+    assertthat::assert_that(length(spliceai.score)!=0, msg= "Transcript not listed in SpliceAI annotation file. Please provide another annotation file if you want to compute this variant")
     spliceai.score <- stringr::str_split(spliceai.score, "[|]") %>%
       unlist()
     spliceai.score <- spliceai.score[2:9]

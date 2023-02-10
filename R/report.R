@@ -114,6 +114,10 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
   ###----------------Evidence sheet ----
   criteria <- completCriteria(vaRclass$final.criteria$criteria.res) %>%
                                                                     as.data.frame()
+  XLConnect::writeWorksheet(wb, introMessage(vaRinfo), sheet="Evidence",
+                            startRow=6, startCol=17,
+                            header=FALSE)
+
   XLConnect::writeWorksheet(wb, criteria[1:16,], sheet="Evidence",
                             startRow=9, startCol=13,
                             header=FALSE)
@@ -244,16 +248,16 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
 
   #non_cancer
 
-  XLConnect::writeWorksheet(wb, paste("Al. Freq.", vaRinfo$gene.specific.info$IC) , sheet="Control_Freq", #non_cancer exomes
+  XLConnect::writeWorksheet(wb, paste("CI ", vaRinfo$gene.specific.info$IC) , sheet="Control_Freq", #non_cancer exomes
                             startRow=9, startCol=9,
                             header=FALSE)
-  XLConnect::writeWorksheet(wb, paste("Al. Freq.", vaRinfo$gene.specific.info$IC) , sheet="Control_Freq", #non_cancer exomes
+  XLConnect::writeWorksheet(wb, paste("CI", vaRinfo$gene.specific.info$IC) , sheet="Control_Freq", #non_cancer exomes
                             startRow=25, startCol=9,
                             header=FALSE)
-  XLConnect::writeWorksheet(wb, paste("Al. Freq.", vaRinfo$gene.specific.info$IC) , sheet="Control_Freq", #non_cancer exomes
+  XLConnect::writeWorksheet(wb, paste("CI", vaRinfo$gene.specific.info$IC) , sheet="Control_Freq", #non_cancer exomes
                             startRow=41, startCol=9,
                             header=FALSE)
-  XLConnect::writeWorksheet(wb, paste("Al. Freq.",vaRinfo$gene.specific.info$IC) , sheet="Control_Freq", #non_cancer exomes
+  XLConnect::writeWorksheet(wb, paste("CI",vaRinfo$gene.specific.info$IC) , sheet="Control_Freq", #non_cancer exomes
                             startRow=57, startCol=9,
                             header=FALSE)
   #·····Exomes
@@ -285,16 +289,16 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
 
 
   #non-neuro
-  XLConnect::writeWorksheet(wb, paste("Al. Freq.", vaRinfo$gene.specific.info$IC) , sheet="Control_Freq", #non_cancer exomes
+  XLConnect::writeWorksheet(wb, paste("CI", vaRinfo$gene.specific.info$IC) , sheet="Control_Freq", #non_cancer exomes
                             startRow=9, startCol=17,
                             header=FALSE)
-  XLConnect::writeWorksheet(wb, paste("Al. Freq.", vaRinfo$gene.specific.info$IC) , sheet="Control_Freq", #non_cancer exomes
+  XLConnect::writeWorksheet(wb, paste("CI", vaRinfo$gene.specific.info$IC) , sheet="Control_Freq", #non_cancer exomes
                             startRow=25, startCol=17,
                             header=FALSE)
-  XLConnect::writeWorksheet(wb, paste("Al. Freq.", vaRinfo$gene.specific.info$IC) , sheet="Control_Freq", #non_cancer exomes
+  XLConnect::writeWorksheet(wb, paste("CI", vaRinfo$gene.specific.info$IC) , sheet="Control_Freq", #non_cancer exomes
                             startRow=41, startCol=17,
                             header=FALSE)
-  XLConnect::writeWorksheet(wb, paste("Al. Freq.", vaRinfo$gene.specific.info$IC) , sheet="Control_Freq", #non_cancer exomes
+  XLConnect::writeWorksheet(wb, paste("CI", vaRinfo$gene.specific.info$IC) , sheet="Control_Freq", #non_cancer exomes
                             startRow=57, startCol=17,
                             header=FALSE)
   #·······exomes
@@ -329,13 +333,7 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
                             startRow=66, startCol=4,
                             header=FALSE, rownames= TRUE)
 
-  #CancerHotspots
-  XLConnect::writeWorksheet(wb, vaRinfo$cancer.hotspots$variant, sheet="Control_Freq", #non_cancer exomes
-                            startRow=73, startCol=4,
-                            header=FALSE, rownames= TRUE)
-  XLConnect::writeWorksheet(wb, vaRinfo$cancer.hotspots$cancer.type, sheet="Control_Freq", #non_cancer exomes
-                            startRow=75, startCol=4,
-                            header=TRUE, rownames= TRUE)
+
 
   #ClinVar
 
@@ -492,7 +490,7 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
 
 
   }
-  XLConnect::writeWorksheet(wb, vaRinfo$codon.stop$exons[,2:6], sheet="NMD",
+  XLConnect::writeWorksheet(wb, vaRinfo$codon.stop$exons[,2:8], sheet="NMD",
                             startRow=7, startCol=12,
                             header=FALSE, rownames= FALSE)
 
@@ -642,23 +640,30 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
   #············Functional information----
   XLConnect::writeWorksheet(wb, paste(vaRclass$final.criteria$PS3.message,  vaRclass$final.criteria$BS3.message),
                             sheet="Functional information", startRow=4, startCol=4, header=TRUE)
+  #CancerHotspots
+  XLConnect::writeWorksheet(wb, vaRinfo$cancer.hotspots$variant, sheet="Bibliography data vaRHC", #non_cancer exomes
+                            startRow=66, startCol=4,
+                            header=FALSE, rownames= TRUE)
+  XLConnect::writeWorksheet(wb, vaRinfo$cancer.hotspots$cancer.type, sheet="Bibliography data vaRHC", #non_cancer exomes
+                            startRow=68, startCol=4,
+                            header=TRUE, rownames= TRUE)
 
   #google references
   XLConnect::writeWorksheet(wb, vaRinfo$google.scholar.30.references$google.scholar.search,
-                            sheet="Bibliography data vaRHC", startRow=65, startCol=3, header=FALSE)
+                            sheet="Bibliography data vaRHC", startRow=71, startCol=3, header=FALSE)
   if(!is.na(vaRinfo$google.scholar.30.references$articles)[1]){
-    if (stringr::str_detect(vaRinfo$google.scholar.30.references$articles[1],"Error 429:" )&& nrow(vaRinfo$google.scholar.30.references$articles)==1){
+    if (stringr::str_detect(vaRinfo$google.scholar.30.references$articles[1],"Error 429:" )&& is.character(vaRinfo$google.scholar.30.references$articles)){
       XLConnect::writeWorksheet(wb, vaRinfo$google.scholar.30.references$articles,
-                                sheet="Bibliography data vaRHC", startRow=67, startCol=1, header=FALSE)
+                                sheet="Bibliography data vaRHC", startRow=73, startCol=1, header=FALSE)
     }else{
     XLConnect::writeWorksheet(wb, vaRinfo$google.scholar.30.references$articles[,1],
-                              sheet="Bibliography data vaRHC", startRow=67, startCol=1, header=FALSE)
+                              sheet="Bibliography data vaRHC", startRow=73, startCol=1, header=FALSE)
     XLConnect::writeWorksheet(wb, vaRinfo$google.scholar.30.references$articles[,2],
-                              sheet="Bibliography data vaRHC", startRow=67, startCol=6, header=FALSE)
+                              sheet="Bibliography data vaRHC", startRow=73, startCol=6, header=FALSE)
     XLConnect::writeWorksheet(wb, vaRinfo$google.scholar.30.references$articles[,3],
-                              sheet="Bibliography data vaRHC", startRow=67, startCol=9, header=FALSE)
+                              sheet="Bibliography data vaRHC", startRow=73, startCol=9, header=FALSE)
     XLConnect::writeWorksheet(wb, vaRinfo$google.scholar.30.references$articles[,4],
-                              sheet="Bibliography data vaRHC", startRow=67, startCol=12, header=FALSE)
+                              sheet="Bibliography data vaRHC", startRow=73, startCol=12, header=FALSE)
 
     }
   }
@@ -687,4 +692,104 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
   # Save workbook ----
   XLConnect::saveWorkbook(wb, )
 }
+}
+
+################################################################################
+## Introduction message
+################################################################################
+introMessage <- function(all.information){
+  if(all.information$Variant.Info$most.severe.consequence == "synonymous_variant"){
+    intro.message <- paste("The", all.information$Variant.Info$gene, "all.information$Variant.Info$variant, variant affects a not conserved nucleotide, resulting in no amino acid change.")
+  }else if (all.information$Variant.Info$most.severe.consequence == "stop_gained"){ #nonesense
+    intro.message <- paste0(all.information$Variant.Info$variant,
+                            ", located in exon",
+                            all.information$Variant.Info$exon_intron %>% as.character(),
+                            "of the", all.information$Variant.Info$gene,
+                            "gene, is a nonsense variant" )
+  }else if (all.information$Variant.Info$most.severe.consequence == "frameshift_variant"){ #fer condicio que estigui a l'exó
+    intro.message <- paste0(all.information$Variant.Info$variant,
+                            ", located in exon ",
+                            all.information$Variant.Info$exon_intron %>% as.character(),
+                            " of the ",
+                            all.information$Variant.Info$gene,
+                            " gene, consistis in the deletion/insertion/duplication of",  nrExtract(all.information)$nr.nt ," nucleotide(s), causing a translational frameshift with a predicted alternate stop codon (",
+                            all.information$Variant.Info$protein, ").")
+  }else if (all.information$Variant.Info$most.severe.consequence %in% c("splice_donor_variant", "splice_acceptor_variant")){
+    intro.message <- paste0(all.information$Variant.Info$variant,
+                            ", located in a canonic splicing site of the ",
+                            all.information$Variant.Info$gene,
+                            " gene is predicted to alter splicing, probably causing the skiping of exon/s {skippedEXON(s)}. ")
+  }else if(all.information$Variant.Info$most.severe.consequence == "missense_variant"){
+    intro.message <- paste(all.information$Variant.Info$variant,
+                           ", located in exon",
+                           all.information$Variant.Info$exon_intron$exon,
+                           "of the",
+                           all.information$Variant.Info$gene,
+                            "gene, is a missense variant predicted to result in a substitution",
+                           all.information$Variant.Info$protein )
+  }else{
+    intro.message <- NA
+  }
+  return(intro.message)
+}
+
+showMessage <- function (all.information, crit.met, final.criteria){
+  intro <- introMessage(all.information)
+    max.subpop <- all.information$gnomAD$info$exomes.genomes$non.cancer$subpopulations %>%
+    dplyr::filter(CI==max(all.information$gnomAD$info$exomes.genomes$non.cancer$subpopulations$CI))
+  popu <- max.subpop %>%
+    dplyr::select("rowname") %>%
+    dplyr::mutate(rowname = stringr::str_sub(.data$rowname, -3,-1)) %>%
+    as.character()
+  freq.sum <- paste0("Freq gnomAD all non-cancer v2.1.1 = ", round(as.numeric(all.information$gnomAD$info$exomes.genomes$non.cancer$overall$AF)*100,5), "% (MCAF ",  as.numeric(all.information$gene.specific.info$IC)*100,
+                     "% = ", round(as.numeric(all.information$gnomAD$info$exomes.genomes$non.cancer$overall$AF)*100,5), "%). ",
+                     ifelse(nrow(max.subpop)==8, "",
+                            paste0("Max freq in ",  popu, " subpopulation ", round(as.numeric(max.subpop$AF)*100,5), "% (MCAF ", as.numeric(all.information$gene.specific.info$IC)*100, "% = ", round(as.numeric(max.subpop$CI)*100,5), "%).", collapse=" and ") ))
+
+  all.messages <- paste(intro,
+                        ifelse(any(stringr::str_detect(crit.met, "PVS1")),
+                               final.criteria$PVS1.message,
+                               ""),
+                        ifelse(any(stringr::str_detect(crit.met, "PM1")),
+                               final.criteria$PM1.message,
+                               ""),
+                        ifelse(any(stringr::str_detect(crit.met, "PM4")),
+                               final.criteria$PM1.message,
+                               ""),
+                        freq.sum,
+                        ifelse(any(stringr::str_detect(crit.met, "BA1")),
+                               final.criteria$BA1.message,
+                               ""),
+                        ifelse(any(stringr::str_detect(crit.met, "BS1")),
+                               final.criteria$BS1.message,
+                               ""),
+                        ifelse(any(stringr::str_detect(crit.met, "PM2")),
+                               final.criteria$PM2.message,
+                               ""),
+                        ifelse(any(stringr::str_detect(crit.met, "BS2")),
+                               final.criteria$BS2.message,
+                               ""),
+                        ifelse(any(stringr::str_detect(crit.met, "PP3")),
+                               final.criteria$PP3.message,
+                               ""),
+                        ifelse(any(stringr::str_detect(crit.met, "BP4")),
+                               final.criteria$BP4.message,
+                               ""),
+                        ifelse(any(stringr::str_detect(crit.met, "BP7")),
+                               final.criteria$BP7.message,
+                               ""),
+                        ifelse(any(stringr::str_detect(crit.met, "BS3")),
+                               final.criteria$BS4.message,
+                               ""),
+                        ifelse(any(stringr::str_detect(crit.met, "PS3")),
+                               final.criteria$BS4.message,
+                               ""),
+                        ifelse(any(stringr::str_detect(crit.met, "PS1")),
+                               final.criteria$PS1.message,
+                               ""),
+                        ifelse(any(stringr::str_detect(crit.met, "PM5")),
+                               final.criteria$PM5.message,
+                               "")
+
+                        )
 }
