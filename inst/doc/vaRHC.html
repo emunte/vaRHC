@@ -12,7 +12,7 @@
 
 <meta name="author" content="Elisabet Munté Roca emunte@idibell.cat" />
 
-<meta name="date" content="2022-11-11" />
+<meta name="date" content="2023-02-03" />
 
 <title>vaRHC</title>
 
@@ -121,13 +121,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; }
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
     try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
+    var j = 0;
+    while (j < rules.length) {
       var rule = rules[j];
       // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -333,7 +340,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">vaRHC</h1>
 <h4 class="author">Elisabet Munté Roca <a href="mailto:emunte@idibell.cat" class="email">emunte@idibell.cat</a></h4>
-<h4 class="date">2022-11-11</h4>
+<h4 class="date">2023-02-03</h4>
 
 
 
@@ -391,12 +398,15 @@ bp beyond the coding sequence.</p>
 </div>
 <div id="install" class="section level2">
 <h2>2. Installation</h2>
-<p>vaRHC can be downloaded from GitHub using the remotes package:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">&quot;remotes&quot;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) <span class="fu">install.packages</span>(<span class="st">&#39;remotes&#39;</span>) <span class="do">## Only the first time</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(remotes)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;emunte/vaRHC&quot;</span>)</span></code></pre></div>
+<p>vaRHC can be downloaded from CRAN:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;vaRHC&quot;</span>)</span></code></pre></div>
+<p>vaRHC can also be downloaded from GitHub using the remotes
+package:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">&quot;remotes&quot;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) <span class="fu">install.packages</span>(<span class="st">&#39;remotes&#39;</span>) <span class="do">## Only the first time</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(remotes)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;emunte/vaRHC&quot;</span>)</span></code></pre></div>
 <p>Next, it has to be loaded into the workspace:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;vaRHC&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;vaRHC&quot;</span>)</span></code></pre></div>
 </div>
 <div id="functions" class="section level2">
 <h2>3. Main functions</h2>
@@ -410,21 +420,22 @@ bp beyond the coding sequence.</p>
 <div id="parameters" class="section level5">
 <h5>3.1.1.1 Parameters</h5>
 <p>Using a <strong>gene</strong> and a <strong>variant</strong> name (in
-coding DNA nomenclature) as input variables,
-<strong><em>vaR()</em></strong> gathers relevant information from
-different sources. Gene-specific ACMG/AMP guidelines are then applied in
-order to calculate whether the variant of interest meets different
-criteria. The output also provides an explanation of the reason for
-applying or rejecting each criterion. Additionally, it returns a final
-classification of the variant using Tavtigian Bayesian metastructure and
-also considering most of CanVIG-UK recommendations.</p>
+coding DNA nomenclature) and if possible <strong>NM</strong> from RefSeq
+as input variables, <strong><em>vaR()</em></strong> gathers relevant
+information from different sources. Gene-specific ACMG/AMP guidelines
+are then applied in order to calculate whether the variant of interest
+meets different criteria. The output also provides an explanation of the
+reason for applying or rejecting each criterion. Additionally, it
+returns a final classification of the variant using Tavtigian Bayesian
+metastructure and also considering most of CanVIG-UK
+recommendations.</p>
 <p>The following example shows how to call the <strong>vaR()</strong>
 function for the variant c.1137+1G&gt;A in <em>CDH1</em> gene.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>eg.gene <span class="ot">&lt;-</span> <span class="st">&quot;CDH1&quot;</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>eg.variant <span class="ot">&lt;-</span> <span class="st">&quot;c.1137+1G&gt;A&quot;</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>var.information <span class="ot">&lt;-</span> <span class="fu">vaR</span>(<span class="at">gene =</span> eg.gene, <span class="at">variant =</span> eg.variant)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>eg.gene <span class="ot">&lt;-</span> <span class="st">&quot;CDH1&quot;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>eg.variant <span class="ot">&lt;-</span> <span class="st">&quot;c.1137+1G&gt;A&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>var.information <span class="ot">&lt;-</span> <span class="fu">vaR</span>(<span class="at">gene =</span> eg.gene, <span class="at">variant =</span> eg.variant)</span></code></pre></div>
 </div>
 <div id="optional-parameters" class="section level5">
 <h5>3.1.1.2 Optional parameters</h5>
@@ -441,14 +452,11 @@ CCDS must also be provided.The transcript accession number is retrieved
 from RefSeq. By default, this function parameter is set to NULL. vaRHC
 will consider the NMs listed in the Supplementary Table 1. If a
 different NM is used than the ones described in the table, it must be
-noted that the program has not been validated yet for it. In this case,
-a CCDS ID is also required.</p></li>
+noted that the program has not been validated yet for it.</p></li>
 <li><p><strong><em>CCDS</em></strong>: Consensus CDS ID retrieved from
 NCBI CCDS database (which can be found in the following link <a href="https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi" class="uri">https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi</a>).
 By default is set to NULL. vaRHC will consider the IDs detailed in the
-table above. Again, it must be noted that if a different CCDS ID is
-provided, the program has not been validated yet for it. In this case,
-NM accession number is required.</p></li>
+table above.</p></li>
 </ul>
 </div>
 <div id="gene.specific.df" class="section level5">
@@ -469,75 +477,19 @@ A template of how the table needs to be can be downloaded from GitHub
 or it can be found at the package documentation. Column names cannot be
 modified. See below the default table and the explanation of each
 column:</p>
+<p>Landscape</p>
 <table>
 <colgroup>
-<col width="1%" />
-<col width="0%" />
-<col width="0%" />
-<col width="0%" />
-<col width="0%" />
-<col width="0%" />
-<col width="1%" />
-<col width="0%" />
-<col width="2%" />
-<col width="1%" />
-<col width="0%" />
-<col width="0%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="2%" />
-<col width="2%" />
-<col width="2%" />
-<col width="2%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="2%" />
-<col width="3%" />
-<col width="3%" />
-<col width="2%" />
-<col width="2%" />
-<col width="2%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
-<col width="1%" />
+<col width="9%" />
+<col width="7%" />
+<col width="8%" />
+<col width="7%" />
+<col width="8%" />
+<col width="4%" />
+<col width="9%" />
+<col width="8%" />
+<col width="19%" />
+<col width="14%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -551,63 +503,6 @@ column:</p>
 <th align="right">BS2_sup</th>
 <th align="left">BS2_sup_db</th>
 <th align="left">status</th>
-<th align="right">PM2</th>
-<th align="right">PM2_sup</th>
-<th align="left">op_phylop_ben</th>
-<th align="left">op_phylop_pat</th>
-<th align="right">phylop_ben</th>
-<th align="right">phylop_pat</th>
-<th align="left">op_phastcons_ben</th>
-<th align="left">op_phastcons_pat</th>
-<th align="right">phastcons_ben</th>
-<th align="left">op_gerp_ben</th>
-<th align="left">op_gerp_pat</th>
-<th align="left">gerp_ben</th>
-<th align="left">op_revel_ben</th>
-<th align="left">op_revel_pat</th>
-<th align="right">revel_ben</th>
-<th align="right">revel_pat</th>
-<th align="left">op_VEST4_ben</th>
-<th align="left">op_VEST4_pat</th>
-<th align="right">VEST4_ben</th>
-<th align="right">VEST4_pat</th>
-<th align="left">op_provean_ben</th>
-<th align="left">op_provean_pat</th>
-<th align="right">provean_ben</th>
-<th align="right">provean_pat</th>
-<th align="left">op_bayesDel_noAF_ben</th>
-<th align="left">op_bayesDel_noAF_pat</th>
-<th align="right">bayesDel_noAF_ben</th>
-<th align="right">bayesDel_noAF_pat</th>
-<th align="left">op_agvgd_ben</th>
-<th align="left">op_agvgd_pat</th>
-<th align="right">agvgd_ben</th>
-<th align="right">agvgd_pat</th>
-<th align="left">op_spliceai_ben</th>
-<th align="left">op_spliceai_pat</th>
-<th align="right">spliceai_ben</th>
-<th align="right">spliceai_pat</th>
-<th align="left">op_trap_ben</th>
-<th align="left">op_trap_pat</th>
-<th align="right">trap_ben</th>
-<th align="right">trap_pat</th>
-<th align="left">op_prior_utah_prot_ben</th>
-<th align="left">op_prior_utah_prot_pat_sup</th>
-<th align="left">op_prior_utah_prot_pat_mod</th>
-<th align="right">prior_utah_prot_ben</th>
-<th align="right">prior_utah_prot_pat_sup</th>
-<th align="right">prior_utah_prot_pat_mod</th>
-<th align="left">BP7_splicing</th>
-<th align="left">op_polyphen_ben</th>
-<th align="left">op_polyphen_pat</th>
-<th align="right">polyphen_pat</th>
-<th align="right">polyphen_ben</th>
-<th align="left">op_MAPP_ben</th>
-<th align="left">op_MAPP_pat</th>
-<th align="right">MAPP_ben</th>
-<th align="right">MAPP_pat</th>
-<th align="right">phastcons_pat</th>
-<th align="right">gerp_pat</th>
 </tr>
 </thead>
 <tbody>
@@ -622,63 +517,6 @@ column:</p>
 <td align="right">NA</td>
 <td align="left">NA</td>
 <td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">1e-05</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">&lt;</td>
-<td align="left">&gt;</td>
-<td align="right">0.249</td>
-<td align="right">0.733</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;</td>
-<td align="right">0.5</td>
-<td align="right">0.5</td>
-<td align="left">&gt;</td>
-<td align="left">&lt;=</td>
-<td align="right">-2.5</td>
-<td align="right">-2.5</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.15</td>
-<td align="right">0.5</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.459</td>
-<td align="right">0.93</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">Independent</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
 </tr>
 <tr class="even">
 <td align="left">CDH1</td>
@@ -691,63 +529,6 @@ column:</p>
 <td align="right">3</td>
 <td align="left">FLOSSIES</td>
 <td align="left">hete_healthy</td>
-<td align="right">NA</td>
-<td align="right">1e-05</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;</td>
-<td align="right">0.5</td>
-<td align="right">0.5</td>
-<td align="left">&gt;</td>
-<td align="left">&lt;=</td>
-<td align="right">-2.5</td>
-<td align="right">-2.5</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.15</td>
-<td align="right">0.5</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.459</td>
-<td align="right">0.93</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">Independent</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">CHEK2</td>
@@ -760,63 +541,6 @@ column:</p>
 <td align="right">NA</td>
 <td align="left"></td>
 <td align="left"></td>
-<td align="right">1e-05</td>
-<td align="right">5e-05</td>
-<td align="left">&lt;</td>
-<td align="left">&gt;=</td>
-<td align="right">6.66</td>
-<td align="right">6.66</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="right">NA</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left">&lt;</td>
-<td align="left">&gt;=</td>
-<td align="right">0.700</td>
-<td align="right">0.700</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;</td>
-<td align="right">0.5</td>
-<td align="right">0.5</td>
-<td align="left">&gt;</td>
-<td align="left">&lt;=</td>
-<td align="right">-2.5</td>
-<td align="right">-2.5</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.15</td>
-<td align="right">0.5</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.459</td>
-<td align="right">0.93</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">Dependent</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
 </tr>
 <tr class="even">
 <td align="left">general</td>
@@ -829,63 +553,6 @@ column:</p>
 <td align="right">2</td>
 <td align="left">GNOMAD_non_cancer</td>
 <td align="left">homo_healthy</td>
-<td align="right">1e-05</td>
-<td align="right">2e-05</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="right">NA</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left">&lt;</td>
-<td align="left">&gt;=</td>
-<td align="right">0.700</td>
-<td align="right">0.700</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;</td>
-<td align="right">0.5</td>
-<td align="right">0.5</td>
-<td align="left">&gt;</td>
-<td align="left">&lt;=</td>
-<td align="right">-2.5</td>
-<td align="right">-2.5</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.15</td>
-<td align="right">0.5</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.459</td>
-<td align="right">0.93</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">Dependent</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">MLH1</td>
@@ -898,63 +565,6 @@ column:</p>
 <td align="right">NA</td>
 <td align="left"></td>
 <td align="left">homo_healthy</td>
-<td align="right">NA</td>
-<td align="right">2e-05</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="right">NA</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;</td>
-<td align="right">0.5</td>
-<td align="right">0.5</td>
-<td align="left">&gt;</td>
-<td align="left">&lt;=</td>
-<td align="right">-2.5</td>
-<td align="right">-2.5</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.15</td>
-<td align="right">0.5</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.459</td>
-<td align="right">0.93</td>
-<td align="left">&lt;</td>
-<td align="left">&gt;</td>
-<td align="left">&gt;=</td>
-<td align="right">0.11</td>
-<td align="right">0.68</td>
-<td align="right">0.81</td>
-<td align="left">Independent</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
 </tr>
 <tr class="even">
 <td align="left">MSH2</td>
@@ -967,63 +577,6 @@ column:</p>
 <td align="right">NA</td>
 <td align="left"></td>
 <td align="left">homo_healthy</td>
-<td align="right">NA</td>
-<td align="right">2e-05</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="right">NA</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;</td>
-<td align="right">0.5</td>
-<td align="right">0.5</td>
-<td align="left">&gt;</td>
-<td align="left">&lt;=</td>
-<td align="right">-2.5</td>
-<td align="right">-2.5</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.15</td>
-<td align="right">0.5</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.459</td>
-<td align="right">0.93</td>
-<td align="left">&lt;</td>
-<td align="left">&gt;</td>
-<td align="left">&gt;=</td>
-<td align="right">0.11</td>
-<td align="right">0.68</td>
-<td align="right">0.81</td>
-<td align="left">Independent</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">MSH6</td>
@@ -1036,63 +589,6 @@ column:</p>
 <td align="right">NA</td>
 <td align="left"></td>
 <td align="left">homo_healthy</td>
-<td align="right">NA</td>
-<td align="right">2e-05</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="right">NA</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;</td>
-<td align="right">0.5</td>
-<td align="right">0.5</td>
-<td align="left">&gt;</td>
-<td align="left">&lt;=</td>
-<td align="right">-2.5</td>
-<td align="right">-2.5</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.15</td>
-<td align="right">0.5</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.459</td>
-<td align="right">0.93</td>
-<td align="left">&lt;</td>
-<td align="left">&gt;</td>
-<td align="left">&gt;=</td>
-<td align="right">0.11</td>
-<td align="right">0.68</td>
-<td align="right">0.81</td>
-<td align="left">Independent</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
 </tr>
 <tr class="even">
 <td align="left">PMS2</td>
@@ -1105,63 +601,6 @@ column:</p>
 <td align="right">NA</td>
 <td align="left"></td>
 <td align="left">homo_healthy</td>
-<td align="right">NA</td>
-<td align="right">2e-05</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="right">NA</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;</td>
-<td align="right">0.5</td>
-<td align="right">0.5</td>
-<td align="left">&gt;</td>
-<td align="left">&lt;=</td>
-<td align="right">-2.5</td>
-<td align="right">-2.5</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.15</td>
-<td align="right">0.5</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.459</td>
-<td align="right">0.93</td>
-<td align="left">&lt;</td>
-<td align="left">&gt;</td>
-<td align="left">&gt;=</td>
-<td align="right">0.11</td>
-<td align="right">0.68</td>
-<td align="right">0.81</td>
-<td align="left">Independent</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">PTEN</td>
@@ -1174,63 +613,6 @@ column:</p>
 <td align="right">2</td>
 <td align="left">GNOMAD_non_cancer</td>
 <td align="left">homo_healthy</td>
-<td align="right">1e-05</td>
-<td align="right">NA</td>
-<td align="left">&lt;</td>
-<td align="left">&gt;=</td>
-<td align="right">0.10</td>
-<td align="right">0.10</td>
-<td align="left">!=</td>
-<td align="left">=</td>
-<td align="right">1</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;</td>
-<td align="right">0.5</td>
-<td align="right">0.5</td>
-<td align="left">&gt;</td>
-<td align="left">&lt;=</td>
-<td align="right">-2.5</td>
-<td align="right">-2.5</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.15</td>
-<td align="right">0.5</td>
-<td align="left">&lt;=</td>
-<td align="left">&gt;=</td>
-<td align="right">0.459</td>
-<td align="right">0.93</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">Dependent</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
 </tr>
 <tr class="even">
 <td align="left">TP53</td>
@@ -1243,6 +625,146 @@ column:</p>
 <td align="right">2</td>
 <td align="left">FLOSSIES</td>
 <td align="left">hete_healthy</td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col width="4%" />
+<col width="6%" />
+<col width="11%" />
+<col width="11%" />
+<col width="8%" />
+<col width="8%" />
+<col width="13%" />
+<col width="13%" />
+<col width="11%" />
+<col width="9%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="right">PM2</th>
+<th align="right">PM2_sup</th>
+<th align="left">op_phylop_ben</th>
+<th align="left">op_phylop_pat</th>
+<th align="right">phylop_ben</th>
+<th align="right">phylop_pat</th>
+<th align="left">op_phastcons_ben</th>
+<th align="left">op_phastcons_pat</th>
+<th align="right">phastcons_ben</th>
+<th align="left">op_gerp_ben</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">NA</td>
+<td align="right">1e-05</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="right">NA</td>
+<td align="right">1e-05</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="right">1e-05</td>
+<td align="right">5e-05</td>
+<td align="left">&lt;</td>
+<td align="left">&gt;=</td>
+<td align="right">6.66</td>
+<td align="right">6.66</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="right">NA</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="right">1e-05</td>
+<td align="right">2e-05</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="right">NA</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="right">NA</td>
+<td align="right">2e-05</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="right">NA</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="right">NA</td>
+<td align="right">2e-05</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="right">NA</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="right">NA</td>
+<td align="right">2e-05</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="right">NA</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="right">NA</td>
+<td align="right">2e-05</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="right">NA</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="right">1e-05</td>
+<td align="right">NA</td>
+<td align="left">&lt;</td>
+<td align="left">&gt;=</td>
+<td align="right">0.10</td>
+<td align="right">0.10</td>
+<td align="left">!=</td>
+<td align="left">=</td>
+<td align="right">1</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
 <td align="right">NA</td>
 <td align="right">0e+00</td>
 <td align="left">&lt;</td>
@@ -1253,6 +775,86 @@ column:</p>
 <td align="left"></td>
 <td align="right">NA</td>
 <td align="left"></td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col width="10%" />
+<col width="7%" />
+<col width="11%" />
+<col width="11%" />
+<col width="8%" />
+<col width="8%" />
+<col width="11%" />
+<col width="11%" />
+<col width="8%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">op_gerp_pat</th>
+<th align="left">gerp_ben</th>
+<th align="left">op_revel_ben</th>
+<th align="left">op_revel_pat</th>
+<th align="right">revel_ben</th>
+<th align="right">revel_pat</th>
+<th align="left">op_VEST4_ben</th>
+<th align="left">op_VEST4_pat</th>
+<th align="right">VEST4_ben</th>
+<th align="right">VEST4_pat</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">&lt;</td>
+<td align="left">&gt;</td>
+<td align="right">0.249</td>
+<td align="right">0.733</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;</td>
+<td align="right">0.5</td>
+<td align="right">0.5</td>
+</tr>
+<tr class="even">
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;</td>
+<td align="right">0.5</td>
+<td align="right">0.5</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">&lt;</td>
+<td align="left">&gt;=</td>
+<td align="right">0.700</td>
+<td align="right">0.700</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;</td>
+<td align="right">0.5</td>
+<td align="right">0.5</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">&lt;</td>
+<td align="left">&gt;=</td>
+<td align="right">0.700</td>
+<td align="right">0.700</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;</td>
+<td align="right">0.5</td>
+<td align="right">0.5</td>
+</tr>
+<tr class="odd">
 <td align="left"></td>
 <td align="left"></td>
 <td align="left">NA</td>
@@ -1263,6 +865,206 @@ column:</p>
 <td align="left">&gt;</td>
 <td align="right">0.5</td>
 <td align="right">0.5</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;</td>
+<td align="right">0.5</td>
+<td align="right">0.5</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;</td>
+<td align="right">0.5</td>
+<td align="right">0.5</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;</td>
+<td align="right">0.5</td>
+<td align="right">0.5</td>
+</tr>
+<tr class="odd">
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;</td>
+<td align="right">0.5</td>
+<td align="right">0.5</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;</td>
+<td align="right">0.5</td>
+<td align="right">0.5</td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col width="9%" />
+<col width="9%" />
+<col width="7%" />
+<col width="7%" />
+<col width="13%" />
+<col width="13%" />
+<col width="11%" />
+<col width="11%" />
+<col width="8%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">op_provean_ben</th>
+<th align="left">op_provean_pat</th>
+<th align="right">provean_ben</th>
+<th align="right">provean_pat</th>
+<th align="left">op_bayesDel_noAF_ben</th>
+<th align="left">op_bayesDel_noAF_pat</th>
+<th align="right">bayesDel_noAF_ben</th>
+<th align="right">bayesDel_noAF_pat</th>
+<th align="left">op_agvgd_ben</th>
+<th align="left">op_agvgd_pat</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">&gt;</td>
+<td align="left">&lt;=</td>
+<td align="right">-2.5</td>
+<td align="right">-2.5</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">&gt;</td>
+<td align="left">&lt;=</td>
+<td align="right">-2.5</td>
+<td align="right">-2.5</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">&gt;</td>
+<td align="left">&lt;=</td>
+<td align="right">-2.5</td>
+<td align="right">-2.5</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">&gt;</td>
+<td align="left">&lt;=</td>
+<td align="right">-2.5</td>
+<td align="right">-2.5</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">&gt;</td>
+<td align="left">&lt;=</td>
+<td align="right">-2.5</td>
+<td align="right">-2.5</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">&gt;</td>
+<td align="left">&lt;=</td>
+<td align="right">-2.5</td>
+<td align="right">-2.5</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">&gt;</td>
+<td align="left">&lt;=</td>
+<td align="right">-2.5</td>
+<td align="right">-2.5</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">&gt;</td>
+<td align="left">&lt;=</td>
+<td align="right">-2.5</td>
+<td align="right">-2.5</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">&gt;</td>
+<td align="left">&lt;=</td>
+<td align="right">-2.5</td>
+<td align="right">-2.5</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
 <td align="left">&gt;</td>
 <td align="left">&lt;=</td>
 <td align="right">-2.5</td>
@@ -1273,6 +1075,146 @@ column:</p>
 <td align="right">0.16</td>
 <td align="left">&lt;=</td>
 <td align="left">&gt;=</td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col width="8%" />
+<col width="8%" />
+<col width="13%" />
+<col width="13%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="7%" />
+<col width="7%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="right">agvgd_ben</th>
+<th align="right">agvgd_pat</th>
+<th align="left">op_spliceai_ben</th>
+<th align="left">op_spliceai_pat</th>
+<th align="right">spliceai_ben</th>
+<th align="right">spliceai_pat</th>
+<th align="left">op_trap_ben</th>
+<th align="left">op_trap_pat</th>
+<th align="right">trap_ben</th>
+<th align="right">trap_pat</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.15</td>
+<td align="right">0.5</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.459</td>
+<td align="right">0.93</td>
+</tr>
+<tr class="even">
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.15</td>
+<td align="right">0.5</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.459</td>
+<td align="right">0.93</td>
+</tr>
+<tr class="odd">
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.15</td>
+<td align="right">0.5</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.459</td>
+<td align="right">0.93</td>
+</tr>
+<tr class="even">
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.15</td>
+<td align="right">0.5</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.459</td>
+<td align="right">0.93</td>
+</tr>
+<tr class="odd">
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.15</td>
+<td align="right">0.5</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.459</td>
+<td align="right">0.93</td>
+</tr>
+<tr class="even">
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.15</td>
+<td align="right">0.5</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.459</td>
+<td align="right">0.93</td>
+</tr>
+<tr class="odd">
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.15</td>
+<td align="right">0.5</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.459</td>
+<td align="right">0.93</td>
+</tr>
+<tr class="even">
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.15</td>
+<td align="right">0.5</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.459</td>
+<td align="right">0.93</td>
+</tr>
+<tr class="odd">
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.15</td>
+<td align="right">0.5</td>
+<td align="left">&lt;=</td>
+<td align="left">&gt;=</td>
+<td align="right">0.459</td>
+<td align="right">0.93</td>
+</tr>
+<tr class="even">
 <td align="right">15</td>
 <td align="right">25</td>
 <td align="left">&lt;=</td>
@@ -1283,6 +1225,54 @@ column:</p>
 <td align="left">&gt;=</td>
 <td align="right">0.459</td>
 <td align="right">0.93</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<colgroup>
+<col width="13%" />
+<col width="15%" />
+<col width="15%" />
+<col width="11%" />
+<col width="13%" />
+<col width="13%" />
+<col width="7%" />
+<col width="9%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">op_prior_utah_prot_ben</th>
+<th align="left">op_prior_utah_prot_pat_sup</th>
+<th align="left">op_prior_utah_prot_pat_mod</th>
+<th align="right">prior_utah_prot_ben</th>
+<th align="right">prior_utah_prot_pat_sup</th>
+<th align="right">prior_utah_prot_pat_mod</th>
+<th align="left">BP7_splicing</th>
+<th align="left">op_polyphen_ben</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">Independent</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">Independent</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
 <td align="left">NA</td>
 <td align="left">NA</td>
 <td align="left">NA</td>
@@ -1291,6 +1281,205 @@ column:</p>
 <td align="right">NA</td>
 <td align="left">Dependent</td>
 <td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">Dependent</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">&lt;</td>
+<td align="left">&gt;</td>
+<td align="left">&gt;=</td>
+<td align="right">0.11</td>
+<td align="right">0.68</td>
+<td align="right">0.81</td>
+<td align="left">Independent</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">&lt;</td>
+<td align="left">&gt;</td>
+<td align="left">&gt;=</td>
+<td align="right">0.11</td>
+<td align="right">0.68</td>
+<td align="right">0.81</td>
+<td align="left">Independent</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">&lt;</td>
+<td align="left">&gt;</td>
+<td align="left">&gt;=</td>
+<td align="right">0.11</td>
+<td align="right">0.68</td>
+<td align="right">0.81</td>
+<td align="left">Independent</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">&lt;</td>
+<td align="left">&gt;</td>
+<td align="left">&gt;=</td>
+<td align="right">0.11</td>
+<td align="right">0.68</td>
+<td align="right">0.81</td>
+<td align="left">Independent</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">Dependent</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">Dependent</td>
+<td align="left">NA</td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col width="14%" />
+<col width="12%" />
+<col width="12%" />
+<col width="11%" />
+<col width="11%" />
+<col width="8%" />
+<col width="8%" />
+<col width="13%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">op_polyphen_pat</th>
+<th align="right">polyphen_pat</th>
+<th align="right">polyphen_ben</th>
+<th align="left">op_MAPP_ben</th>
+<th align="left">op_MAPP_pat</th>
+<th align="right">MAPP_ben</th>
+<th align="right">MAPP_pat</th>
+<th align="right">phastcons_pat</th>
+<th align="right">gerp_pat</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
 <td align="left">NA</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
@@ -1358,12 +1547,12 @@ the guidelines specify to use that predictor.</p>
 criteria is dependent on splicing prediction not being altered or not.
 Possible options are <em>dependent</em>, <em>indpendent</em>.</li>
 </ul>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>eg.gene <span class="ot">&lt;-</span> <span class="st">&quot;CDH1&quot;</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>eg.variant <span class="ot">&lt;-</span> <span class="st">&quot;c.1137+1G&gt;A&quot;</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;gene_specific&quot;</span>)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>eg.gene.specific <span class="ot">&lt;-</span> gene_specific</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>var.information <span class="ot">&lt;-</span> <span class="fu">vaR</span>(<span class="at">gene =</span> eg.gene, <span class="at">variant =</span> eg.variant, <span class="at">gene.specific.df =</span> eg.gene.specific)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>eg.gene <span class="ot">&lt;-</span> <span class="st">&quot;CDH1&quot;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>eg.variant <span class="ot">&lt;-</span> <span class="st">&quot;c.1137+1G&gt;A&quot;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;gene_specific&quot;</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>eg.gene.specific <span class="ot">&lt;-</span> gene_specific</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>var.information <span class="ot">&lt;-</span> <span class="fu">vaR</span>(<span class="at">gene =</span> eg.gene, <span class="at">variant =</span> eg.variant, <span class="at">gene.specific.df =</span> eg.gene.specific)</span></code></pre></div>
 </div>
 <div id="connecting-to-webpages-using-javascript" class="section level5">
 <h5>3.1.1.2.3 Connecting to webpages using javascript</h5>
@@ -1442,15 +1631,15 @@ file. The list has to dimensions.</p>
 <h5>3.1.2.1 vaRinfo</h5>
 <p>Where all the information retrieved is stored. The names of the list
 elements are the following.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(var.information<span class="sc">$</span>vaRinfo)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;Variant.Info&quot;                 &quot;Variant.Info.other&quot;          </span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [3] &quot;variant.correction&quot;           &quot;gene.specific.info&quot;          </span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [5] &quot;gnomAD&quot;                       &quot;flossies.db&quot;                 </span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7] &quot;clinVar&quot;                      &quot;predictors&quot;                  </span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [9] &quot;codon.stop&quot;                   &quot;second.met&quot;                  </span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [11] &quot;insight.info&quot;                 &quot;functional.assays&quot;           </span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [13] &quot;google.scholar.30.references&quot; &quot;cancer.hotspots&quot;             </span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [15] &quot;class.info&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(var.information<span class="sc">$</span>vaRinfo)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;Variant.Info&quot;                 &quot;Variant.Info.other&quot;          </span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [3] &quot;variant.correction&quot;           &quot;gene.specific.info&quot;          </span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [5] &quot;gnomAD&quot;                       &quot;flossies.db&quot;                 </span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7] &quot;clinVar&quot;                      &quot;predictors&quot;                  </span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [9] &quot;codon.stop&quot;                   &quot;second.met&quot;                  </span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [11] &quot;insight.info&quot;                 &quot;functional.assays&quot;           </span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [13] &quot;google.scholar.30.references&quot; &quot;cancer.hotspots&quot;             </span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [15] &quot;class.info&quot;</span></span></code></pre></div>
 <ul>
 <li><strong>Variant.Info</strong>: a data.frame containing a summary of
 variant location, different nomenclatures and variant consequences.</li>
@@ -1488,18 +1677,18 @@ nomeclature, coverage and alleles information for non_cancer and
 non_neuro datasets. See below examples of how to obtain the gnomAD
 data</li>
 </ul>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#nomenclature</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>var.information<span class="sc">$</span>vaRinfo<span class="sc">$</span>gnomAD<span class="sc">$</span>nomenclature</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;16-68846167-G-A&quot;</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#coverage</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>var.information<span class="sc">$</span>vaRinfo<span class="sc">$</span>gnomAD<span class="sc">$</span>coverage</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $exomes</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 92.4</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $genomes</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 33.94</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">#information from exomes non cancer separated by subpopulations</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(var.information<span class="sc">$</span>vaRinfo<span class="sc">$</span>gnomAD<span class="sc">$</span>info<span class="sc">$</span>exomes<span class="sc">$</span>non.cancer<span class="sc">$</span>subpopulations)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#nomenclature</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>var.information<span class="sc">$</span>vaRinfo<span class="sc">$</span>gnomAD<span class="sc">$</span>nomenclature</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;16-68846167-G-A&quot;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#coverage</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>var.information<span class="sc">$</span>vaRinfo<span class="sc">$</span>gnomAD<span class="sc">$</span>coverage</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $exomes</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 92.4</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $genomes</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 33.94</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co">#information from exomes non cancer separated by subpopulations</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(var.information<span class="sc">$</span>vaRinfo<span class="sc">$</span>gnomAD<span class="sc">$</span>info<span class="sc">$</span>exomes<span class="sc">$</span>non.cancer<span class="sc">$</span>subpopulations)</span></code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -1578,8 +1767,8 @@ data</li>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#information from exomes + genomes non neuro overall frequency</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(var.information<span class="sc">$</span>vaRinfo<span class="sc">$</span>gnomAD<span class="sc">$</span>info<span class="sc">$</span>exomes.genomes<span class="sc">$</span>non.neuro<span class="sc">$</span>overall)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#information from exomes + genomes non neuro overall frequency</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(var.information<span class="sc">$</span>vaRinfo<span class="sc">$</span>gnomAD<span class="sc">$</span>info<span class="sc">$</span>exomes.genomes<span class="sc">$</span>non.neuro<span class="sc">$</span>overall)</span></code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -2110,8 +2299,8 @@ Hotspots (<a href="http://www.insight-database.org/classifications/mmr_integrati
 <p>All the assigned and denied criteria are stored in this list as well
 as final classification.</p>
 <p>The list has the following items:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(var.information<span class="sc">$</span>vaRclass)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;final.classification&quot; &quot;final.criteria&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(var.information<span class="sc">$</span>vaRclass)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;final.classification&quot; &quot;final.criteria&quot;</span></span></code></pre></div>
 <p>The final.classification element contains:<br></p>
 <ul>
 <li><strong>final.class</strong>: variant’s final classification</li>
@@ -2458,17 +2647,27 @@ this searches are overpasses an Error 429 is returned.</li>
 in batch.</p>
 <div id="input-1" class="section level4">
 <h4>3.1.1 Input</h4>
-<p>The input is a data frame containing gene and variant column. See and
-example below. This function only works for the NM described in
-3.1.1.2.1 section.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Example 1</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;example_input_vaRbatch&quot;</span>)</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>example_input_vaRbatch[] <span class="ot">&lt;-</span> <span class="fu">lapply</span>(example_input_vaRbatch, as.character) <span class="co">#convert to character</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>all <span class="ot">&lt;-</span> <span class="fu">vaRbatch</span>( <span class="at">all.variants =</span> example_input_vaRbatch, <span class="at">spliceai.program =</span> <span class="cn">TRUE</span>, <span class="at">splieai.reference=</span> <span class="st">&quot;./hg19.fa&quot;</span>, <span class="at">excel.results =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co">#Example2</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>eg.variants <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">gene=</span><span class="fu">c</span>(<span class="st">&quot;ATM&quot;</span>, <span class="st">&quot;MSH6&quot;</span>, <span class="st">&quot;BRCA1&quot;</span>), <span class="at">variants =</span> <span class="fu">c</span>(<span class="st">&quot;c.8420A&gt;T&quot;</span>, <span class="st">&quot;c.1559G&gt;A&quot;</span>, <span class="st">&quot;c.211A&gt;G&quot;</span>))</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>batch.results <span class="ot">&lt;-</span> <span class="fu">vaRbatch</span>( <span class="at">all.variants =</span> eg.variants, <span class="at">spliceai.program =</span><span class="cn">FALSE</span>, <span class="at">print.data.frame =</span> <span class="cn">FALSE</span> <span class="at">excel.results =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>vaRbatch has two possible inputs: - a data frame containing gene,
+variant and NM (not necessary but it is recommended, otherwise the
+function will consider NM detailed in supplementary table 1). - a small
+variant call format (vcf or compressed vcf). The file will be annotated
+using Mutalyzer v3 API. Vcfs resulting from WES or WGS will take too
+long (although they work as well). Assembly parameter must be then
+specified</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Example 1</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>output.dir <span class="ot">&lt;-</span> <span class="st">&quot;/path/to/output_dir&quot;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Example 1</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;ex_vaRbatch&quot;</span>)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>ex_vaRbatch[] <span class="ot">&lt;-</span> <span class="fu">lapply</span>(ex_vaRbatch, as.character) <span class="co">#convert to character</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>all <span class="ot">&lt;-</span> <span class="fu">vaRbatch</span>( <span class="at">all.variants =</span> ex_vaRbatch, <span class="at">spliceai.program =</span> <span class="cn">TRUE</span>,  <span class="at">splieai.reference=</span> <span class="st">&quot;dir to /hg19.fa&quot;</span>, <span class="at">output.dir =</span> <span class="at">excel.results =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co">#Example2</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>eg.variants <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">gene=</span><span class="fu">c</span>(<span class="st">&quot;ATM&quot;</span>, <span class="st">&quot;MSH6&quot;</span>, <span class="st">&quot;BRCA1&quot;</span>), <span class="at">variants =</span> <span class="fu">c</span>(<span class="st">&quot;c.8420A&gt;T&quot;</span>, <span class="st">&quot;c.1559G&gt;A&quot;</span>, <span class="st">&quot;c.211A&gt;G&quot;</span>))</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>batch.results <span class="ot">&lt;-</span> <span class="fu">vaRbatch</span>( <span class="at">all.variants =</span> eg.variants, <span class="at">spliceai.program =</span><span class="cn">FALSE</span>, <span class="at">output.dir =</span> ouput.dir, <span class="at">print.data.frame =</span> <span class="cn">FALSE</span> <span class="at">excel.results =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co">#Example 3</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>vcf.file <span class="ot">&lt;-</span> <span class="st">&quot;path/to/vcf.vcf&quot;</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">vaRbatch</span>(<span class="at">all.variants=</span> vcf.file, <span class="at">annotation=</span><span class="st">&quot;hg19&quot;</span>, <span class="at">spliceai.program =</span> <span class="cn">TRUE</span>, <span class="at">spliceai.reference =</span> <span class="st">&quot;/path/to/vcf.vcf&quot;</span>, <span class="at">remote=</span><span class="cn">TRUE</span>, <span class="at">output.dir =</span> output.dir, <span class="at">excel.results =</span> <span class="cn">FALSE</span>, <span class="at">print.data.frame =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 </div>
 <div id="output-1" class="section level4">
 <h4>3.1.2 Output</h4>
@@ -2477,7 +2676,8 @@ can choose to print a data frame
 (<strong><em>print.data.frame</em></strong>) to store classification
 results in a csv file. The function also returns a log file, with the
 detailed time execution and any error that may occur explained. The log
-file is stored in a log folder in the working directory.</p>
+file is stored in a log folder in the specified output.dir
+directory.</p>
 </div>
 </div>
 <div id="legal" class="section level3">
@@ -7002,7 +7202,7 @@ following Privacy Policy. <br></p>
 <tr class="odd">
 <td align="left">ENST00000369601</td>
 <td align="left">IKBKG</td>
-<td align="left">NM_003639.3</td>
+<td align="left">NM_003639.4</td>
 <td align="left">NC_000023.10</td>
 <td align="left">CCDS14757.1</td>
 </tr>
@@ -7196,18 +7396,32 @@ following Privacy Policy. <br></p>
 <td align="left">CCDS8744.1</td>
 </tr>
 <tr class="odd">
+<td align="left">ENST00000377139.8</td>
+<td align="left">IRF3</td>
+<td align="left">NM_001571.6</td>
+<td align="left">NC_000019.9</td>
+<td align="left">CCDS12775.1</td>
+</tr>
+<tr class="even">
 <td align="left">ENST00000525445.6</td>
 <td align="left">IRF7</td>
 <td align="left">NM_001572.5</td>
 <td align="left">NC_000011.9</td>
 <td align="left">CCDS7703.1</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">ENST00000268638.10</td>
 <td align="left">IRF8</td>
 <td align="left">NM_002163.2</td>
 <td align="left">NC_000016.9</td>
 <td align="left">CCDS10956.1</td>
+</tr>
+<tr class="even">
+<td align="left">ENST00000396864.8</td>
+<td align="left">IRF9</td>
+<td align="left">NM_006084.5</td>
+<td align="left">NC_000014.8</td>
+<td align="left">CCDS9615.1</td>
 </tr>
 <tr class="odd">
 <td align="left">ENST00000649529.1</td>
@@ -8745,7 +8959,7 @@ following Privacy Policy. <br></p>
 <tr class="even">
 <td align="left">ENST00000439151</td>
 <td align="left">NSD1</td>
-<td align="left">NM_001007792.1</td>
+<td align="left">NM_022455.4</td>
 <td align="left">NC_000005.9</td>
 <td align="left">CCDS30890.1</td>
 </tr>
@@ -8759,77 +8973,77 @@ following Privacy Policy. <br></p>
 <tr class="even">
 <td align="left">ENST00000359428.10</td>
 <td align="left">NTRK1</td>
-<td align="left">NM_005085.4</td>
+<td align="left">NM_001007792.1</td>
 <td align="left">NC_000001.10</td>
 <td align="left">CCDS6940.1</td>
 </tr>
 <tr class="odd">
 <td align="left">ENST00000368845.6</td>
 <td align="left">NUP214</td>
-<td align="left">NM_000274.3</td>
+<td align="left">NM_005085.4</td>
 <td align="left">NC_000009.11</td>
 <td align="left">CCDS7639.1</td>
 </tr>
 <tr class="even">
 <td align="left">ENST00000570156.7</td>
 <td align="left">OAT</td>
-<td align="left">NM_001271223.3</td>
+<td align="left">NM_000274.3</td>
 <td align="left">NC_000010.10</td>
 <td align="left">CCDS59204.1</td>
 </tr>
 <tr class="odd">
 <td align="left">ENST00000361828.7</td>
 <td align="left">OBSCN</td>
-<td align="left">NM_015560.2</td>
+<td align="left">NM_001271223.3</td>
 <td align="left">NC_000001.10</td>
 <td align="left">CCDS43186.1</td>
 </tr>
 <tr class="even">
 <td align="left">ENST00000337049.8</td>
 <td align="left">OPA1</td>
-<td align="left">NM_001008503.3</td>
+<td align="left">NM_015560.2</td>
 <td align="left">NC_000003.11</td>
 <td align="left">CCDS43517.1</td>
 </tr>
 <tr class="odd">
 <td align="left">ENST00000330079</td>
 <td align="left">OPRM1</td>
-<td align="left">NM_032790.3</td>
+<td align="left">NM_001008503.3</td>
 <td align="left">NC_000006.11</td>
 <td align="left">-</td>
 </tr>
 <tr class="even">
 <td align="left">ENST00000039007.5</td>
 <td align="left">ORAI1</td>
-<td align="left">NM_000531.6</td>
+<td align="left">NM_032790.3</td>
 <td align="left">NC_000012.11</td>
 <td align="left">CCDS14247.1</td>
 </tr>
 <tr class="odd">
 <td align="left">ENST00000672264.2</td>
 <td align="left">OTC</td>
-<td align="left">NM_021728.4</td>
+<td align="left">NM_000531.6</td>
 <td align="left">NC_000023.10</td>
 <td align="left">CCDS9728.1</td>
 </tr>
 <tr class="even">
 <td align="left">ENST00000305097.6</td>
 <td align="left">OTX2</td>
-<td align="left">NM_002563.5</td>
+<td align="left">NM_021728.4</td>
 <td align="left">NC_000014.8</td>
 <td align="left">CCDS3169.1</td>
 </tr>
 <tr class="odd">
 <td align="left">ENST00000302632.4</td>
 <td align="left">P2RY1</td>
-<td align="left">NM_022788.4</td>
+<td align="left">NM_002563.5</td>
 <td align="left">NC_000003.11</td>
 <td align="left">CCDS3159.1</td>
 </tr>
 <tr class="even">
 <td align="left">ENST00000296388.10</td>
 <td align="left">P2RY12</td>
-<td align="left">NM_022356.3</td>
+<td align="left">NM_022788.4</td>
 <td align="left">NC_000003.11</td>
 <td align="left">CCDS472.2</td>
 </tr>
@@ -8906,7 +9120,7 @@ following Privacy Policy. <br></p>
 <tr class="odd">
 <td align="left">ENST00000257290.10</td>
 <td align="left">PDGFRA</td>
-<td align="left">NM_006206.4</td>
+<td align="left">NM_006206.6</td>
 <td align="left">NC_000004.11</td>
 <td align="left">CCDS3495.1</td>
 </tr>
@@ -10551,7 +10765,7 @@ following Privacy Policy. <br></p>
 <tr class="even">
 <td align="left">ENST00000644036.2</td>
 <td align="left">SMARCB1</td>
-<td align="left">NM_003073.3</td>
+<td align="left">NM_003073.5</td>
 <td align="left">NC_000022.10</td>
 <td align="left">CCDS13817.1</td>
 </tr>
@@ -11615,7 +11829,7 @@ following Privacy Policy. <br></p>
 <tr class="even">
 <td align="left">ENST00000227471.7</td>
 <td align="left">UNC93B1</td>
-<td align="left">NM_030930.2</td>
+<td align="left">NM_030930.3</td>
 <td align="left">NC_000011.9</td>
 <td align="left">CCDS73334.1</td>
 </tr>
@@ -11700,21 +11914,21 @@ following Privacy Policy. <br></p>
 <td align="left">ENST00000394975.3</td>
 <td align="left">VKORC1</td>
 <td align="left">NM_024006.6</td>
-<td align="left">NC_000023.10</td>
+<td align="left">NC_000016.9</td>
 <td align="left">CCDS10703.1</td>
 </tr>
 <tr class="odd">
 <td align="left">ENST00000330374.7</td>
 <td align="left">VMA21</td>
 <td align="left">NM_001017980.3</td>
-<td align="left">NC_000008.10</td>
+<td align="left">NC_000023.10</td>
 <td align="left">CCDS35430.1</td>
 </tr>
 <tr class="even">
 <td align="left">ENST00000358544.7</td>
 <td align="left">VPS13B</td>
 <td align="left">NM_017890.4</td>
-<td align="left">NC_000001.10</td>
+<td align="left">NC_000008.10</td>
 <td align="left">CCDS6280.1</td>
 </tr>
 <tr class="odd">
@@ -11728,14 +11942,14 @@ following Privacy Policy. <br></p>
 <td align="left">ENST00000333371.8</td>
 <td align="left">VPS33B</td>
 <td align="left">NM_018668.4</td>
-<td align="left">NC_000001.10</td>
+<td align="left">NC_000015.9</td>
 <td align="left">CCDS10369.1</td>
 </tr>
 <tr class="odd">
 <td align="left">ENST00000644510.2</td>
 <td align="left">VPS45</td>
 <td align="left">NM_007259.5</td>
-<td align="left">NC_000014.8</td>
+<td align="left">NC_000001.10</td>
 <td align="left">CCDS944.1</td>
 </tr>
 <tr class="even">
@@ -11932,78 +12146,50 @@ following Privacy Policy. <br></p>
 </div>
 <div id="session" class="section level3">
 <h3>6. Session info</h3>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; R version 4.2.1 (2022-06-23)</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Platform: x86_64-pc-linux-gnu (64-bit)</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Running under: Ubuntu 20.04.4 LTS</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Matrix products: default</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.9.0</span></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.9.0</span></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; locale:</span></span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              </span></span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_US.UTF-8    </span></span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_US.UTF-8   </span></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 </span></span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [9] LC_ADDRESS=C               LC_TELEPHONE=C            </span></span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       </span></span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; attached base packages:</span></span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; other attached packages:</span></span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] vaRHC_0.0.0.9000 dplyr_1.0.10    </span></span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] bitops_1.0-7                matrixStats_0.62.0         </span></span>
-<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [3] httr_1.4.2                  GenomeInfoDb_1.32.2        </span></span>
-<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [5] tools_4.2.1                 bslib_0.3.1                </span></span>
-<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7] utf8_1.2.2                  R6_2.5.1                   </span></span>
-<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [9] DBI_1.1.2                   BiocGenerics_0.42.0        </span></span>
-<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [11] tidyselect_1.1.2            Exact_3.1                  </span></span>
-<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [13] RMySQL_0.10.23              curl_4.3.2                 </span></span>
-<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [15] compiler_4.2.1              cli_3.4.1                  </span></span>
-<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [17] rvest_1.0.2                 Biobase_2.56.0             </span></span>
-<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [19] expm_0.999-6                xml2_1.3.3                 </span></span>
-<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [21] DelayedArray_0.22.0         rtracklayer_1.56.1         </span></span>
-<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [23] sass_0.4.1                  caTools_1.18.2             </span></span>
-<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [25] mvtnorm_1.1-3               proxy_0.4-27               </span></span>
-<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [27] askpass_1.1                 stringr_1.4.0              </span></span>
-<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [29] digest_0.6.29               Rsamtools_2.12.0           </span></span>
-<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [31] rmarkdown_2.13              wdman_0.2.5                </span></span>
-<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [33] XVector_0.36.0              pkgconfig_2.0.3            </span></span>
-<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [35] htmltools_0.5.2             MatrixGenerics_1.8.1       </span></span>
-<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [37] fastmap_1.1.0               highr_0.9                  </span></span>
-<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [39] rlang_1.0.4                 readxl_1.4.0               </span></span>
-<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [41] rstudioapi_0.13             jquerylib_0.1.4            </span></span>
-<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [43] BiocIO_1.6.0                generics_0.1.2             </span></span>
-<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [45] jsonlite_1.8.0              BiocParallel_1.30.3        </span></span>
-<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [47] RCurl_1.98-1.7              magrittr_2.0.3             </span></span>
-<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [49] GenomeInfoDbData_1.2.8      Matrix_1.4-1               </span></span>
-<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [51] Rcpp_1.0.8.3                DescTools_0.99.45          </span></span>
-<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [53] S4Vectors_0.34.0            fansi_1.0.3                </span></span>
-<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [55] lifecycle_1.0.1             stringi_1.7.6              </span></span>
-<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [57] yaml_2.3.5                  MASS_7.3-56                </span></span>
-<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [59] SummarizedExperiment_1.26.1 rootSolve_1.8.2.3          </span></span>
-<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [61] zlibbioc_1.42.0             grid_4.2.1                 </span></span>
-<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [63] parallel_4.2.1              crayon_1.5.1               </span></span>
-<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [65] lmom_2.9                    semver_0.2.0               </span></span>
-<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [67] lattice_0.20-45             Biostrings_2.64.0          </span></span>
-<span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [69] knitr_1.38                  pillar_1.7.0               </span></span>
-<span id="cb12-60"><a href="#cb12-60" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [71] GenomicRanges_1.48.0        boot_1.3-28                </span></span>
-<span id="cb12-61"><a href="#cb12-61" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [73] rjson_0.2.21                gld_2.6.5                  </span></span>
-<span id="cb12-62"><a href="#cb12-62" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [75] codetools_0.2-18            stats4_4.2.1               </span></span>
-<span id="cb12-63"><a href="#cb12-63" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [77] XML_3.99-0.10               glue_1.6.2                 </span></span>
-<span id="cb12-64"><a href="#cb12-64" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [79] evaluate_0.15               data.table_1.14.2          </span></span>
-<span id="cb12-65"><a href="#cb12-65" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [81] vctrs_0.4.1                 selectr_0.4-2              </span></span>
-<span id="cb12-66"><a href="#cb12-66" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [83] cellranger_1.1.0            openssl_2.0.0              </span></span>
-<span id="cb12-67"><a href="#cb12-67" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [85] purrr_0.3.4                 assertthat_0.2.1           </span></span>
-<span id="cb12-68"><a href="#cb12-68" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [87] xfun_0.30                   binman_0.1.2               </span></span>
-<span id="cb12-69"><a href="#cb12-69" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [89] restfulr_0.0.15             e1071_1.7-11               </span></span>
-<span id="cb12-70"><a href="#cb12-70" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [91] class_7.3-20                tibble_3.1.6               </span></span>
-<span id="cb12-71"><a href="#cb12-71" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [93] RSelenium_1.7.7             GenomicAlignments_1.32.1   </span></span>
-<span id="cb12-72"><a href="#cb12-72" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [95] IRanges_2.30.0              ellipsis_0.3.2</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; R version 4.2.2 Patched (2022-11-10 r83330)</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Platform: x86_64-pc-linux-gnu (64-bit)</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Running under: Ubuntu 20.04.5 LTS</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Matrix products: default</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.9.0</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.9.0</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; locale:</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              </span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_US.UTF-8    </span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_US.UTF-8   </span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 </span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [9] LC_ADDRESS=C               LC_TELEPHONE=C            </span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       </span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; attached base packages:</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; other attached packages:</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] vaRHC_0.0.9  dplyr_1.0.10</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] tidyselect_1.2.0       xfun_0.37              bslib_0.4.1           </span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [4] purrr_1.0.1            vctrs_0.5.2            generics_0.1.3        </span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7] htmltools_0.5.4        stats4_4.2.2           yaml_2.3.7            </span></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [10] utf8_1.2.2             XML_3.99-0.13          rlang_1.0.6           </span></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [13] jquerylib_0.1.4        pillar_1.8.1           withr_2.5.0           </span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [16] glue_1.6.2             DBI_1.1.3              BiocGenerics_0.44.0   </span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [19] semver_0.2.0           GenomeInfoDbData_1.2.9 lifecycle_1.0.3       </span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [22] stringr_1.5.0          zlibbioc_1.44.0        Biostrings_2.64.1     </span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [25] binman_0.1.3           caTools_1.18.2         evaluate_0.20         </span></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [28] knitr_1.42             wdman_0.2.6            IRanges_2.32.0        </span></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [31] fastmap_1.1.0          GenomeInfoDb_1.32.4    fansi_1.0.4           </span></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [34] Rcpp_1.0.10            cachem_1.0.6           S4Vectors_0.36.1      </span></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [37] RSelenium_1.7.9        jsonlite_1.8.3         XVector_0.38.0        </span></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [40] RMySQL_0.10.25         digest_0.6.30          stringi_1.7.12        </span></span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [43] cli_3.6.0              tools_4.2.2            bitops_1.0-7          </span></span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [46] magrittr_2.0.3         sass_0.4.5             RCurl_1.98-1.10       </span></span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [49] tibble_3.1.8           crayon_1.5.2           pkgconfig_2.0.3       </span></span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [52] xml2_1.3.3             assertthat_0.2.1       rmarkdown_2.20        </span></span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [55] httr_1.4.4             rstudioapi_0.14        R6_2.5.1              </span></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [58] compiler_4.2.2</span></span></code></pre></div>
 </div>
 </div>
 

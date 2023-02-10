@@ -50,6 +50,8 @@ vaRclass <- function (all.information){
   return (list(final.classification = final.class, final.criteria = final.criteria))
 }
 
+
+
 ################################################################################
 ## Final Classification functions
 ################################################################################
@@ -144,7 +146,12 @@ finalClass <- function (all.information, final.criteria){
     discrep.reason <- "We allow a variant to reach a likely benign classification based on BS1 stand alone."
   }
   criteria.assigned <- criteriaAssigned (final.criteria)
-  return (list (final.class = class.final, criteria.assigned = criteria.assigned, sum.criteria = sum.total, discrep.reason=discrep.reason))
+  reasoning = showMessage(all.information, criteria.assigned, final.criteria)
+  return (list (final.class = class.final,
+                criteria.assigned = criteria.assigned,
+                sum.criteria = sum.total,
+                discrep.reason=discrep.reason,
+                reasoning=reasoning))
 }
 
 criteriaAssigned <- function(final.criteria){

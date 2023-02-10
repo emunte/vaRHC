@@ -5,7 +5,8 @@
 #' @import Biostrings
 #' @import RMySQL
 #' @import stringr
-#' @import liftOver
+#' @import R.utils
+#' @import testthat
 #' @importFrom assertthat assert_that
 #' @importFrom tibble as_tibble
 #' @importFrom tibble rownames_to_column
@@ -17,7 +18,6 @@
 #' @importFrom RCurl getURL
 #' @importFrom jsonlite fromJSON
 #' @importFrom jsonlite toJSON
-#' @importFrom RSelenium rsDriver
 #' @importFrom purrr map
 #' @importFrom xml2 read_html
 #' @importFrom XML readHTMLTable
@@ -51,13 +51,21 @@ NULL
 #' @keywords data
 NULL
 
+#' @name BLOSUM62
+#' @title BLOSUM62
+#' @docType data
+#' @author H. Pags and P. Aboyoun
+#' @references K. Malde, The effect of sequence quality on sequence alignment, Bioinformatics, Feb 23, 2008. \url{https://academic.oup.com/bioinformatics/article/24/7/897/296249}
+NULL
+
+
 #' vaR()
 #' @description  vaR function firstly collects different type of information related to the variant of interest (e.g. Population frequencies, in-silico predictions, some functional studies...).
 #' Secondly,  it mixes all this information and following modified ACMG rules it returns the final classification of the variant and it specifies which criteria are given. Optionally, all the information can be printed in an excel file.
 #' @param gene gene of interest
-#' @param variant variant of interest in cdna
-#' @param NM Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM,  NC and CCDS must also be provided.
-#' @param CCDS Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM and NC must also be provided. Current version only works for hg19.
+#' @param variant variant of interest in coding DNA nomenclature
+#' @param NM Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it.
+#' @param CCDS Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different CCDS because the program has not been validated for it.
 #' @param gene.specific.df By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv or in the package extdata folder and some parameters can be modified taking into account your preferences
 #' @param remote Logical. Connect remotely to RSelenium server? By default is TRUE and will start Rselenium server.If it is FALSE vaRHC will not connect to insight database.
 #' @param browser Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".
@@ -69,10 +77,16 @@ NULL
 #' @param provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
 #' @param provean.sh Path to provean.sh. It will only be considered if provean.program is set to TRUE.
 #' @param excel.results Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved
-#' @param output.dir By default is NULL. output.dir must provide the folder to store the results. If not provided it will be saved in the working directory.
+#' @param output.dir  output.dir must provide the folder to store the results. By default is NULL.
+#' @param google.search Logical. By default is FALSE and it will not look for variant results in google.
+#' @param verbose logic. By default is FALSE. If TRUE, it includes status messages (if any).
+#' @return A list of two items: vaRinfo and vaRclass.  The first one stores variant information collected from diverse databases and the second one it is related to the criteria assigned to the variant and its final classification.
 #' @author Elisabet Munté Roca
 #' @examples
-#' vaR (gene= "BRCA1", variant= "c.211A>G",  excel.results=TRUE)
+#' \dontrun{
+#' output.dir <- "/path/to/outputdir"
+#' vaR (gene= "BRCA1", variant= "c.211A>G", output.dir = output.dir,  excel.results=FALSE)
+#' }
 #' @references
 #' Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17(5), 405–424. https://doi.org/10.1038/gim.2015.30
 #' Tavtigian, S. V., Harrison, S. M., Boucher, K. M., & Biesecker, L. G. (2020). Fitting a naturally scaled point system to the ACMG/AMP variant classification guidelines. Human mutation, 41(10), 1734–1737. https://doi.org/10.1002/humu.24088
@@ -82,7 +96,8 @@ NULL
 #' ClinGen InSiGHT Hereditary Colorectal Cancer/Polyposis Variant Curation Expert Panel Specifications to the ACMG/AMP Variant Interpretation Guidelines Version 1 (draft): https://www.insight-group.org/content/uploads/2021/11/DRAFT_Nov_2021_TEMPLATE_SVI.ACMG_Specifications_InSiGHT_MMR_V1.pdf
 #' Feliubadaló, L., Moles-Fernández, A., Santamariña-Pena, M., Sánchez, A. T., López-Novo, A., Porras, L. M., Blanco, A., Capellá, G., de la Hoya, M., Molina, I. J., Osorio, A., Pineda, M., Rueda, D., de la Cruz, X., Diez, O., Ruiz-Ponte, C., Gutiérrez-Enríquez, S., Vega, A., & Lázaro, C. (2021). A Collaborative Effort to Define Classification Criteria for ATM Variants in Hereditary Cancer Patients. Clinical chemistry, 67(3), 518–533. https://doi.org/10.1093/clinchem/hvaa250
 #' @export
-vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote=TRUE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, excel.results = FALSE,  output.dir = NULL ){
+
+vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote=TRUE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, excel.results = FALSE,  output.dir = NULL, google.search = FALSE, verbose = FALSE ){
   if(!is.null(output.dir))assertthat::assert_that(dir.exists(output.dir), msg = "Output directory does not exists, please enter a valid one.")
   cat("looking for VariantInfo, please wait\n")
   info <- vaRinfo(gene = gene,
@@ -90,6 +105,7 @@ vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote
                   NM = NM,
                   CCDS = CCDS,
                   gene.specific.df = gene.specific.df,
+                  output.dir = output.dir,
                   remote = remote,
                   browser = browser,
                   spliceai.program = spliceai.program,
@@ -98,7 +114,9 @@ vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote
                   spliceai.distance = spliceai.distance,
                   spliceai.masked = spliceai.masked,
                   provean.program = provean.program,
-                  provean.sh = provean.sh)
+                  provean.sh = provean.sh,
+                  google.search = google.search,
+                  verbose = verbose)
   cat("calculating the final classification , please wait \n")
   class <- vaRclass(info)
   if (isTRUE(excel.results)){
@@ -113,9 +131,11 @@ vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote
 
 #' vaRbatch()
 #' @description  vaRbatch function allows to perform vaR function in batch. It also returns a logfile.
-#' @param all.variants a dataframe object containing at least two columns named gene and variant. Variant mus be coding dna sequence and for batch function only works in transcripts stored in IDIBELL database (see vignette)
+#' @param all.variants it requires a dataframe object or the path to a file vcf. For the dataframe object variants must be coding dna sequence and it may have two columns gene and variant (see vignette to know ho to prepare the dataframe)
+#' @param assembly Assembly used for the vcf generation. It can only be "hg19" or "hg38" assembly. By default is NULL.
+#' @param annotation  character. Only needed if a vcf file is provided. It can only be LRG or MANE_select. Variants will be annotated considering LRG or MANE_select transcripts.
 #' @param gene.specific.df By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv or in the package docs folder and some parameters can be modified taking into account your preferences
-#' @param remote Logical. Connect remotely to RSelenium server? By default is TRUE and will start Rselenium server.If it is FALSE vaRHC will not connect to insight database.
+#' @param remote Logical. Connect remotely to RSelenium server? By default is FALSE and it will not start Rselenium server.If it is TRUE vaRHC will connect to insight database.
 #' @param browser Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".
 #' @param spliceai.program Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.
 #' @param spliceai.reference Path to the Reference genome hg19 fasta file. Can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
@@ -126,20 +146,29 @@ vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote
 #' @param provean.sh Path to provean.sh. It will only be considered if provean.program is set to TRUE.
 #' @param print.data.frame  Logical. By defaul is TRUE and the results will be stored in a txt file.
 #' @param excel.results Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved
-#' @param output.dir By default is NULL. output.dir must provide the folder to store the results. If not provided it will be saved in the working directory.
+#' @param google.search Logical. By default is FALSE and it will not look for variant results in google.
+#' @param verbose logic. By default is FALSE. If TRUE, it includes status messages (if any).
+#' @param output.dir output.dir must provide the folder to store the results. By default is NULL.
+#' @return A list of n intems. Where n is the number of variants where vaR() was successfully.
 #' @author Elisabet Munté Roca
 #' @examples
+#' \dontrun{
 #' data("ex_vaRbatch")
+#' output.dir <- "/path/to/output_dir"
 #' ex_vaRbatch[] <- lapply(ex_vaRbatch, as.character) #convert to character
-#' all <- vaRbatch( all.variants = ex_vaRbatch, spliceai.program = FALSE, excel.results = TRUE)
+#' all <- vaRbatch( all.variants = ex_vaRbatch, spliceai.program = FALSE, output.dir = output.dir)
+#' }
 #' @export
-vaRbatch <- function (all.variants, gene.specific.df=NULL, remote = TRUE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, print.data.frame = TRUE, excel.results = FALSE, output.dir = NULL){
+vaRbatch <- function (all.variants, assembly = NULL, annotation = NULL, gene.specific.df=NULL, remote = FALSE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, print.data.frame = TRUE, excel.results = FALSE, output.dir = NULL, google.search = FALSE, verbose = FALSE){
   time <-  Sys.time() %>%
     stringr::str_replace_all("-|:| ", "_")
   log.folder<- checkDir (output.dir, "log")
-  #log.file <- file.path(getwd(), "log")
-  #dir.create(log.file, showWarnings = FALSE)
   file.create(file.path(log.folder,paste0(time, ".log")))
+
+  if(is.character(all.variants)){
+  all.variants <- vcfToCodingDNA (file.vcf = all.variants , assembly = assembly , log.dir = output.dir )
+  }
+
   all.variants.list <- list()
   df.variants2 <- data.frame(NM=NULL, gene=NULL, variant=NULL, prot=NULL, final_class=NULL, all_criteria=NULL,
                              PVS1=NULL, PS1=NULL,  PS3=NULL,
@@ -149,11 +178,17 @@ vaRbatch <- function (all.variants, gene.specific.df=NULL, remote = TRUE, browse
                              spliceAI_AG_score=NULL, spliceAI_AG_dis=NULL,spliceAI_AL_score=NULL, spliceAI_AL_dis=NULL,spliceAI_DG_score=NULL, spliceAI_DG_dis=NULL, spliceAI_DL_score=NULL, spliceAI_DL_dis=NULL,
                              revel=NULL )
   info.R <- list()
+
   for (i in 1:nrow(all.variants)){
     cat(paste(i, "/", nrow(all.variants), "variants \n"))
     gene <- all.variants$gene[i]
     variant <- all.variants$variant[i]
-    NM <- NULL
+    if(!is.null(all.variants$NM[i])){
+      NM <- all.variants$NM[i]
+    }else{
+      NM <- NULL
+    }
+
     NC <- NULL
     CCDS <- NULL
     tryCatch({
@@ -173,7 +208,9 @@ vaRbatch <- function (all.variants, gene.specific.df=NULL, remote = TRUE, browse
                     provean.program = provean.program,
                     provean.sh = provean.sh,
                     excel.results = excel.results,
-                    output.dir= output.dir)
+                    google.search = google.search,
+                    output.dir= output.dir,
+                    verbose = verbose)
       crit <- paste0(info.R$vaRclass$final.classification$criteria.assigned  , collapse=";")
       if(print.data.frame == TRUE){
         df.variants2 <- rbind(df.variants2,
@@ -240,7 +277,9 @@ vaRbatch <- function (all.variants, gene.specific.df=NULL, remote = TRUE, browse
                   row.names = FALSE)
     })
   }
-  cat (paste0("Find log file: ",  file.path(log.folder, paste0(time, ".log"))))
+  message (paste0("Find log file: ",  file.path(log.folder, paste0(time, ".log"))))
   return(all.variants.list)
 }
+
+
 

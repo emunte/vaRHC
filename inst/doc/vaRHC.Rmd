@@ -1,13 +1,17 @@
 ---
 title: "vaRHC"
+header-includes:
+- \usepackage{pdflscape}
+- \newcommand{\blandscape}{\begin{landscape}}
+- \newcommand{\elandscape}{\end{landscape}}
 author: "Elisabet Munté Roca <emunte@idibell.cat>"
 date: "`r Sys.Date()`"
 package: "`r pkgload::pkg_version(path='.')"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{vaRHC}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::knitr}
+  %\usepackage[utf8]{inputenc}
 ---
 
 ```{r, include = FALSE}
@@ -54,7 +58,11 @@ In the last 5 years, some programs have been developed with the aim to semi-auto
 The current version of the package is based on the GRCh37 assembly of the human genome and works for single substitutions, deletions and insertions up to 25 bp, intronic variants and 5’ or 3’-UTR variants 25 bp beyond the coding sequence. 
 
 ## 2. Installation {#install}
-vaRHC can be downloaded from GitHub using the remotes package:
+vaRHC can be downloaded from CRAN:
+```{r, eval=FALSE}
+install.packages("vaRHC")
+```
+vaRHC can also be downloaded from GitHub using the remotes package:
 ```{r, eval=FALSE}
 if(!require("remotes", quietly = TRUE)) install.packages('remotes') ## Only the first time
 library(remotes)
@@ -74,7 +82,7 @@ The package consists of two main functions ***vaR()***  and ***vaRbatch()***.
 
 #### 3.1.1 Input
 ##### 3.1.1.1 Parameters
-Using a **gene** and a **variant** name (in coding DNA nomenclature) as input variables,  ***vaR()*** gathers relevant information from different sources.  Gene-specific ACMG/AMP guidelines are then applied in order to calculate whether the variant of interest meets different criteria. The output also provides an explanation of the reason for applying or rejecting each criterion. Additionally, it returns a final classification of the variant using Tavtigian Bayesian metastructure and also considering most of CanVIG-UK recommendations.
+Using a **gene** and a **variant** name (in coding DNA nomenclature) and if possible **NM** from RefSeq as input variables,  ***vaR()*** gathers relevant information from different sources.  Gene-specific ACMG/AMP guidelines are then applied in order to calculate whether the variant of interest meets different criteria. The output also provides an explanation of the reason for applying or rejecting each criterion. Additionally, it returns a final classification of the variant using Tavtigian Bayesian metastructure and also considering most of CanVIG-UK recommendations.
 
 
 The following example shows how to call the **vaR()** function for the variant  c.1137+1G>A in *CDH1* gene.
@@ -92,22 +100,29 @@ var.information <- vaR(gene = eg.gene, variant = eg.variant)
 Optional parameters of *vaR()* are described below.
 
 ##### 3.1.1.2.1 NM and CCDS
-- ***NM***: Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed above. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM, CCDS must also be provided.The transcript accession number is retrieved from RefSeq. By default, this function parameter is set to NULL. vaRHC will consider the NMs listed in the Supplementary Table 1. If a different NM is used than the ones described in the table, it must be noted that the program has not been validated yet for it. In this case, a CCDS ID is also required.
+- ***NM***: Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed above. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM, CCDS must also be provided.The transcript accession number is retrieved from RefSeq. By default, this function parameter is set to NULL. vaRHC will consider the NMs listed in the Supplementary Table 1. If a different NM is used than the ones described in the table, it must be noted that the program has not been validated yet for it. 
 
-
-
-- ***CCDS***: Consensus CDS ID retrieved from NCBI CCDS database (which can be found in the following link https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi). By default is set to NULL. vaRHC will consider the IDs detailed in the table above. Again, it must be noted that if a different CCDS ID is provided, the program has not been validated yet for it. In this case, NM accession number is required. 
-
+- ***CCDS***: Consensus CDS ID retrieved from NCBI CCDS database (which can be found in the following link https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi). By default is set to NULL. vaRHC will consider the IDs detailed in the table above. 
 
 ##### 3.1.1.2.2 gene.specific.df
 **gene.specific.df**: By default the parameter is set to NULL as it considers the gene-specific cutoffs, frequencies and additional parameters queried in the IDIBELL database as described in the paper *vaRHC: an R package for semi-automation of variant classification in hereditary cancer genes according to ACMG/AMP and gene-specific ClinGen guidelines [Manuscript submitted for publication]*.
 This table contains gene-specific information for applying the following criteria: BA1, BS1, BS2, PM2, predictors cut-off and BP7. If the user wants to modify any of these criteria or specify another additional gene, a table containing all these criteria can be loaded to the R environment, and set as the gene.specific.df parameter. 
 A template of how the table needs to be can be downloaded from GitHub (https://github.com/emunte/vaRHC/blob/main/data/gene_specific.txt) or it can be found at the package documentation. Column names cannot be modified. See below the default table and the explanation of each column:
 
+\newpage
+\blandscape
+Landscape
 ```{r, echo=FALSE}
  gene.specific.df <- vaRHC:::connectionDB("SELECT * from  gene_specific;") %>% as.data.frame()
-    knitr::kable(gene.specific.df %>% filter(genename %in% c("general", "ATM", "CDH1", "CHEK2", "MLH1", "MSH2", "MSH6", "PMS2", "PTEN", "TP53")))
+    knitr::kable(gene.specific.df %>% filter(genename %in% c("general", "ATM", "CDH1", "CHEK2", "MLH1", "MSH2", "MSH6", "PMS2", "PTEN", "TP53")) %>% dplyr::select(1:10))
+     knitr::kable(gene.specific.df %>% filter(genename %in% c("general", "ATM", "CDH1", "CHEK2", "MLH1", "MSH2", "MSH6", "PMS2", "PTEN", "TP53")) %>% dplyr::select(11:20))
+    knitr::kable(gene.specific.df %>% filter(genename %in% c("general", "ATM", "CDH1", "CHEK2", "MLH1", "MSH2", "MSH6", "PMS2", "PTEN", "TP53"))%>% dplyr::select(21:30))
+       knitr::kable(gene.specific.df %>% filter(genename %in% c("general", "ATM", "CDH1", "CHEK2", "MLH1", "MSH2", "MSH6", "PMS2", "PTEN", "TP53"))%>% dplyr::select(31:40))
+       knitr::kable(gene.specific.df %>% filter(genename %in% c("general", "ATM", "CDH1", "CHEK2", "MLH1", "MSH2", "MSH6", "PMS2", "PTEN", "TP53"))%>% dplyr::select(41:50))
+       knitr::kable(gene.specific.df %>% filter(genename %in% c("general", "ATM", "CDH1", "CHEK2", "MLH1", "MSH2", "MSH6", "PMS2", "PTEN", "TP53"))%>% dplyr::select(51:58))
+       knitr::kable(gene.specific.df %>% filter(genename %in% c("general", "ATM", "CDH1", "CHEK2", "MLH1", "MSH2", "MSH6", "PMS2", "PTEN", "TP53"))%>% dplyr::select(59:67))
 ```
+\elandscape
 
 - **BA1**: *float number*. Cut-off used to assign BA1 criterion.<br>
 - **BS1**: *float number*. Cut-off used to assign BS1 criterion.<br>
@@ -277,21 +292,31 @@ The excel file has the following sheets:<br>
 ***vaRbatch()***  allows to perform vaR function in batch.
 
 #### 3.1.1 Input
-The input is a data frame containing gene and variant column. See and example below. This function only works for the NM described in 3.1.1.2.1 section. 
+vaRbatch has two possible inputs:
+- a data frame containing gene, variant and NM (not necessary but it is recommended, otherwise the function will consider NM detailed in supplementary table 1). 
+- a small variant call format (vcf or compressed vcf). The file will be annotated using Mutalyzer v3 API. Vcfs resulting from WES or WGS will take too long (although they work as well). Assembly parameter must be then specified
+
 
 ```{r eval=FALSE}
 #Example 1
-data("example_input_vaRbatch")
-example_input_vaRbatch[] <- lapply(example_input_vaRbatch, as.character) #convert to character
-all <- vaRbatch( all.variants = example_input_vaRbatch, spliceai.program = TRUE, splieai.reference= "./hg19.fa", excel.results = TRUE)
+output.dir <- "/path/to/output_dir"
+#Example 1
+data("ex_vaRbatch")
+ex_vaRbatch[] <- lapply(ex_vaRbatch, as.character) #convert to character
+all <- vaRbatch( all.variants = ex_vaRbatch, spliceai.program = TRUE,  splieai.reference= "dir to /hg19.fa", output.dir = excel.results = TRUE)
 
 #Example2
 eg.variants <- data.frame(gene=c("ATM", "MSH6", "BRCA1"), variants = c("c.8420A>T", "c.1559G>A", "c.211A>G"))
-batch.results <- vaRbatch( all.variants = eg.variants, spliceai.program =FALSE, print.data.frame = FALSE excel.results = TRUE)
+batch.results <- vaRbatch( all.variants = eg.variants, spliceai.program =FALSE, output.dir = ouput.dir, print.data.frame = FALSE excel.results = TRUE)
+
+#Example 3
+vcf.file <- "path/to/vcf.vcf"
+results <- vaRbatch(all.variants= vcf.file, annotation="hg19", spliceai.program = TRUE, spliceai.reference = "/path/to/vcf.vcf", remote=TRUE, output.dir = output.dir, excel.results = FALSE, print.data.frame = TRUE)
 ```
 
 #### 3.1.2 Output
-It returns a list containing vaR() output for all variants. The user can choose to print a data frame (***print.data.frame***) to store classification results in a csv file. The function also returns a log file, with the detailed time execution and any error that may occur explained. The log file is stored in a log folder in the working directory.
+It returns a list containing vaR() output for all variants. The user can choose to print a data frame (***print.data.frame***) to store classification results in a csv file. The function also returns a log file, with the detailed time execution and any error that may occur explained. The log file is stored in a log folder in the specified output.dir directory.
+
 
 ### 4. Legal advice and privacy policy for users {#legal}
 #### Legal advice

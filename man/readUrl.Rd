@@ -4,10 +4,12 @@
 \alias{readUrl}
 \title{read url}
 \usage{
-readUrl(url)
+readUrl(description, verbose = FALSE)
 }
 \arguments{
-\item{url}{url to read}
+\item{description}{url to read}
+
+\item{verbose}{logical. By default is FALSE``}
 }
 \description{
 read url

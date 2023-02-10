@@ -4,9 +4,9 @@
 \name{vaRHC-package}
 \alias{vaRHC}
 \alias{vaRHC-package}
-\title{vaRHC: Variant Classification in Hereditary Cancer Following Specific ACMG Guidelines}
+\title{vaRHC: Variant Classification in Hereditary Cancer Following Specific ACMG/AMP Guidelines}
 \description{
-Automate, as far as possible, the variant classification process for hereditary cancer genes following specific ACMG guidelines.
+Automate, as far as possible, the variant classification process following the updated American College of Medical Genetics (ACMG) and Association for Molecular Pathology (AMP) gene-specific criteria for **ATM**, **CDH1**, **CHEK2**, **MLH1**, **MSH2**, **MSH6**, **PMS2**, **PTEN** and **TP53** and general criteria for other genes. From the input of a gene and a variant (in coding DNA nomenclature) or a variant caller format (vcf) file, functions are provided to gather relevant information from diverse sources (local queries and real-time queries), to assign classification criteria and finally to combine them to give a final classification of the variant. All this information is returned in a list object, but it can be saved additionally as a tabulated or excel file.
 }
 \seealso{
 Useful links:
