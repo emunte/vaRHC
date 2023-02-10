@@ -6,8 +6,10 @@
 \usage{
 vaRbatch(
   all.variants,
+  assembly = NULL,
+  annotation = NULL,
   gene.specific.df = NULL,
-  remote = TRUE,
+  remote = FALSE,
   browser = "firefox",
   spliceai.program = FALSE,
   spliceai.reference = NULL,
@@ -18,15 +20,21 @@ vaRbatch(
   provean.sh = NULL,
   print.data.frame = TRUE,
   excel.results = FALSE,
-  output.dir = NULL
+  output.dir = NULL,
+  google.search = FALSE,
+  verbose = FALSE
 )
 }
 \arguments{
-\item{all.variants}{a dataframe object containing at least two columns named gene and variant. Variant mus be coding dna sequence and for batch function only works in transcripts stored in IDIBELL database (see vignette)}
+\item{all.variants}{it requires a dataframe object or the path to a file vcf. For the dataframe object variants must be coding dna sequence and it may have two columns gene and variant (see vignette to know ho to prepare the dataframe)}
+
+\item{assembly}{Assembly used for the vcf generation. It can only be "hg19" or "hg38" assembly. By default is NULL.}
+
+\item{annotation}{character. Only needed if a vcf file is provided. It can only be LRG or MANE_select. Variants will be annotated considering LRG or MANE_select transcripts.}
 
 \item{gene.specific.df}{By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv or in the package docs folder and some parameters can be modified taking into account your preferences}
 
-\item{remote}{Logical. Connect remotely to RSelenium server? By default is TRUE and will start Rselenium server.If it is FALSE vaRHC will not connect to insight database.}
+\item{remote}{Logical. Connect remotely to RSelenium server? By default is FALSE and it will not start Rselenium server.If it is TRUE vaRHC will connect to insight database.}
 
 \item{browser}{Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".}
 
@@ -48,15 +56,25 @@ vaRbatch(
 
 \item{excel.results}{Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved}
 
-\item{output.dir}{By default is NULL. output.dir must provide the folder to store the results. If not provided it will be saved in the working directory.}
+\item{output.dir}{output.dir must provide the folder to store the results. By default is NULL.}
+
+\item{google.search}{Logical. By default is FALSE and it will not look for variant results in google.}
+
+\item{verbose}{logic. By default is FALSE. If TRUE, it includes status messages (if any).}
+}
+\value{
+A list of n intems. Where n is the number of variants where vaR() was successfully.
 }
 \description{
 vaRbatch function allows to perform vaR function in batch. It also returns a logfile.
 }
 \examples{
+\dontrun{
 data("ex_vaRbatch")
+output.dir <- "/path/to/output_dir"
 ex_vaRbatch[] <- lapply(ex_vaRbatch, as.character) #convert to character
-all <- vaRbatch( all.variants = ex_vaRbatch, spliceai.program = FALSE, excel.results = TRUE)
+all <- vaRbatch( all.variants = ex_vaRbatch, spliceai.program = FALSE, output.dir = output.dir)
+}
 }
 \author{
 Elisabet Munté Roca

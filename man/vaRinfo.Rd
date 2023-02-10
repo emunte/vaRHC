@@ -10,6 +10,7 @@ vaRinfo(
   NM = NULL,
   CCDS = NULL,
   gene.specific.df = NULL,
+  output.dir = NULL,
   remote = TRUE,
   browser = "firefox",
   spliceai.program = FALSE,
@@ -18,7 +19,9 @@ vaRinfo(
   spliceai.distance = 1000,
   spliceai.masked = 1,
   provean.program = FALSE,
-  provean.sh = NULL
+  provean.sh = NULL,
+  google.search = FALSE,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -31,6 +34,8 @@ vaRinfo(
 \item{CCDS}{Consensus CD id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM must also be provided. Current version only works for hg19.}
 
 \item{gene.specific.df}{By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv and some parameters can be modified taking into account your preferences}
+
+\item{output.dir}{output.dir must provide the folder to store the results. By default is NULL.}
 
 \item{remote}{Logical. Connect remotely to RSelenium server? By default is TRUE and will start Rselenium server.If it is FALSE vaRHC will not connect to insight database.}
 
@@ -49,6 +54,10 @@ vaRinfo(
 \item{provean.program}{Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.}
 
 \item{provean.sh}{Path to provean.sh. By default is NULL and will only be taken into account if provean.program is set to TRUE.}
+
+\item{google.search}{Logical. By default is FALSE and it will not look for variant results in google.}
+
+\item{verbose}{logic. By default is FALSE and it will not show intermediate process messages}
 }
 \value{
 information about the variant.

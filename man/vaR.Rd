@@ -20,17 +20,19 @@ vaR(
   provean.program = FALSE,
   provean.sh = NULL,
   excel.results = FALSE,
-  output.dir = NULL
+  output.dir = NULL,
+  google.search = FALSE,
+  verbose = FALSE
 )
 }
 \arguments{
 \item{gene}{gene of interest}
 
-\item{variant}{variant of interest in cdna}
+\item{variant}{variant of interest in coding DNA nomenclature}
 
-\item{NM}{Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it. If you provide a different NM,  NC and CCDS must also be provided.}
+\item{NM}{Accession number of the transcrit and mRNA from RefSeq. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different NM because the program has not been validated for it.}
 
-\item{CCDS}{Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different CCDS because the program has not been validated for it. If you provide a different CCDS, NM and NC must also be provided. Current version only works for hg19.}
+\item{CCDS}{Consensus CDS id https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi. By default is NULL and vaRHC will consider the ones detailed in README file. Be careful if you use a different CCDS because the program has not been validated for it.}
 
 \item{gene.specific.df}{By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv or in the package extdata folder and some parameters can be modified taking into account your preferences}
 
@@ -54,14 +56,24 @@ vaR(
 
 \item{excel.results}{Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved}
 
-\item{output.dir}{By default is NULL. output.dir must provide the folder to store the results. If not provided it will be saved in the working directory.}
+\item{output.dir}{output.dir must provide the folder to store the results. By default is NULL.}
+
+\item{google.search}{Logical. By default is FALSE and it will not look for variant results in google.}
+
+\item{verbose}{logic. By default is FALSE. If TRUE, it includes status messages (if any).}
+}
+\value{
+A list of two items: vaRinfo and vaRclass.  The first one stores variant information collected from diverse databases and the second one it is related to the criteria assigned to the variant and its final classification.
 }
 \description{
 vaR function firstly collects different type of information related to the variant of interest (e.g. Population frequencies, in-silico predictions, some functional studies...).
 Secondly,  it mixes all this information and following modified ACMG rules it returns the final classification of the variant and it specifies which criteria are given. Optionally, all the information can be printed in an excel file.
 }
 \examples{
-vaR (gene= "BRCA1", variant= "c.211A>G",  excel.results=TRUE)
+\dontrun{
+output.dir <- "/path/to/outputdir"
+vaR (gene= "BRCA1", variant= "c.211A>G", output.dir = output.dir,  excel.results=FALSE)
+}
 }
 \references{
 Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17(5), 405–424. https://doi.org/10.1038/gim.2015.30
