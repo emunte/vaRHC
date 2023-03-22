@@ -127,7 +127,10 @@ extractBBDD <- function(mutalyzer, object, gnom){
   #predictors
 
   ###prior
-  prior.db <- paste0("SELECT p.refsplice_prior, p.splice_severity, p.de_novo_prior, p.dn_severity, p.protein_prior, p.applicable_prior, b.Polyphen, b.MAPP, b.prior from prior_db_all p LEFT JOIN prior_db b  ON (p.Gene=b.gene AND p.cdna=b.cdna) WHERE p.Gene= '", object$gene ,"' AND p.cdna='", object$variant, "';")
+  #  prior.db <- paste0("SELECT p.refsplice_prior, p.splice_severity, p.de_novo_prior, p.dn_severity, p.protein_prior, p.applicable_prior, b.Polyphen, b.MAPP, b.prior from prior_db_all p LEFT JOIN prior_db b  ON (p.Gene=b.gene AND p.cdna=b.cdna) WHERE p.Gene= '", object$gene ,"' AND p.cdna='", object$variant, "';")
+  prior.dba <- paste0("SELECT refsplice_prior, splice_severity, de_novo_prior, dn_severity, protein_prior, applicable_prior from prior_db_all WHERE Gene= '", object$gene ,"' AND cdna='", object$variant, "';")
+  prior.dbb <- paste0("SELECT Polyphen, MAPP, prior from prior_db WHERE gene= '", object$gene ,"' AND cdna='", object$variant, "';")
+
   ###alignGvgd (only for TP53)
   align.gvgd <- paste0("SELECT Prediction from align_gvgd WHERE Substitution= '", paste0(aaShort(unlist(prot$aa.ref)), unlist(prot$aa.pos),aaShort(unlist(prot$aa.alt)) ),"' AND namegene='", object$gene,"';")
   ###dbnsfp
@@ -207,7 +210,8 @@ extractBBDD <- function(mutalyzer, object, gnom){
   genomes.gnomad <- queriesGnomad("genomes", gnom)
 
   queries <- list(gene.specific = gene.specific,
-                  prior = prior.db,
+                  prior_a = prior.dba,
+                  prior_b = prior.dbb,
                   align.gvd = align.gvgd,
                   dbnsfp = dbnsfp,
                   spliceai = spliceai,

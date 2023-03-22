@@ -26,9 +26,10 @@ predicInfo <- function(object, gene.specific, bbdd, gnomad, output.dir, spliceai
   # while(is.na(spliceai.score$Acceptor_Gain)[1]){
   #   spliceai.score <-  spliceaiR(object, ensembl.id)
   # }
-  prior.utah <- bbdd$prior %>%
+
+  prior.utah <- bbdd$prior_b %>%
                            dplyr::select("Polyphen", "MAPP", "prior")
-  prior.utah.splice <- bbdd$prior %>%
+  prior.utah.splice <- bbdd$prior_a %>%
                                   dplyr::select("refsplice_prior", "splice_severity", "de_novo_prior", "dn_severity", "protein_prior", "applicable_prior") %>%
                                   dplyr::mutate(splice_severity=ifelse(.data$splice_severity=="",
                                                                        "not applicable",
