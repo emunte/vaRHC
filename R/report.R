@@ -27,14 +27,24 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
   gene <- vaRinfo$Variant.Info$gene
   variant <- vaRinfo$Variant.Info$variant
   protein <- vaRinfo$Variant.Info$protein
-  XLConnect::writeWorksheet(wb, gene, sheet=2:12,
+  XLConnect::writeWorksheet(wb, gene, sheet=c(2:5,7:14),
                             startRow=1, startCol=2,
                             header=FALSE)
-  XLConnect::writeWorksheet(wb, variant, sheet=2:12,
+  XLConnect::writeWorksheet(wb, variant, sheet=c(2:5,7:14),
                             startRow=2, startCol=2,
                             header=FALSE)
-  XLConnect::writeWorksheet(wb, protein, sheet=2:12,
+  XLConnect::writeWorksheet(wb, protein, sheet=c(2:5,7:14),
                             startRow=3, startCol=2,
+                            header=FALSE)
+
+  XLConnect::writeWorksheet(wb, gene, sheet=6,
+                            startRow=2, startCol=2,
+                            header=FALSE)
+  XLConnect::writeWorksheet(wb, variant, sheet=6,
+                            startRow=3, startCol=2,
+                            header=FALSE)
+  XLConnect::writeWorksheet(wb, protein, sheet=6,
+                            startRow=4, startCol=2,
                             header=FALSE)
 
   ###-----------------Classification Summary sheet ----
@@ -406,7 +416,7 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
                                                                       dplyr::select("blosum", "prior", "grantham") %>%
                                                                       t(),
                                 sheet=sheet.name,
-                                startRow=4, startCol=2,
+                                startRow=5, startCol=2,
                                 header=FALSE, rownames= FALSE)
       XLConnect::setSheetPos(wb, sheet.name, 6+j)
       id.variant <- vaRinfo$clinVar$clinVar.ids$table %>%
@@ -427,7 +437,7 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
                                 header=FALSE, rownames= FALSE)
 
       XLConnect::writeWorksheet(wb, variant.name, sheet=sheet.name,
-                                startRow=4, startCol=5,
+                                startRow=3, startCol=5,
                                 header=FALSE, rownames= FALSE)
       if(vaRinfo$Variant.Info$most.severe.consequence=="missense_variant"){
         XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.ids$table %>%
@@ -442,19 +452,19 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
                                   header=FALSE, rownames= FALSE)
       }
       XLConnect::writeWorksheet(wb, purrr::map(vaRinfo$clinVar$clinVar.info$same_codon[[j]][7],2) %>% unlist, sheet=sheet.name,
-                                startRow=2, startCol=5,
+                                startRow=8, startCol=5,
                                 header=FALSE, rownames= TRUE)
       XLConnect::writeWorksheet(wb, purrr::map(vaRinfo$clinVar$clinVar.info$same_codon[[j]][7],1) %>% unlist, sheet=sheet.name,
-                                startRow=3, startCol=5,
+                                startRow=9, startCol=5,
                                 header=FALSE, rownames= TRUE)
       XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$same_codon[[j]][4], sheet=sheet.name,
-                                startRow=17, startCol=1,
+                                startRow=20, startCol=1,
                                 header=FALSE, rownames= FALSE)
       XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$same_codon[[j]][6], sheet=sheet.name,
-                                startRow=17, startCol=9,
+                                startRow=20, startCol=9,
                                 header=FALSE, rownames= FALSE)
       XLConnect::writeWorksheet(wb, matrix(unlist(vaRinfo$clinVar$clinVar.info$same_codon[[j]][8]),nrow=5), sheet=sheet.name,
-                                startRow=10, startCol=4,
+                                startRow=12, startCol=2,
                                 header=FALSE, rownames= FALSE)
     }
   }
@@ -699,7 +709,7 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
 ################################################################################
 introMessage <- function(all.information){
   if(all.information$Variant.Info$most.severe.consequence == "synonymous_variant"){
-    intro.message <- paste("The", all.information$Variant.Info$gene, "all.information$Variant.Info$variant, variant affects a not conserved nucleotide, resulting in no amino acid change.")
+    intro.message <- paste("The", all.information$Variant.Info$gene, all.information$Variant.Info$variant, "variant affects a not conserved nucleotide, resulting in no amino acid change.")
   }else if (all.information$Variant.Info$most.severe.consequence == "stop_gained"){ #nonesense
     intro.message <- paste0(all.information$Variant.Info$variant,
                             ", located in exon",
