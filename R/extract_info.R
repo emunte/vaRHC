@@ -1033,7 +1033,7 @@ articlesInfo <- function (object, variant.cor, bbdd){
   rna.pten <- NA
   atm.functionals <- NA
   prot <- toProtein(object$protein)
-  prot.cor <- protsyn(object, variant.cor)
+  prot.cor <- protsyn(object, variant.cor) %>% stringr::str_replace_all("\\(|\\)", "")
   if (object$gene == "BRCA1"){
     query <- "SELECT * from lyra_db;"
     lyra <- bbdd$lyra %>%
