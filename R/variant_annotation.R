@@ -54,7 +54,7 @@ correctHgvsMutalyzerV1 <- function(NM, NC, gene, variant, skip.pred=FALSE){
   server.mutalyzerv3 <- "https://mutalyzer.nl/api/"#Mutalyzer's V3 REST API
 
   ####we encode the URL
-  variant.mutalyzer <- URLencode(paste0(NC, "(",NM, "):",variant),reserved=TRUE)
+  variant.mutalyzer <- utils::URLencode(paste0(NC, "(",NM, "):",variant),reserved=TRUE)
 
   #Changing between equivalent versions, to avoid mutalyzer errors.
 
@@ -74,9 +74,9 @@ correctHgvsMutalyzerV1 <- function(NM, NC, gene, variant, skip.pred=FALSE){
    query<- paste0("SELECT NC_hg38 FROM NCs where NC_hg19 ='", NC,"';")
    NC.hg38 <- connectionDB(query)[[1]] %>%
      as.character
-    variant.mutalyzer <- URLencode(paste0(NC.hg38, "(",NM, "):",variant),reserved=TRUE)
-    if(NM=="NM_000535.5")  variant.mutalyzer <- URLencode(paste0(NC.hg38, "(","NM_000535.6", "):",variant),reserved=TRUE)
-    if(NM=="NM_002528.5")  variant.mutalyzer <- URLencode(paste0(NC.hg38, "(","NM_002528.6", "):",variant),reserved=TRUE)
+    variant.mutalyzer <- utils::URLencode(paste0(NC.hg38, "(",NM, "):",variant),reserved=TRUE)
+    if(NM=="NM_000535.5")  variant.mutalyzer <- utils::URLencode(paste0(NC.hg38, "(","NM_000535.6", "):",variant),reserved=TRUE)
+    if(NM=="NM_002528.5")  variant.mutalyzer <- utils::URLencode(paste0(NC.hg38, "(","NM_002528.6", "):",variant),reserved=TRUE)
     ext.mutalyzer.v3 <- paste0("normalize/", variant.mutalyzer)
     mutalyzerv3 <- api2(server.mutalyzerv3, ext.mutalyzer.v3)
     as <- "hg38"
@@ -169,7 +169,7 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant, skip.pred=FALSE){
   query<- paste0("SELECT NC_hg38 FROM NCs where NC_hg19 ='", NC,"';")
   NC.hg38 <- connectionDB(query)[[1]] %>%
     as.character
-  variant.mutalyzer <- URLencode(paste0(NC.hg38, "(",NM, "):",variant),reserved=TRUE)
+  variant.mutalyzer <- utils::URLencode(paste0(NC.hg38, "(",NM, "):",variant),reserved=TRUE)
   #if(NM=="NM_000535.5")  variant.mutalyzer <- URLencode(paste0(NC.hg38, "(","NM_000535.6", "):",variant),reserved=TRUE)
   #if(NM=="NM_002528.5")  variant.mutalyzer <- URLencode(paste0(NC.hg38, "(","NM_002528.6", "):",variant),reserved=TRUE)
   ext.mutalyzer.v3 <- paste0("normalize/", variant.mutalyzer)
@@ -183,7 +183,7 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant, skip.pred=FALSE){
  while (any(mutalyzerv3$custom$errors$code=="ENOSELECTORFOUND") && i <5){
    NM.split <- stringr::str_split(NM, "\\.") %>% unlist()
    NM <- paste0(NM.split[1], ".", NM.split[2] %>% as.numeric()+1)
-   variant.mutalyzer <- URLencode(paste0(NC.hg38, "(",NM, "):",variant),reserved=TRUE)
+   variant.mutalyzer <- utils::URLencode(paste0(NC.hg38, "(",NM, "):",variant),reserved=TRUE)
    ext.mutalyzer.v3 <- paste0("normalize/", variant.mutalyzer)
    mutalyzerv3 <- api2(server.mutalyzerv3, ext.mutalyzer.v3)
    message.mutalyzer <- paste("Not", NM.old, "selector found in reference, to continue", NM, "has been used instead")
@@ -231,7 +231,7 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant, skip.pred=FALSE){
   cds.pos.38 <- mutalyzerv3$selector_short$cds$g
   cds.c <- mutalyzerv3$selector_short$cds$c
 
-  variant.mutalyzer.hg37 <- URLencode(paste0(NC, "(",NM, "):",variant),reserved=TRUE)
+  variant.mutalyzer.hg37 <- utils::URLencode(paste0(NC, "(",NM, "):",variant),reserved=TRUE)
   ext.mutalyzer.v3.hg37 <- paste0("normalize/", variant.mutalyzer.hg37)
 
     mutalyzerv3.hg37 <- api2(server.mutalyzerv3, ext.mutalyzer.v3.hg37 )
@@ -293,6 +293,16 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant, skip.pred=FALSE){
     }
   }
 
+if(stringr::str_detect(cor.variant, "\\[[0-9+]\\]")){
+
+server <- "https://rest.variantvalidator.org/VariantValidator/variantvalidator/hg19/"
+ext <- paste0(NM,"%3A", variant, "/", NM, "?content-type=application%2Fjson")
+variant.validator <- api2(server, ext)
+var.validator <- variant.validator[[1]]$hgvs_refseqgene_variant
+cor.variant <- variant.validator[[1]]$hgvs_transcript_variant %>% stringr::str_split(":") %>% purrr::map(2) %>% unlist()
+mutalyzer.genomic_hg37 <- variant.validator[[1]]$primary_assembly_loci$grch37$hgvs_genomic_description
+mutalyzer.genomic_hg38 <- variant.validator[[1]]$primary_assembly_loci$grch38$hgvs_genomic_description
+}
 
   ##final output
   correct.variant <- list(initial.variant = variant,
@@ -493,6 +503,7 @@ geneLrgCoord <- function (object){
 coordNonCoding <- function (variant.mutalyzer, object){
   coordinates.exon.nocodi <- try(geneLrgCoord(object))
   if(any(is.na(coordinates.exon.nocodi))){
+    if(object$strand==1){
     coordinates.exon.nocodi <- data.frame(exon = 1:nrow(variant.mutalyzer$exons_g_37),
                                           V1 = variant.mutalyzer$exons_g_37$V1,
                                           V2=variant.mutalyzer$exons_g_37$V2,
@@ -501,6 +512,16 @@ coordNonCoding <- function (variant.mutalyzer, object){
       dplyr::mutate(transcript = object$NM) %>%
       dplyr::arrange(.data$exon) %>%
       dplyr::relocate ("transcript")
+    }else{
+      coordinates.exon.nocodi <- data.frame(exon = 1:nrow(variant.mutalyzer$exons_g_37),
+                                            V1 = variant.mutalyzer$exons_g_37$V2,
+                                            V2=variant.mutalyzer$exons_g_37$V1,
+                                            V1_hg38 = variant.mutalyzer$exons_g_38$V2,
+                                            V2_hg38 = variant.mutalyzer$exons_g_38$V1)  %>%
+        dplyr::mutate(transcript = object$NM) %>%
+        dplyr::arrange(.data$exon) %>%
+        dplyr::relocate ("transcript")
+    }
   }
   query <- paste0("SELECT exon, cStart, cStop FROM LRG_cds WHERE LRG_id= '", coordinates.exon.nocodi$transcript[1] ,"'; ")
   lrg.cds <- connectionDB(query)[[1]]
@@ -589,20 +610,20 @@ gnomADnomen <- function(object){
     alt<-ifelse(stringr::str_detect(object$variant, "del"),
                 stringr::str_sub(str.compare, values[1],values[1]),
                 stringr::str_sub(sequence.mutate, values[1], values[1]+length.pattern)) #we obtain the alt bp
-    if (object$strand==1){
+    #if (object$strand==1){
       if(stringr::str_detect(object$variant, "del")){
         gnomAD<-c(object$chr,start2,ref, alt)#we obtain the gnomAD
       }else{
         gnomAD<-c(object$chr,start2,ref,alt)#we obtain the gnomAD
       }
-    }else if( object$strand == -1){
-      seq1 <- DescTools::StrRev(seq1) #we need the reverse sequence
-      if(stringr::str_detect(object$variant, "del")){
-        gnomAD<- c(object$chr,object$start-1, ref, alt)
-      }else{
-        gnomAD<- c(object$chr,object$end-stringr::str_length(object$alt),ref, alt)
-      }
-    }
+    # }else if( object$strand == -1){
+    #   seq1 <- DescTools::StrRev(seq1) #we need the reverse sequence
+    #   if(stringr::str_detect(object$variant, "del")){
+    #     gnomAD<- c(object$chr,object$start-1, ref, alt)
+    #   }else{
+    #     gnomAD<- c(object$chr,object$end-stringr::str_length(object$alt),ref, alt)
+    #   }
+    # }
   }else{
     gnomAD<-c(object$chr, object$start, object$ref, object$alt)
   }
