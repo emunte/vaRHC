@@ -10,10 +10,10 @@ PVS1 <- function (all.information, final.criteria){
     final.criteria$criteria.res["PVS1", 1:4] <- c(NA, NA ,NA, NA)
     final.criteria[["PVS1.message"]] <- PVS1.message
   }else{
-  spli.loss.pvs1.df <- all.information$predictors$predictor.table %>%
+  spli.loss.pvs1.df <- all.information$predictors$predictor.table$predictors.table2%>%
     dplyr::filter(grepl("Loss", .data$predictor),
                   .data$classification %in% c("Pathogenic" ,"Grey"))
-  spli.gain.pvs1.df <- all.information$predictors$predictor.table %>%
+  spli.gain.pvs1.df <- all.information$predictors$predictor.table$predictors.table2 %>%
     dplyr::filter(grepl("Gain", .data$predictor),
                   .data$classification == "Pathogenic")
   gene <- all.information$Variant.Info$gene
@@ -293,7 +293,7 @@ PS1 <- function (all.information, final.criteria){
                                                                                               c(1,0,0) ,
                                                                                               c(0,1,0))
             if(gene %in% c("ATM", "CHEK2")){
-              our.score <- max(as.numeric(all.information$predictors$predictor.table[c("SpliceAI-AcceptorGain", "SpliceAI-AcceptorLoss", "SpliceAI-DonorGain", "SpliceAI-DonorLoss"), "values"]))
+              our.score <- max(as.numeric(all.information$predictors$predictor.table$predictors.table2[c("SpliceAI-AcceptorGain", "SpliceAI-AcceptorLoss", "SpliceAI-DonorGain", "SpliceAI-DonorLoss"), "values"]))
               sel <- our.score >= as.numeric(ps1.df$score.spliceai)
               final.criteria$criteria.res["PS1", c("strong", "moderate")] <- ifelse(rep(sel==TRUE,2),
                                                                                     c(0,1),
@@ -582,7 +582,7 @@ PM5 <- function (all.information, final.criteria){
     final.criteria$criteria.res["PM5",3] <- NA
   }else if(all.information$Variant.Info$gene %in% c("CDH1")){
     if (all.information$Variant.Info$most.severe.consequence %in% c("frameshift_variant","stop_gained")){
-      alt.splicing <- insilico (all.information$predictors$predictor.table, "Splicing Predictor", "Pathogenic")
+      alt.splicing <- insilico (all.information$predictors$predictor.table$predictors.table2, "Splicing Predictor", "Pathogenic")
       final.criteria$criteria.res["PM5",c(3,4)] <- ifelse(rep(nrow(alt.splicing)==0 && final.criteria$NMD=="YES", 2),
                                                           c(0,1),
                                                           c(0,0))
@@ -658,7 +658,7 @@ PM5 <- function (all.information, final.criteria){
         }
 
         if (gene %in% c("MLH1", "MSH2", "MSH6", "PMS2")){
-          if(all.information$predictors$predictor.table$values[11]>0.68){
+          if(all.information$predictors$predictor.table$predictors.table2$values[11]>0.68){
             pm5.mmr.pat <- pm5.df %>%
               dplyr::filter(.data$pat_guideline>0 | .data$pat_expert>0)
             PM5.message[nrow(pm5.mmr.pat)>0] <-  paste("PM5 is assigned because because the prior value of the variant achieves PP3 and there are other variants at the same codon : ", pm5.mmr.pat$variants.name, "in ClinVar classified as pathogenic by at least expert panel (with a prior value", round(as.numeric(pm5.df$prior),6), " )", collapse=".")
@@ -676,7 +676,7 @@ PM5 <- function (all.information, final.criteria){
 
             }
           }else{
-            PM5.message<-  paste("PM5 is denied  because the prior value of the variant i below 0.68 (value=",all.information$predictors$predictor.table$values[11],")." )
+            PM5.message<-  paste("PM5 is denied  because the prior value of the variant i below 0.68 (value=",all.information$predictors$predictor.table$predictors.table2$values[11],")." )
             final.criteria$criteria.res["PM5","moderate"] <- 0
           }
 
@@ -802,9 +802,9 @@ PP3 <- function (all.information, final.criteria){
     if (all.information$Variant.Info$gene!="PTEN"|
         (all.information$Variant.Info$gene=="PTEN" && all.information$Variant.Info$most.severe.consequence %in% c("synonymous_variant", "intron_variant", "splice_donor_variant", "splice_acceptor_variant", "splice_donor_region_variant", "splice_acceptor_region_variant") & !stringr::str_detect(all.information$Variant.Info$variant, "c.79+1|c.79+2|c.80-2|c.80-1"))){
       # First SpliceAI is checked
-      alt.splicing <- insilico(all.information$predictors$predictor.table, "Splicing Predictor", "Pathogenic")
-      alt.splicing.prior <- insilico(all.information$predictors$predictor.table, "Splicing Predictor", "Increased")
-      alt.splicing.prior2 <- insilico(all.information$predictors$predictor.table, "Splicing Predictor", "High")
+      alt.splicing <- insilico(all.information$predictors$predictor.table$predictors.table2, "Splicing Predictor", "Pathogenic")
+      alt.splicing.prior <- insilico(all.information$predictors$predictor.table$predictors.table2, "Splicing Predictor", "Increased")
+      alt.splicing.prior2 <- insilico(all.information$predictors$predictor.table$predictors.table2, "Splicing Predictor", "High")
       if(nrow(alt.splicing) >0 |nrow(alt.splicing.prior) >0 | nrow(alt.splicing.prior2) > 0){
         final.criteria$criteria.res["PP3", 4] <- 1
         predictor.altered <- ifelse(nrow(alt.splicing.prior)>0,
@@ -817,19 +817,19 @@ PP3 <- function (all.information, final.criteria){
 
       }else if (all.information$Variant.Info$most.severe.consequence %in% c("inframe_deletion", "inframe_insertion")){
 
-        alt.provean <- insilico(all.information$predictors$predictor.table, "Protein effect", "Pathogenic")
+        alt.provean <- insilico(all.information$predictors$predictor.table$predictors.table2, "Protein effect", "Pathogenic")
         final.criteria$criteria.res["PP3", 4] <- ifelse(nrow(alt.provean)>0,
                                                         1,
                                                         0)
-        PP3.message <-  ifelse(is.na(all.information$predictors$predictor.table["Provean", "values"]),
+        PP3.message <-  ifelse(is.na(all.information$predictors$predictor.table$predictors.table2["Provean", "values"]),
                                "Please consider installing or checking Provean score manually to assign or deny PP3.",
                                ifelse(nrow(alt.provean)>0,
                                paste("PP3 is assigned because it is an", all.information$Variant.Info$most.severe.consequence, "and Provean score is", alt.provean$values, "that is =< than -2.5."),
-                               paste("PP3 is denied because SpliceAi predicts no impact and it is an", all.information$Variant.Info$most.severe.consequence, "and Provean score is", all.information$predictors$predictor.table["Provean", "values"], "that is > than -2.5.")))
+                               paste("PP3 is denied because SpliceAi predicts no impact and it is an", all.information$Variant.Info$most.severe.consequence, "and Provean score is", all.information$predictors$predictor.table$predictors.table2["Provean", "values"], "that is > than -2.5.")))
 
         }else if (nrow(alt.splicing)==0 & nrow(alt.splicing.prior)==0 & nrow(alt.splicing.prior2)==0 & all.information$Variant.Info$most.severe.consequence =="missense_variant" & !(all.information$Variant.Info$gene %in% c("CDH1", "BAP1", "PALB2"))){
         PP3.sentence <- NULL
-        predictors.prot <- insilico(all.information$predictors$predictor.table, "Protein effect", "Pathogenic")
+        predictors.prot <- insilico(all.information$predictors$predictor.table$predictors.table2, "Protein effect", "Pathogenic")
         final.criteria$criteria.res["PP3", 4][(nrow(predictors.prot)==1 & !(gene %in% c("TP53"))) |
                                                 (nrow(predictors.prot)==2 &gene %in% c("TP53"))] <- 1
         PP3.sentence[(nrow(predictors.prot)==1 & !(gene %in% c("TP53"))) |
@@ -837,9 +837,9 @@ PP3 <- function (all.information, final.criteria){
 
 
         #Exception : MMR genes -> PP3_Moderate:Missense with MAPP+PolyPhen-2 prior probability for pathogenicity >0.81
-        final.criteria$criteria.res["PP3", c(3,4)][gene %in% c("MLH1", "MSH2", "MSH6", "PMS2") && !is.na(all.information$predictors$predictor.table$values[11]) & as.numeric(all.information$predictors$predictor.table$values[11])>0.81] <- c(1,0)
-        final.criteria$criteria.res["PP3", 3][gene %in% c("MLH1", "MSH2", "MSH6", "PMS2") && !is.na(all.information$predictors$predictor.table$values[11]) & as.numeric(all.information$predictors$predictor.table$values[11])<=0.81] <- 0
-        PP3.sentence[gene  %in% c("MLH1", "MSH2", "MSH6", "PMS2") && !is.na(all.information$predictors$predictor.table$values[11]) & as.numeric(all.information$predictors$predictor.table$values[11])>0.81] <- stringr::str_replace(PP3.sentence, "which is > than 0.68", "which is > than 0.81")
+        final.criteria$criteria.res["PP3", c(3,4)][gene %in% c("MLH1", "MSH2", "MSH6", "PMS2") && !is.na(all.information$predictors$predictor.table$predictors.table2$values[11]) & as.numeric(all.information$predictors$predictor.table$predictors.table2$values[11])>0.81] <- c(1,0)
+        final.criteria$criteria.res["PP3", 3][gene %in% c("MLH1", "MSH2", "MSH6", "PMS2") && !is.na(all.information$predictors$predictor.table$predictors.table2$values[11]) & as.numeric(all.information$predictors$predictor.table$predictors.table2$values[11])<=0.81] <- 0
+        PP3.sentence[gene  %in% c("MLH1", "MSH2", "MSH6", "PMS2") && !is.na(all.information$predictors$predictor.table$predictors.table2$values[11]) & as.numeric(all.information$predictors$predictor.table$predictors.table2$values[11])>0.81] <- stringr::str_replace(PP3.sentence, "which is > than 0.68", "which is > than 0.81")
 
         #Exception: TP53 -> PP3_moderate: aGVGD Zebrafish Class C65 required and BayesDel score 0.16
         final.criteria$criteria.res["PP3", c(3,4)][gene  == "TP53"&&nrow(predictors.prot)==2 && predictors.prot["aGVGD_zebrafish", "values"] >= 65] <-  c(1,0)
@@ -1277,15 +1277,15 @@ BP4 <- function (all.information, final.criteria){
     final.criteria$criteria.res["BP4", 4] <- NA
     BP4.message <- "BP4 is denied because PTEN guidelines specify that it should not to be applied for variants which may impact the intron 1 splice donor or acceptor sites. "
   }else{
-    ben.splicing <- insilico (all.information$predictors$predictor.table, "Splicing Predictor", "Benign")
-    pat.splicing <- insilico (all.information$predictors$predictor.table, "Splicing Predictor", "Pathogenic")
-    ben.splicing.prior <- insilico (all.information$predictors$predictor.table, "Splicing Predictor", "Low")
-    ben.splicing.prior2 <- insilico (all.information$predictors$predictor.table, "Splicing Predictor", "Innocuous")
-    ben.splicing.prior3 <- insilico (all.information$predictors$predictor.table, "Splicing Predictor", "Improved")
-    ben.splicing.prior4 <- insilico (all.information$predictors$predictor.table, "Splicing Predictor", "Minimal")
-    ben.splicing.notapplicable <- insilico (all.information$predictors$predictor.table, "Splicing Predictor", "not applicable")
-    alt.splicing.prior <- insilico(all.information$predictors$predictor.table, "Splicing Predictor", "Increased")
-    alt.splicing.prior2 <- insilico(all.information$predictors$predictor.table, "Splicing Predictor", "High")
+    ben.splicing <- insilico (all.information$predictors$predictor.table$predictors.table2, "Splicing Predictor", "Benign")
+    pat.splicing <- insilico (all.information$predictors$predictor.table$predictors.table2, "Splicing Predictor", "Pathogenic")
+    ben.splicing.prior <- insilico (all.information$predictors$predictor.table$predictors.table2, "Splicing Predictor", "Low")
+    ben.splicing.prior2 <- insilico (all.information$predictors$predictor.table$predictors.table2, "Splicing Predictor", "Innocuous")
+    ben.splicing.prior3 <- insilico (all.information$predictors$predictor.table$predictors.table2, "Splicing Predictor", "Improved")
+    ben.splicing.prior4 <- insilico (all.information$predictors$predictor.table$predictors.table2, "Splicing Predictor", "Minimal")
+    ben.splicing.notapplicable <- insilico (all.information$predictors$predictor.table$predictors.table2, "Splicing Predictor", "not applicable")
+    alt.splicing.prior <- insilico(all.information$predictors$predictor.table$predictors.table2, "Splicing Predictor", "Increased")
+    alt.splicing.prior2 <- insilico(all.information$predictors$predictor.table$predictors.table2, "Splicing Predictor", "High")
     sum.prior.splice.pat <- sum(nrow(alt.splicing.prior), nrow(alt.splicing.prior2))
     MMR <- all.information$Variant.Info$gene %in% c("MLH1", "MSH2", "MSH6") &
       !(stringr::str_detect(all.information$Variant.Info$variant, "del")) &
@@ -1316,7 +1316,7 @@ BP4 <- function (all.information, final.criteria){
                                   paste0("BP4 is denied because at least one splicing predictor score is above the benign cut-off (", paste0(rownames(pathogenic.all), "=", pathogenic.all$values, "which is not", pathogenic.all$operator.benign, pathogenic.all$BE.cut.off, collapse = " and "))))
 
     if (ben.splicing.pred & all.information$Variant.Info$most.severe.consequence == "missense_variant"){
-      ben.prot <- insilico (all.information$predictors$predictor.table, "Protein effect", "Benign")
+      ben.prot <- insilico (all.information$predictors$predictor.table$predictors.table2, "Protein effect", "Benign")
       condition <- (nrow(ben.prot)==1 & !gene %in% c("TP53")) |(nrow(ben.prot)==2 &gene %in% c("TP53"))
       final.criteria$criteria.res["BP4", 4] <- ifelse (condition, 1, 0)
       BP4.message <- ifelse ( condition,
@@ -1326,15 +1326,15 @@ BP4 <- function (all.information, final.criteria){
                               # paste("BP4 is not met because", ben.prot$predictor, " value is ", ben.prot$values , "which is not ", ben.prot$operator.benign, ben.prot$BE.cut.off, "."))
                               paste0("BP4 is denied because the protein predictor is in the grey or pathogenic zone (", paste(rownames(ben.prot), "=", ben.prot$values, "which is not ", ben.prot$operator.benign, "than", ben.prot$BE.cut.off, collapse=" and "), ")."))
     }else if( all.information$Variant.Info$most.severe.consequence %in% c("inframe_deletion", "inframe_insertion", "inframe_duplication") && nrow(ben.splicing) == 4){
-      provean <- insilico(all.information$predictors$predictor.table, "Protein effect", "Benign")
-      final.criteria$criteria.res["BP4",4] <- ifelse(is.na(all.information$predictors$predictor.table["Provean", "values"]) || nrow(provean)==0,
+      provean <- insilico(all.information$predictors$predictor.table$predictors.table2, "Protein effect", "Benign")
+      final.criteria$criteria.res["BP4",4] <- ifelse(is.na(all.information$predictors$predictor.table$predictors.table2["Provean", "values"]) || nrow(provean)==0,
                                                      0,
                                                      1)
-      BP4.message <- ifelse(is.na(all.information$predictors$predictor.table["Provean", "values"]),
+      BP4.message <- ifelse(is.na(all.information$predictors$predictor.table$predictors.table2["Provean", "values"]),
                             "Please consider installing or checking Provean score manually to assign or deny PP3.",
                             ifelse(nrow(provean)==0,
-                                   paste("BP4 is denied because although Splice AI does not predict splicing alteration  Provean predicts pathogenic protein alteration (score", all.information$predictors$predictor.table["Provean", "values"], "which is < than -2.5)."),
-                                   paste("BP4 is assigned because Splice AI does not predict splicing alteration and Provean no pathogenic protein effect (score", all.information$predictors$predictor.table["Provean", "values"], "which is > than -2.5).")))
+                                   paste("BP4 is denied because although Splice AI does not predict splicing alteration  Provean predicts pathogenic protein alteration (score", all.information$predictors$predictor.table$predictors.table2["Provean", "values"], "which is < than -2.5)."),
+                                   paste("BP4 is assigned because Splice AI does not predict splicing alteration and Provean no pathogenic protein effect (score", all.information$predictors$predictor.table$predictors.table2["Provean", "values"], "which is > than -2.5).")))
 
     }
 
@@ -1378,11 +1378,11 @@ BP7 <- function (all.information, final.criteria){
                                   "BP7 is assigned because it is a synonymous variant."))
   }else if ((!all.information$gene.specific.info$BP7_splicing =="Independent"  & !(all.information$Variant.Info$gene%in%c("TP53")) & all.information$Variant.Info$most.severe.consequence %in% c("synonymous_variant", "intron_variant","splice_region_variant", "splice_donor_region_variant", "splice_acceptor_region_variant")) |
              (all.information$Variant.Info$gene%in% c("TP53") & all.information$Variant.Info$most.severe.consequence %in% c("synonymous_variant"))){
-    alt.splicing <- insilico (all.information$predictors$predictor.table, "Splicing Predictor", "Benign") %>%
+    alt.splicing <- insilico (all.information$predictors$predictor.table$predictors.table2, "Splicing Predictor", "Benign") %>%
                                                                                                           dplyr::filter(stringr::str_detect(type, "SpliceAI"))
     if(nrow(alt.splicing)==0){
       if (gene %in% c("CHEK2", "PTEN", "TP53", "PALB2")){
-      predictors.conservation <- insilico (all.information$predictors$predictor.table, "Nucleotide conservation", "Not strongly conserved")
+      predictors.conservation <- insilico (all.information$predictors$predictor.table$predictors.table2, "Nucleotide conservation", "Not strongly conserved")
       condition <- (nrow(predictors.conservation)==1 & gene != "PTEN" )| (nrow(predictors.conservation)==2 & gene =="PTEN")
       final.criteria$criteria.res["BP7", 4] <- ifelse( condition, 1, 0)
       BP7.message <- ifelse(condition,

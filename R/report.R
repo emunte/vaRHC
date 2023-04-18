@@ -472,7 +472,7 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
 
 
   #············Predictors----
-  XLConnect::writeWorksheet(wb, vaRinfo$predictors, sheet="Predictors",
+  XLConnect::writeWorksheet(wb, vaRinfo$predictors$predictor.table, sheet="Predictors",
                             startRow=8, startCol=1,
                             header=FALSE, rownames= FALSE)
 
@@ -501,7 +501,7 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
 
   }
   XLConnect::writeWorksheet(wb, vaRinfo$codon.stop$exons[,2:8], sheet="NMD",
-                            startRow=7, startCol=12,
+                            startRow=21, startCol=8,
                             header=FALSE, rownames= FALSE)
 
   XLConnect::writeWorksheet(wb, vaRinfo$canonical.skip.pred, sheet="NMD",
@@ -511,6 +511,23 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
   XLConnect::writeWorksheet(wb, vaRclass$final.criteria$PVS1, sheet="NMD",
                             startRow=1, startCol=6,
                             header=FALSE, rownames= FALSE)
+
+if(nrow(vaRinfo$predictors$predictor.table$spliceai.10k)>0){
+  XLConnect::writeWorksheet(wb, vaRinfo$predictors$predictor.table$spliceai.10k[1,10:19], sheet="NMD",
+                            startRow=12, startCol=1,
+                            header=FALSE, rownames= FALSE)
+  XLConnect::writeWorksheet(wb, vaRinfo$predictors$predictor.table$spliceai.10k[1,20:32], sheet="NMD",
+                            startRow=14, startCol=1,
+                            header=FALSE, rownames= FALSE)
+  XLConnect::writeWorksheet(wb, vaRinfo$predictors$predictor.table$spliceai.10k[1,33:47], sheet="NMD",
+                            startRow=16, startCol=1,
+                            header=FALSE, rownames= FALSE)
+}else{
+  XLConnect::writeWorksheet(wb, "SpliceAI-10k not calculated.", sheet="NMD",
+                            startRow=12, startCol=1,
+                            header=FALSE, rownames= FALSE)
+}
+
 
   #············Start Codon ----
   XLConnect::writeWorksheet(wb, vaRinfo$start.lost.variants$pos.second.met, sheet="Start Codon",

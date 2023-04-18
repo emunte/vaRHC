@@ -7,6 +7,7 @@
 #' @import stringr
 #' @import R.utils
 #' @import testthat
+#' @import XVector
 #' @importFrom assertthat assert_that
 #' @importFrom tibble as_tibble
 #' @importFrom tibble rownames_to_column
@@ -22,6 +23,7 @@
 #' @importFrom xml2 read_html
 #' @importFrom XML readHTMLTable
 #' @importFrom utils URLencode data write.table
+
 NULL
 
 # #' @import rtracklayer
@@ -97,7 +99,7 @@ NULL
 #' Feliubadaló, L., Moles-Fernández, A., Santamariña-Pena, M., Sánchez, A. T., López-Novo, A., Porras, L. M., Blanco, A., Capellá, G., de la Hoya, M., Molina, I. J., Osorio, A., Pineda, M., Rueda, D., de la Cruz, X., Diez, O., Ruiz-Ponte, C., Gutiérrez-Enríquez, S., Vega, A., & Lázaro, C. (2021). A Collaborative Effort to Define Classification Criteria for ATM Variants in Hereditary Cancer Patients. Clinical chemistry, 67(3), 518–533. https://doi.org/10.1093/clinchem/hvaa250
 #' @export
 
-vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote=TRUE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, excel.results = FALSE,  output.dir = NULL, google.search = FALSE, verbose = FALSE ){
+vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote=TRUE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, spliceai.10k= FALSE, excel.results = FALSE,  output.dir = NULL, google.search = FALSE, verbose = FALSE ){
   if(!is.null(output.dir))assertthat::assert_that(dir.exists(output.dir), msg = "Output directory does not exists, please enter a valid one.")
   cat("looking for VariantInfo, please wait\n")
   info <- vaRinfo(gene = gene,
@@ -115,6 +117,7 @@ vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote
                   spliceai.masked = spliceai.masked,
                   provean.program = provean.program,
                   provean.sh = provean.sh,
+                  spliceai.10k= spliceai.10k,
                   google.search = google.search,
                   verbose = verbose)
   cat("calculating the final classification , please wait \n")
@@ -159,7 +162,7 @@ vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote
 #' all <- vaRbatch( all.variants = ex_vaRbatch, spliceai.program = FALSE, output.dir = output.dir)
 #' }
 #' @export
-vaRbatch <- function (all.variants, assembly = NULL, annotation = NULL, gene.specific.df=NULL, remote = FALSE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, print.data.frame = TRUE, excel.results = FALSE, output.dir = NULL, google.search = FALSE, verbose = FALSE){
+vaRbatch <- function (all.variants, assembly = NULL, annotation = NULL, gene.specific.df=NULL, remote = FALSE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, spliceai.10k= FALSE, print.data.frame = TRUE, excel.results = FALSE, output.dir = NULL, google.search = FALSE, verbose = FALSE){
   time <-  Sys.time() %>%
     stringr::str_replace_all("-|:| ", "_")
   log.folder<- checkDir (output.dir, "log")
@@ -207,6 +210,7 @@ vaRbatch <- function (all.variants, assembly = NULL, annotation = NULL, gene.spe
                     spliceai.masked = spliceai.masked,
                     provean.program = provean.program,
                     provean.sh = provean.sh,
+                    spliceai.10k= spliceai.10k,
                     excel.results = excel.results,
                     google.search = google.search,
                     output.dir= output.dir,
