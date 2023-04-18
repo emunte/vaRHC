@@ -16,10 +16,7 @@ The current version of the package is based on the GRCh37 assembly of the human 
 Installation and user guide are available at the [vignette](https://htmlpreview.github.io/?https://github.com/emunte/vaRHC/blob/main/inst/doc/vaRHC.html).
 
 ## Citation
-vaRHC was developed by Elisabet Munté Roca. Please if you use vaRHC cite the paper:
-
-Munté, E. et al. vaRHC: an R package for semi-automation of variant classification in hereditary cancer genes according to ACMG/AMP and gene-specific ClinGen guidelines. Bioinformatics 8908 (2023) doi:10.1093/BIOINFORMATICS/BTAD128.
-
+vaRHC was developed by Elisabet Munté Roca. The paper is now being submitted. 
 
 ## Legal advice and privacy policy for users
 ### Legal advice
