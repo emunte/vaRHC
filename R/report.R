@@ -504,7 +504,7 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
                             startRow=7, startCol=12,
                             header=FALSE, rownames= FALSE)
 
-  XLConnect::writeWorksheet(wb, vaRinfo$canonical.skip.pred, sheet="NMD",
+  XLConnect::writeWorksheet(wb, vaRinfo$codon.stop$canonical.skip.pred %>% as.data.frame(), sheet="NMD",
                             startRow=7, startCol=10,
                             header=FALSE, rownames= FALSE)
 
