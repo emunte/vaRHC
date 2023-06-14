@@ -14,10 +14,11 @@ vaRbatch(
   spliceai.program = FALSE,
   spliceai.reference = NULL,
   spliceai.annotation = NULL,
-  spliceai.distance = 1000,
+  spliceai.distance = 4999,
   spliceai.masked = 1,
   provean.program = FALSE,
   provean.sh = NULL,
+  spliceai.10k = FALSE,
   print.data.frame = TRUE,
   excel.results = FALSE,
   output.dir = NULL,
@@ -51,6 +52,8 @@ vaRbatch(
 \item{provean.program}{Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.}
 
 \item{provean.sh}{Path to provean.sh. It will only be considered if provean.program is set to TRUE.}
+
+\item{spliceai.10k}{Logical. By default is FALSE and SpliceAI-10k will not be computed. It can only be computed if provean.program is TRUE}
 
 \item{print.data.frame}{Logical. By defaul is TRUE and the results will be stored in a txt file.}
 
