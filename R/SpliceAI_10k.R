@@ -74,8 +74,9 @@ annotationSplice <- function(object, .tmp, genome ){
 
 
 
-spliceai10k <- function(input, refseq.table, DS_AGDG_MIN_T= 0.02, DS_AGDG_MAX_T=0.05, GEX_size_MIN=25, GEX_size_MAX=500, DS_ALDL_MIN_T=0.02, DS_ALDL_MAX_T=0.2,  AG_T=0.2, DG_T=0.2, ref_genome){
+spliceai10k <- function(input, refseq.table, genome, DS_AGDG_MIN_T= 0.02, DS_AGDG_MAX_T=0.05, GEX_size_MIN=25, GEX_size_MAX=500, DS_ALDL_MIN_T=0.02, DS_ALDL_MAX_T=0.2,  AG_T=0.2, DG_T=0.2){
 
+  ref.genome <- ifelse(genome==37, "hg19", "hg38" )
   #load input
   input.splice.all <- input %>%
     # Splitting SpliceAI predictions if multiple transcripts included
@@ -398,7 +399,8 @@ spliceai10k <- function(input, refseq.table, DS_AGDG_MIN_T= 0.02, DS_AGDG_MAX_T=
                                                                    frameshift = Partial_frameshift,
                                                                    varPos = POS,
                                                                    ref = REF,
-                                                                   alt = ALT),"-"))
+                                                                   alt = ALT,
+                                                                   ref.genome = ref.genome),"-"))
   # for partial exon deletion
   output <- output %>%
     dplyr::rowwise() %>%
@@ -412,7 +414,9 @@ spliceai10k <- function(input, refseq.table, DS_AGDG_MIN_T= 0.02, DS_AGDG_MAX_T=
                                                                 frameshift = Partial_frameshift,
                                                                 varPos = POS,
                                                                 ref = REF,
-                                                                alt = ALT),"-"))
+                                                                alt = ALT,
+                                                                ref.genome = ref.genome),
+                                                "-"))
   # for (multi)exon skipping
   output <- output %>%
     dplyr::rowwise() %>%
@@ -447,7 +451,8 @@ spliceai10k <- function(input, refseq.table, DS_AGDG_MIN_T= 0.02, DS_AGDG_MAX_T=
                                                              frameshift = Intron_retention_frameshift,
                                                              varPos = POS,
                                                              ref = REF,
-                                                             alt = ALT),"-"))
+                                                             alt = ALT,
+                                                             ref.seq=ref.seq),"-"))
   # clean up the partial frameshift column
   output <- output %>%
     dplyr::rowwise() %>%
@@ -637,7 +642,7 @@ find_exon_lost <- function(transcript,DLposition,ALposition,refseqTab) {
 # Extract the changed amino acid sequence for partial's
 get_partial_SEQ <- function(transcript,consensusStart,consensusEnd,
                             partialStart,partialEnd,refseqTable,
-                            frameshift,varPos,ref,alt) {
+                            frameshift,varPos,ref,alt, ref.genome) {
   # correct the start site, from ucsc table format
   consensusStart = consensusStart+1
   consensusTable = make_consensus_table(transcript,refseqTable,filterNONCOD = TRUE)
@@ -732,8 +737,8 @@ get_partial_SEQ <- function(transcript,consensusStart,consensusEnd,
   # remove any but the immediate upstream exon
   partialTable <- partialTable %>%
     dplyr::ungroup() %>%
-    dplyr::slice(., ((rowNumber-1):n()))
-  predictSEQ = determine_aaSEQ(partialTable,consensusTable,frameshift,varPos,ref,alt)
+    dplyr::slice(., ((rowNumber-1):dplyr::n()))
+  predictSEQ = determine_aaSEQ(partialTable,consensusTable,frameshift,varPos,ref,alt, ref.genome)
   return(predictSEQ)
 }
 
@@ -781,16 +786,16 @@ get_skip_SEQ <- function(exons,refseqTable,frameshift,transcript,varPos,ref,alt)
   # remove any but the immediate upstream exon
   skipTable <- skipTable %>%
     dplyr::ungroup() %>%
-    dplyr::slice(., (rowNumber:n()))
-  predictSEQ = determine_aaSEQ(skipTable,consensusTable,frameshift,varPos,ref,alt)
+    dplyr::slice(., (rowNumber:dplyr::n()))
+  predictSEQ = determine_aaSEQ(skipTable,consensusTable,frameshift,varPos,ref,alt, ref.genome)
   return(predictSEQ)
 }
 
 
 
 # Format the refseq table to reflect the pseudoexon activation impact
-get_pseudo_SEQ <- function(pseudoStart,pseudoEnd,refseqTable,frameshift,
-                           transcript,varPos,ref,alt) {
+get_pseudo_SEQ <- function(pseudoStart, pseudoEnd, refseqTable, frameshift,
+                           transcript, varPos, ref, alt) {
   if (is.na(pseudoStart) | is.na(pseudoEnd)) {
     return("gain site/s not intronic")
   }
@@ -832,14 +837,14 @@ get_pseudo_SEQ <- function(pseudoStart,pseudoEnd,refseqTable,frameshift,
   # remove any but the immediate upstream exon
   pseudoTable <- pseudoTable %>%
     dplyr::ungroup() %>%
-    dplyr::slice(., ((rowNumber-1):n()))
-  predictSEQ = determine_aaSEQ(pseudoTable,consensusTable,frameshift,varPos,ref,alt)
+    dplyr::slice(., ((rowNumber-1):dplyr::n()))
+  predictSEQ = determine_aaSEQ(pseudoTable,consensusTable,frameshift,varPos,ref,alt, ref.genome)
   return(predictSEQ)
 }
 
 
 # Format the refseq table to reflect the intron retention impact
-get_retention_SEQ <- function(refseqTable,intron,frameshift,transcript,varPos,ref,alt) {
+get_retention_SEQ <- function(refseqTable,intron,frameshift,transcript,varPos,ref,alt, ref.genome) {
   if (is.na(intron)) {
     return("loss site/s do not match consensus")
   }
@@ -903,14 +908,14 @@ get_retention_SEQ <- function(refseqTable,intron,frameshift,transcript,varPos,re
   # remove any but the immediate upstream exon
   retentionTable <- retentionTable %>%
     dplyr::ungroup() %>%
-    dplyr::slice(., ((rowNumber-1):n()))
-  predictSEQ = determine_aaSEQ(retentionTable,consensusTable,frameshift,varPos,ref,alt)
+    dplyr::slice(., ((rowNumber-1):dplyr::n()))
+  predictSEQ = determine_aaSEQ(retentionTable,consensusTable,frameshift,varPos,ref,alt, ref.genome )
   return(predictSEQ)
 }
 
 
 # Overview function to predict the amino acid sequence
-determine_aaSEQ <- function(altTable,consensusTab,frameshift,varPos,ref,alt) {
+determine_aaSEQ <- function(altTable,consensusTab,frameshift,varPos,ref,alt, ref.genome) {
   strand = consensusTab$strand[[1]]
   # remove the equivalent rows from the consensus table to match the altered table
   if (strand == -1) {
@@ -922,9 +927,9 @@ determine_aaSEQ <- function(altTable,consensusTab,frameshift,varPos,ref,alt) {
   currentChr = consensusTab$chrom[[1]]
   consensusTab <- consensusTab %>%
     dplyr::ungroup() %>%
-    dplyr::slice(., ((minKeepExonRow):n()))
+    dplyr::slice(., ((minKeepExonRow):dplyr::n()))
   # get the DNA sequences
-  if(ref_genome =="hg19"){
+  if(ref.genome =="hg19"){
     alteredExonDNAseqs <- Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg19::Hsapiens,paste0("chr",altTable$chrom),start=altTable$eStartAdj,end=altTable$eEnd)
     consensusExonDNAseqs <- Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg19::Hsapiens,paste0("chr",consensusTab$chrom),start=consensusTab$eStartAdj,end=consensusTab$eEnd)
     # make necessary adjustments for the variant itself
