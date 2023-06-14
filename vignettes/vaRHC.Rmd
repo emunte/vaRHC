@@ -53,9 +53,9 @@ Moreover, it has been demonstrated that the combination of criteria in ACMG/AMP 
 
 In the last 5 years, some programs have been developed with the aim to semi-automatize the process of variant classification. Most tools are based on ACMG-AMP general rules but others focus on a set of genes. 
 
-`vaRHC` has been developed to automate as much as possible the process of variant classification in hereditary cancer (HC). The aim is to streamline the work of biologists and avoid possible manual error following gene-specific guidelines for *ATM*, *CDH1*, *CHEK2*, *MLH1*, *MSH2*, *MSH6*, *PMS2*, *PTEN* and *TP53* and the updated general ACMG rules for the remaining cancer susceptibility genes. The final classification is obtained according to  Tatigian's natural scoring Bayesian-based metastructure (Tavtigian et al., 2020) but also considering the  CanVIG-UK incompatibilities proposal. vaRHC gives the oportunity to export the output in a .xlsx file as a user-friendly way to examine and store the results allowing non-bioinformatic users to work with them, and even modify the file adding their considerations or information regarding the non-automatable criteria. 
+`vaRHC` has been developed to automate as much as possible the process of variant classification in hereditary cancer (HC). The aim is to streamline the work of biologists and avoid possible manual error following gene-specific guidelines for *APC*, *ATM*, *CDH1*, *CHEK2*, *MLH1*, *MSH2*, *MSH6*, *PALB2*, *PMS2*, *PTEN* and *TP53* and the updated general ACMG rules for the remaining cancer susceptibility genes. The final classification is obtained according to  Tatigian's natural scoring Bayesian-based metastructure (Tavtigian et al., 2020) but also considering the  CanVIG-UK incompatibilities proposal. vaRHC gives the oportunity to export the output in a .xlsx file as a user-friendly way to examine and store the results allowing non-bioinformatic users to work with them, and even modify the file adding their considerations or information regarding the non-automatable criteria. 
 
-The current version of the package is based on the GRCh37 assembly of the human genome and works for single substitutions, deletions and insertions up to 25 bp, intronic variants and 5’ or 3’-UTR variants 25 bp beyond the coding sequence. 
+The current version of the package  works for single substitutions, deletions and insertions up to 25 bp, intronic variants and 5’ or 3’-UTR variants.
 
 ## 2. Installation {#install}
 vaRHC can be downloaded from CRAN:
@@ -159,15 +159,17 @@ Insight database needs to be queried using RSelenium package. However, we have d
 The ***browser*** parameter is used to set which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs" (but they have not been tested for this package).
 
 ##### 3.1.1.2.4 SpliceAI related parameters
-- ***spliceai.program*** : *Logical*. By default is FALSE , assuming that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants considering a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set the parameter to TRUE.
+- ***spliceai.program*** : *Logical*. By default is FALSE , assuming that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants considering a spliceAI distance of 1000 and will show masked results for *ATM*, *BRCA1*, *BRCA2*, MMR genes, *TP53* and *PTEN*. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set the parameter to TRUE.
 
-- ***spliceai.referenc*** : Path to the Reference genome hg19 fasta file. It can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
+- ***spliceai.reference*** : Path to the Reference genome hg19 fasta file. It can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
 
 - ***spliceai.annotation*** : Path to gene annotation file. By default it uses the file stored in package docs folder: "../docs/gencode.v38lift37.annotation.txt"
 
 - ***spliceai.distance*** :  *Integer*. Maximum distance between the variant and gained/lost splice site (default: 1000)
 
 - ***spliceai.masked*** : Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1, that is masked)
+
+- ***spliceai.10k*** : *Logical*. By default is FALSE. If TRUE performs SpliceAI.10k calculation. Be aware that it will increase dramatically the time needed per variant.
 
 ##### 3.1.1.2.5 Provean related parameters
 - ***provean***: *Logical*. By default is FALSE and it is assumed that provean program is not installed in your computer. Set to TRUE if you want to compute provean locally.

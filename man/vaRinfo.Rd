@@ -20,6 +20,7 @@ vaRinfo(
   spliceai.masked = 1,
   provean.program = FALSE,
   provean.sh = NULL,
+  spliceai.10k = FALSE,
   google.search = FALSE,
   verbose = FALSE
 )

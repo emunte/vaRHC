@@ -22,7 +22,7 @@
 #' @author Elisabet Munté Roca
 #' @references
 #' Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17, 405–424. https://doi.org/10.1038/gim.2015.30
-vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, output.dir = NULL, remote = TRUE, browser="firefox",  spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation =  NULL , spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL, google.search = FALSE, verbose = FALSE){
+vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, output.dir = NULL, remote = TRUE, browser="firefox",  spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation =  NULL , spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL, spliceai.10k= FALSE, google.search = FALSE, verbose = FALSE){
   assembly = "hg19"
   nm.nc <- NMparam(gene, NM = NM,  CCDS = CCDS)
   cat("0% completed ... correcting variant nomenclature \n")
@@ -74,6 +74,7 @@ vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, ou
                                 spliceai.masked = spliceai.masked,
                                 provean.program = provean.program,
                                 provean.sh = provean.sh,
+                                spliceai.10k= spliceai.10k,
                                 verbose = verbose
                                 )
   cat("60% completed ... getting loss of function information\n")
@@ -107,7 +108,7 @@ vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, ou
              cancer.hotspots= cancer.hotspots,
              class.info = list(last.nt = bbdd.info$last.nt,
                                pvs1.cdh1 = bbdd.info$pvs1.cdh1,
-                               pvs1.atm = bbdd.info$pvs1.atm
+                               pvs1.atm.apc = bbdd.info$pvs1.atm.apc
              ))
   return(out)
 }
@@ -203,7 +204,7 @@ extractBBDD <- function(mutalyzer, object, gnom){
   #PVS1 cdh1
   pvs1.cdh1 <- paste0("SELECT PVS1 FROM canonicals WHERE location='c.", pos.nt ,"'")
   #PVS1 ATM
-  pvs1.atm <- paste0("SELECT PVS1_strength, reasoning FROM canonicals_ATM WHERE variant='", object$variant,"'")
+  pvs1.atm.apc <- paste0("SELECT PVS1_strength, reasoning FROM canonicals_ATM WHERE variant='", object$variant,"'")
 
   #gnomad
   exomes.gnomad <- queriesGnomad("exomes", gnom)
@@ -230,7 +231,7 @@ extractBBDD <- function(mutalyzer, object, gnom){
                   atm = atm,
                   last.nt = last.nt,
                   pvs1.cdh1 = pvs1.cdh1,
-                  pvs1.atm = pvs1.atm,
+                  pvs1.atm.apc = pvs1.atm.apc,
                   gnomad1.exomes = exomes.gnomad[1],
                   gnomad2.exomes = exomes.gnomad[2],
                   gnomad.up.exomes = exomes.gnomad[3],
@@ -571,16 +572,28 @@ flossiesInfo <- function(nomen.flossies, nomen.gnomAD=NULL, gene){
 clinVarIds <- function(object){
   clinvar.info <- data.frame()
   server.clinvar <- "https://clinicaltables.nlm.nih.gov/api/variants/v3/search?"
+  server2.clinvar <- "https://clinicaltables.nlm.nih.gov/api/variants/v4/search?"
   if (object$most.severe.consequence == "missense_variant"){
     utils::data("BLOSUM62", package="Biostrings", envir = environment())
     aa.search <- paste0("p.", toProtein(object$protein)$aa.ref, toProtein(object$protein)$aa.pos)
     variant.clinvar <- stringr::str_replace(object$variant, "\\+", "\\\\+" )
     ext.clinvar.all <- paste0("terms=(", object$gene,")", aa.search, "{1}")
-    clinvar.info <- api2(server.clinvar, ext.clinvar.all)[[4]] %>% tibble::as_tibble()
+    clinvar.info1 <- api2(server.clinvar, ext.clinvar.all)[[4]] %>% tibble::as_tibble()
+    clinvar.info2 <- api2(server2.clinvar, ext.clinvar.all)[[4]] %>% tibble::as_tibble()
+
+    if(nrow(clinvar.info1)>0 & nrow(clinvar.info2)>0){
+    clinvar.info <- merge(clinvar.info1, clinvar.info2, by ="V1", all=TRUE) %>%
+      dplyr::mutate(V2=ifelse(is.na(.data$V2.x), .data$V2.y, .data$V2.x)) %>% select(V1, V2) %>%tibble::as_tibble()
+    }else if(nrow(clinvar.info1)>0 & nrow(clinvar.info2)==0){
+      clinvar.info <- clinvar.info1
+    }else{
+      clinvar.info <- clinvar.info2
+    }
+
     if(nrow(clinvar.info)>0){
       clinvar.info <- clinvar.info %>%
                       dplyr::filter((stringr::str_detect(.data$V2, paste0(aa.search, "[A-Z]+")) | stringr::str_detect(.data$V2, paste0(aa.search, "[a-z]+"))) &
-                                      stringr::str_detect(.data$V2,object$gene) & !stringr::str_detect(.data$V2, "del")& !stringr::str_detect(.data$V2, "Ter") &!stringr::str_detect(.data$V2, "fs"))
+                                      stringr::str_detect(.data$V2,object$gene) & !stringr::str_detect(.data$V2, "del")& !stringr::str_detect(.data$V2, "Ter") &!stringr::str_detect(.data$V2, "fs")&!stringr::str_detect(.data$V2, "dup"))
     }
     if(nrow(clinvar.info)>0){
       clinvar.info <- clinvar.info %>%
@@ -747,8 +760,8 @@ reviewStatus <- function(table.clinvar){
 #' @noRd
 clinVarTable <- function(table, verbose = FALSE){
   a <- lapply(table$url, function(g, verbose){
-    page <- readUrl(g)
-    if (!is.na(page)){
+    page <- try(readUrl(g))
+    if (!is.na(page) && any(class(page[1])!="try-error")){
       table.ex <- rvest::html_table(page, fill=TRUE)
       colnames(table.ex[[4]]) <- c("Interpretation", "Review_status",  "Condition", "Submitter", "More_information", "more")
       interpret <- table.ex[[4]][1] %>%

@@ -34,7 +34,8 @@ Imports:
     rlang,
     tidyselect,
     R.utils,
-    testthat
+    testthat,
+    XVector
 Suggests: 
     knitr,
     utils,

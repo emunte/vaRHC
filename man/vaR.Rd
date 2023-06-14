@@ -19,6 +19,7 @@ vaR(
   spliceai.masked = 1,
   provean.program = FALSE,
   provean.sh = NULL,
+  spliceai.10k = FALSE,
   excel.results = FALSE,
   output.dir = NULL,
   google.search = FALSE,
@@ -53,6 +54,8 @@ vaR(
 \item{provean.program}{Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.}
 
 \item{provean.sh}{Path to provean.sh. It will only be considered if provean.program is set to TRUE.}
+
+\item{spliceai.10k}{Logical. By default is FALSE and SpliceAI-10k will not be computed. It can only be computed if provean.program is TRUE.}
 
 \item{excel.results}{Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved}
 

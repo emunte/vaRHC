@@ -8,7 +8,7 @@ In 2015, the American College of Molecular Genetics and Genomics (ACMG) together
 Later, specific guidelines have been published for some genes by collaborative groups. 
 
 `vaRHC` has been developed to automate as much as possible the process of variant classification in hereditary cancer.
-It follows gene-specific guidelines for ATM, CDH1, CHEK2, MLH1, MSH2, MSH6, PMS2, PTEN and TP53, and the updated general ACMG/AMP rules for other cancer susceptibility genes. The final classification is obtained according to Tavtigian’s natural scoring Bayesian-based metastructure (Tavtigian et al., 2020) but also considering some of the proposed CanVIG-UK incompatibilities.
+It follows gene-specific guidelines for *APC*, *ATM*, *CDH1*, *CHEK2*, *MLH1*, *MSH2*, *MSH6*, *PALB2*, *PMS2*, *PTEN* and *TP53*, and the updated general ACMG/AMP rules for other cancer susceptibility genes. The final classification is obtained according to Tavtigian’s natural scoring Bayesian-based metastructure (Tavtigian et al., 2020) but also considering some of the proposed CanVIG-UK incompatibilities.
 
 The current version of the package is based on the GRCh37 assembly of the human genome and works for single substitutions, deletions and insertions up to 25 bp, intronic variants and 5’ or 3’-UTR variants 25 bp beyond the coding sequence. 
 
@@ -16,10 +16,7 @@ The current version of the package is based on the GRCh37 assembly of the human 
 Installation and user guide are available at the [vignette](https://htmlpreview.github.io/?https://github.com/emunte/vaRHC/blob/main/inst/doc/vaRHC.html).
 
 ## Citation
-vaRHC was developed by Elisabet Munté Roca. Please if you use vaRHC cite the paper:
-
-Munté, E. et al. vaRHC: an R package for semi-automation of variant classification in hereditary cancer genes according to ACMG/AMP and gene-specific ClinGen guidelines. Bioinformatics 8908 (2023) doi:10.1093/BIOINFORMATICS/BTAD128.
-
+vaRHC was developed by Elisabet Munté Roca. The paper is now being submitted. 
 
 ## Legal advice and privacy policy for users
 ### Legal advice

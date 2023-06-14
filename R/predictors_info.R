@@ -4,7 +4,7 @@
 
 ## General
 #' @noRd
-predicInfo <- function(object, gene.specific, bbdd, gnomad, output.dir, spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation = NULL, spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL, verbose){
+predicInfo <- function(object, gene.specific, bbdd, gnomad, output.dir, spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation = NULL, spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL, spliceai.10k= FALSE, verbose){
   httr::set_config(httr::config(ssl_verifypeer = 0L))
   ensembl.id <- ensemblTranscript(object$NM, object$gene)
   #scores
@@ -22,7 +22,13 @@ predicInfo <- function(object, gene.specific, bbdd, gnomad, output.dir, spliceai
       dbnsfp$PROVEAN_score <- proveanR(object = object, provean.sh = provean.sh , bbdd = bbdd, output.dir = output.dir)
   }
   align.gvgd <- alignGvgd(object, bbdd)
-  spliceai.score <- spliceaiR(object = object, ext.spliceai = gnomad, output.dir = output.dir, bbdd = bbdd, spliceai.program = spliceai.program, reference.splice = spliceai.reference, annotation.splice = spliceai.annotation, distance = spliceai.distance, mask = spliceai.masked, verbose = verbose)
+  spliceai <- spliceaiR(object = object, ext.spliceai = gnomad, output.dir = output.dir, bbdd = bbdd, spliceai.program = spliceai.program, reference.splice = spliceai.reference, annotation.splice = spliceai.annotation, distance = spliceai.distance, mask = spliceai.masked, verbose = verbose, spliceai.10k = TRUE)
+  spliceai.score <- spliceai[1:4]
+  if(spliceai.10k== TRUE){
+    spliceai.output.10k <- spliceai$spliceai10k
+  }else{
+    spliceai.output.10k <- data.frame()
+  }
   # while(is.na(spliceai.score$Acceptor_Gain)[1]){
   #   spliceai.score <-  spliceaiR(object, ensembl.id)
   # }
@@ -120,7 +126,10 @@ predicInfo <- function(object, gene.specific, bbdd, gnomad, output.dir, spliceai
   predictors.table2["Prior_utah_splicing_reference", "classification"] <- prior.utah.splice.reference[1]
   predictors.table2["Prior_utah_splicing_reference", "classification"] [predictors.table2["Prior_utah_splicing_reference", "use"]=="yes"& is.na(predictors.table2["Prior_utah_splicing_reference", "classification"])] <- "not applicable"
   predictors.table2["Prior_utah_splicing_de_novo", "classification"] [predictors.table2["Prior_utah_splicing_de_novo", "use"]=="yes"& is.na(predictors.table2["Prior_utah_splicing_de_novo", "classification"])] <- "not applicable"
-  return(predictors.table2)
+
+  predictors = list(predictors.table2= predictors.table2,
+                 spliceai.10k = spliceai.output.10k)
+  return(predictors)
 }
 
 #' @noRd
@@ -460,8 +469,9 @@ proveanR <- function(object, provean.sh, bbdd, output.dir, verbose, cores=1){
 
 #' SpliceaiR
 #' @references Jaganathan, K., Panagiotopoulou, S. K., McRae, J. F., Darbandi, S. F., Knowles, D., Li, Y. I., ... & Farh, K. K. H. (2019). Predicting splicing from primary sequence with deep learning. Cell, 176(3), 535-548.
+#' Canson DM, Davidson AL et al. Bioinformatics 2023 https://doi.org/10.1093/bioinformatics/btad179
 #' @noRd
-spliceaiR <- function(object, ext.spliceai, output.dir, genome = 37, distance = 1000, precomputed = 1, mask = 1, bbdd, spliceai.program = FALSE,  reference.splice = NULL, annotation.splice = NULL, verbose) {
+spliceaiR <- function(object, ext.spliceai, output.dir, genome = 37, distance = 4999, precomputed = 1, mask = 1, bbdd, spliceai.program = FALSE,  reference.splice = NULL, annotation.splice = NULL, verbose, spliceai.10k= FALSE) {
   ignore <- ifelse(isTRUE(verbose),
                    FALSE,
                    TRUE)
@@ -477,7 +487,7 @@ spliceaiR <- function(object, ext.spliceai, output.dir, genome = 37, distance = 
 
   }
 
-  if((cond==F || (cond==T && nrow(spliceai.score)==0)) && spliceai.program == TRUE){
+  if((cond==F || (cond==T && nrow(spliceai.score)==0)) && spliceai.program == TRUE || spliceai.10k == TRUE ){
     assertthat::assert_that(!is.null(reference.splice), msg="Reference file must be provided if spliceAI has to be computed")
     assertthat::assert_that(file.exists(reference.splice) & stringr::str_detect(reference.splice, ".fa"), msg="Please enter a valid reference file")
     if(!is.null(annotation.splice)) assertthat::assert_that(file.exists(annotation.splice) , msg="Reference file does not exist, please enter a valid one or keep it null")
@@ -521,11 +531,13 @@ spliceaiR <- function(object, ext.spliceai, output.dir, genome = 37, distance = 
       stringr::str_replace_all("-|:| ", "_")
 
     if (is.null(annotation.splice)){
-      data("gencode_spliceai_hg19",  envir = environment())
-      names(gencode_spliceai_hg19) <- c("#NAME",	"CHROM",	"STRAND",	"TX_START",	"TX_END",	"EXON_START",	"EXON_END")
-      write.table(gencode_spliceai_hg19, file.path(.tmp, "gencode_spliceai_hg19.txt"), sep="\t", col.names=TRUE, row.names = FALSE, quote = FALSE)
-      annotation.splice <- file.path(.tmp, "gencode_spliceai_hg19.txt")
-    }
+      refseq.table <- annotationSplice(object, .tmp, genome)
+      # data("gencode_spliceai_hg19",  envir = environment())
+      # names(gencode_spliceai_hg19) <- c("#NAME",	"CHROM",	"STRAND",	"TX_START",	"TX_END",	"EXON_START",	"EXON_END")
+      # write.table(gencode_spliceai_hg19, file.path(.tmp, "gencode_spliceai_hg19.txt"), sep="\t", col.names=TRUE, row.names = FALSE, quote = FALSE)
+      # annotation.splice <- file.path(.tmp, "gencode_spliceai_hg19.txt")
+      annotation.splice <- file.path(.tmp, "spliceai_tx.txt")
+      }
 
     write.table(var.tros2,
                 file  = file.path(.tmp, paste0("var_splice", time, ".txt")),
@@ -546,29 +558,52 @@ spliceaiR <- function(object, ext.spliceai, output.dir, genome = 37, distance = 
     try(system(paste("chmod  +x", cp.splice.directory),  intern = FALSE))
     cmd2 <- paste(cp.splice.directory, "spiceAI_env/bin/activate", inputVCF, outputFile, distance, mask, reference.splice, annotation.splice)
     try(system(cmd2, ignore.stderr = ignore))
+
+
+
     vcf <- vcfR::read.vcfR(outputFile, "hg19", verbose = verbose)
+    input <- readr::read_tsv(outputFile, comment="##",
+                             col_types = c(`#CHROM` = "c",
+                                           REF="c"))
+    annotation.splice <-
+
+    if(spliceai.10k==TRUE){
+      #output.file <- file.path(.tmp, "SAI_10k_calc/variants_parsed.tsv" )
+      output.spliceai10k <- spliceai10k(input, refseq.table)
+
+    }
     splice <- vcf@fix [,8] %>%
       stringr::str_split (paste0(",[A-z]\\|", object$gene, "| [A-Z]\\|", object$gene, "|", object$gene)) %>%
       unlist()
     #delete intermediate files and directory
     unlink(.tmp, recursive=TRUE)
     spliceai.score <- splice[stringr::str_detect(splice, ensembl.id)==T]
-    assertthat::assert_that(length(spliceai.score)!=0, msg= "Transcript not listed in SpliceAI annotation file. Please provide another annotation file if you want to compute this variant")
-    spliceai.score <- stringr::str_split(spliceai.score, "[|]") %>%
-      unlist()
-    spliceai.score <- spliceai.score[2:9]
+    if(length(spliceai.score)!=0){
+      spliceai.score <- stringr::str_split(spliceai.score, "[|]") %>%
+        unlist()
+      spliceai.score <- spliceai.score[2:9]
+    }else{
+      NM.no.vers <- stringr::str_extract(object$NM, "NM_[0-9]+")
+      spliceai.score <- splice[stringr::str_detect(splice, NM.no.vers)==T]
+      spliceai.score <- stringr::str_split(spliceai.score, "[|]|,") %>%
+        unlist()
+      assertthat::assert_that(length(spliceai.score)!=0, msg= "Transcript not listed in SpliceAI annotation file. Please provide another annotation file if you want to compute this variant")
+
+      spliceai.score <- spliceai.score[3:10]
+    }
+
     spliceai.score <- matrix (spliceai.score, nrow=4)
 
     splice.return <- list(Acceptor_Gain = spliceai.score[1,],
                           Acceptor_Loss = spliceai.score[2,],
                           Donor_Gain = spliceai.score[3,],
-                          Donor_Loss = spliceai.score[4,])
+                          Donor_Loss = spliceai.score[4,],
+                          spliceai10k = output.spliceai10k)
   } else if (spliceai.program == FALSE && (cond==FALSE  || (cond==T &&nrow(spliceai.score)==0))){
     stop("This variant has not a precalculated score, spliceai program should be installed to calculate it")
   }
   return(splice.return)
 }
-
 
 
 insilico <- function (predictors.df, predictor.type, veredict ){

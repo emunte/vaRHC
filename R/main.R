@@ -7,6 +7,7 @@
 #' @import stringr
 #' @import R.utils
 #' @import testthat
+#' @import XVector
 #' @importFrom assertthat assert_that
 #' @importFrom tibble as_tibble
 #' @importFrom tibble rownames_to_column
@@ -22,6 +23,7 @@
 #' @importFrom xml2 read_html
 #' @importFrom XML readHTMLTable
 #' @importFrom utils URLencode data write.table
+
 NULL
 
 # #' @import rtracklayer
@@ -76,6 +78,7 @@ NULL
 #' @param spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
 #' @param provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
 #' @param provean.sh Path to provean.sh. It will only be considered if provean.program is set to TRUE.
+#' @param spliceai.10k Logical. By default is FALSE and SpliceAI-10k will not be computed. It can only be computed if provean.program is TRUE.
 #' @param excel.results Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved
 #' @param output.dir  output.dir must provide the folder to store the results. By default is NULL.
 #' @param google.search Logical. By default is FALSE and it will not look for variant results in google.
@@ -97,7 +100,7 @@ NULL
 #' Feliubadaló, L., Moles-Fernández, A., Santamariña-Pena, M., Sánchez, A. T., López-Novo, A., Porras, L. M., Blanco, A., Capellá, G., de la Hoya, M., Molina, I. J., Osorio, A., Pineda, M., Rueda, D., de la Cruz, X., Diez, O., Ruiz-Ponte, C., Gutiérrez-Enríquez, S., Vega, A., & Lázaro, C. (2021). A Collaborative Effort to Define Classification Criteria for ATM Variants in Hereditary Cancer Patients. Clinical chemistry, 67(3), 518–533. https://doi.org/10.1093/clinchem/hvaa250
 #' @export
 
-vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote=TRUE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, excel.results = FALSE,  output.dir = NULL, google.search = FALSE, verbose = FALSE ){
+vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote=TRUE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, spliceai.10k= FALSE, excel.results = FALSE,  output.dir = NULL, google.search = FALSE, verbose = FALSE ){
   if(!is.null(output.dir))assertthat::assert_that(dir.exists(output.dir), msg = "Output directory does not exists, please enter a valid one.")
   cat("looking for VariantInfo, please wait\n")
   info <- vaRinfo(gene = gene,
@@ -115,6 +118,7 @@ vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote
                   spliceai.masked = spliceai.masked,
                   provean.program = provean.program,
                   provean.sh = provean.sh,
+                  spliceai.10k = spliceai.10k,
                   google.search = google.search,
                   verbose = verbose)
   cat("calculating the final classification , please wait \n")
@@ -144,6 +148,7 @@ vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote
 #' @param spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
 #' @param provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
 #' @param provean.sh Path to provean.sh. It will only be considered if provean.program is set to TRUE.
+#' @param spliceai.10k Logical. By default is FALSE and SpliceAI-10k will not be computed. It can only be computed if provean.program is TRUE
 #' @param print.data.frame  Logical. By defaul is TRUE and the results will be stored in a txt file.
 #' @param excel.results Logical. By default is FALSE and no excel file would be produced. If TRUE and excel file will be saved
 #' @param google.search Logical. By default is FALSE and it will not look for variant results in google.
@@ -159,16 +164,14 @@ vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote
 #' all <- vaRbatch( all.variants = ex_vaRbatch, spliceai.program = FALSE, output.dir = output.dir)
 #' }
 #' @export
-vaRbatch <- function (all.variants, assembly = NULL, annotation = NULL, gene.specific.df=NULL, remote = FALSE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, print.data.frame = TRUE, excel.results = FALSE, output.dir = NULL, google.search = FALSE, verbose = FALSE){
+vaRbatch <- function (all.variants, assembly = NULL, annotation = NULL, gene.specific.df=NULL, remote = FALSE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 4999, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, spliceai.10k= FALSE, print.data.frame = TRUE, excel.results = FALSE, output.dir = NULL, google.search = FALSE, verbose = FALSE){
   time <-  Sys.time() %>%
     stringr::str_replace_all("-|:| ", "_")
   log.folder<- checkDir (output.dir, "log")
   file.create(file.path(log.folder,paste0(time, ".log")))
-
   if(is.character(all.variants)){
   all.variants <- vcfToCodingDNA (file.vcf = all.variants , assembly = assembly , log.dir = output.dir )
   }
-
   all.variants.list <- list()
   df.variants2 <- data.frame(NM=NULL, gene=NULL, variant=NULL, prot=NULL, final_class=NULL, all_criteria=NULL,
                              PVS1=NULL, PS1=NULL,  PS3=NULL,
@@ -207,52 +210,66 @@ vaRbatch <- function (all.variants, assembly = NULL, annotation = NULL, gene.spe
                     spliceai.masked = spliceai.masked,
                     provean.program = provean.program,
                     provean.sh = provean.sh,
+                    spliceai.10k= spliceai.10k,
                     excel.results = excel.results,
                     google.search = google.search,
                     output.dir= output.dir,
                     verbose = verbose)
       crit <- paste0(info.R$vaRclass$final.classification$criteria.assigned  , collapse=";")
       if(print.data.frame == TRUE){
-        df.variants2 <- rbind(df.variants2,
-                              c(info.R$vaRinfo$Variant.Info$NM,
-                                info.R$vaRinfo$Variant.Info$gene,
-                                info.R$vaRinfo$Variant.Info$variant,
-                                info.R$vaRinfo$Variant.Info$protein,
-                                info.R$vaRclass$final.classification$final.class,
-                                crit,
-                                info.R$vaRclass$final.criteria$PVS1.message,
-                                info.R$vaRclass$final.criteria$PS1.message,
-                                info.R$vaRclass$final.criteria$PS3.message,
-                                info.R$vaRclass$final.criteria$PM1.message,
-                                info.R$vaRclass$final.criteria$PM2.message,
-                                info.R$vaRclass$final.criteria$PM4.message,
-                                info.R$vaRclass$final.criteria$PM5.message,
-                                info.R$vaRclass$final.criteria$PP3.message,
-                                info.R$vaRclass$final.criteria$BA1.message,
-                                info.R$vaRclass$final.criteria$BS1.message,
-                                info.R$vaRclass$final.criteria$BS2.message,
-                                info.R$vaRclass$final.criteria$BS3.message,
-                                info.R$vaRclass$final.criteria$BP4.message,
-                                info.R$vaRclass$final.criteria$BP7.message,
-                                ifelse(length(purrr::map(info.R$vaRinfo$clinVar$clinVar.info$variant,7) %>% purrr::map(1) %>% unlist() %>% as.character())==0,NA, purrr::map(info.R$vaRinfo$clinVar$clinVar.info$variant,7) %>% purrr::map(1) %>% unlist() %>% as.character()),
-                                ifelse(length(purrr::map(info.R$vaRinfo$clinVar$clinVar.info$variant,7) %>% purrr::map(2) %>% unlist() %>% as.character())==0,NA, purrr::map(info.R$vaRinfo$clinVar$clinVar.info$variant,7) %>% purrr::map(2) %>% unlist() %>% as.character()),
-                                info.R$vaRinfo$predictors$predictor.table[14,"values"],
-                                info.R$vaRinfo$predictors$predictor.table[14,"position"],
-                                info.R$vaRinfo$predictors$predictor.table[15,"values"],
-                                info.R$vaRinfo$predictors$predictor.table[15,"position"],
-                                info.R$vaRinfo$predictors$predictor.table[16,"values"],
-                                info.R$vaRinfo$predictors$predictor.table[16,"position"],
-                                info.R$vaRinfo$predictors$predictor.table[17,"values"],
-                                info.R$vaRinfo$predictors$predictor.table[17,"position"],
-                                info.R$vaRinfo$predictors$predictor.table[4,"values"]
-                              ))
-        names(df.variants2) <- c("NM", "gene", "variant", "prot", "final_class", "all_criteria",
+        var.pred <- ifelse(is.na(info.R$vaRinfo$codon.stop)[5],
+               NA,
+               info.R$vaRinfo$codon.stop$canonical.skip.pred$variant)
+
+        prot.pred <- ifelse(is.na(info.R$vaRinfo$codon.stop)[5],
+                            NA,
+                            info.R$vaRinfo$codon.stop$canonical.skip.pred$protein)
+        df.var <- data.frame(info.R$vaRinfo$Variant.Info$NM,
+                   info.R$vaRinfo$Variant.Info$gene,
+                   info.R$vaRinfo$Variant.Info$variant,
+                   info.R$vaRinfo$Variant.Info$protein,
+                   info.R$vaRclass$final.classification$final.class,
+                   crit,
+                   info.R$vaRclass$final.criteria$PVS1.message,
+                   info.R$vaRclass$final.criteria$PS1.message,
+                   info.R$vaRclass$final.criteria$PS3.message,
+                   info.R$vaRclass$final.criteria$PM1.message,
+                   info.R$vaRclass$final.criteria$PM2.message,
+                   info.R$vaRclass$final.criteria$PM4.message,
+                   info.R$vaRclass$final.criteria$PM5.message,
+                   info.R$vaRclass$final.criteria$PP3.message,
+                   info.R$vaRclass$final.criteria$BA1.message,
+                   info.R$vaRclass$final.criteria$BS1.message,
+                   info.R$vaRclass$final.criteria$BS2.message,
+                   info.R$vaRclass$final.criteria$BS3.message,
+                   info.R$vaRclass$final.criteria$BP4.message,
+                   info.R$vaRclass$final.criteria$BP7.message,
+                   ifelse(length(purrr::map(info.R$vaRinfo$clinVar$clinVar.info$variant,7) %>% purrr::map(1) %>% unlist() %>% as.character())==0,NA, purrr::map(info.R$vaRinfo$clinVar$clinVar.info$variant,7) %>% purrr::map(1) %>% unlist() %>% as.character()),
+                   ifelse(length(purrr::map(info.R$vaRinfo$clinVar$clinVar.info$variant,7) %>% purrr::map(2) %>% unlist() %>% as.character())==0,NA, purrr::map(info.R$vaRinfo$clinVar$clinVar.info$variant,7) %>% purrr::map(2) %>% unlist() %>% as.character()),
+                   info.R$vaRinfo$predictors$predictor.table$predictors.table2[14,"values"],
+                   info.R$vaRinfo$predictors$predictor.table$predictors.table2[14,"position"],
+                   info.R$vaRinfo$predictors$predictor.table$predictors.table2[15,"values"],
+                   info.R$vaRinfo$predictors$predictor.table$predictors.table2[15,"position"],
+                   info.R$vaRinfo$predictors$predictor.table$predictors.table2[16,"values"],
+                   info.R$vaRinfo$predictors$predictor.table$predictors.table2[16,"position"],
+                   info.R$vaRinfo$predictors$predictor.table$predictors.table2[17,"values"],
+                   info.R$vaRinfo$predictors$predictor.table$predictors.table2[17,"position"],
+                   info.R$vaRinfo$predictors$predictor.table$predictors.table2[4,"values"],
+                   var.pred,
+                   prot.pred,
+                   info.R$vaRinfo$predictors$predictor.table$spliceai.10k
+        )
+        names(df.var) <- c("NM", "gene", "variant", "prot", "final_class", "all_criteria",
                                  "PVS1", "PS1", "PS3",
                                  "PM1", "PM2",  "PM4", "PM5",  "PP3",
                                  "BA1", "BS1", "BS2", "BS3", "BP4", "BP7",
                                  "clinvar_class", "clinvar_review",
                                  "spliceAI_AG_score", "spliceAI_AG_dis","spliceAI_AL_score", "spliceAI_AL_dis", "spliceAI_DG_score", "spliceAI_DG_dis",  "spliceAI_DL_score", "spliceAI_DL_dis",
-                                 "REVEL")
+                                 "REVEL", "variant_pred", "prot.pred")
+
+        df.variants2 <- rbind(df.variants2,
+                              df.var)
+
         dataframe.folder<- checkDir (output.dir, "dataframe")
         write.table(x = df.variants2,
                     file = file.path(dataframe.folder, paste0(time, "variants.txt")),
