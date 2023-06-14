@@ -108,7 +108,7 @@ vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, ou
              cancer.hotspots= cancer.hotspots,
              class.info = list(last.nt = bbdd.info$last.nt,
                                pvs1.cdh1 = bbdd.info$pvs1.cdh1,
-                               pvs1.atm = bbdd.info$pvs1.atm
+                               pvs1.atm.apc = bbdd.info$pvs1.atm.apc
              ))
   return(out)
 }
@@ -204,7 +204,7 @@ extractBBDD <- function(mutalyzer, object, gnom){
   #PVS1 cdh1
   pvs1.cdh1 <- paste0("SELECT PVS1 FROM canonicals WHERE location='c.", pos.nt ,"'")
   #PVS1 ATM
-  pvs1.atm <- paste0("SELECT PVS1_strength, reasoning FROM canonicals_ATM WHERE variant='", object$variant,"'")
+  pvs1.atm.apc <- paste0("SELECT PVS1_strength, reasoning FROM canonicals_ATM WHERE variant='", object$variant,"'")
 
   #gnomad
   exomes.gnomad <- queriesGnomad("exomes", gnom)
@@ -231,7 +231,7 @@ extractBBDD <- function(mutalyzer, object, gnom){
                   atm = atm,
                   last.nt = last.nt,
                   pvs1.cdh1 = pvs1.cdh1,
-                  pvs1.atm = pvs1.atm,
+                  pvs1.atm.apc = pvs1.atm.apc,
                   gnomad1.exomes = exomes.gnomad[1],
                   gnomad2.exomes = exomes.gnomad[2],
                   gnomad.up.exomes = exomes.gnomad[3],
@@ -580,12 +580,20 @@ clinVarIds <- function(object){
     ext.clinvar.all <- paste0("terms=(", object$gene,")", aa.search, "{1}")
     clinvar.info1 <- api2(server.clinvar, ext.clinvar.all)[[4]] %>% tibble::as_tibble()
     clinvar.info2 <- api2(server2.clinvar, ext.clinvar.all)[[4]] %>% tibble::as_tibble()
+
+    if(nrow(clinvar.info1)>0 & nrow(clinvar.info2)>0){
     clinvar.info <- merge(clinvar.info1, clinvar.info2, by ="V1", all=TRUE) %>%
       dplyr::mutate(V2=ifelse(is.na(.data$V2.x), .data$V2.y, .data$V2.x)) %>% select(V1, V2) %>%tibble::as_tibble()
+    }else if(nrow(clinvar.info1)>0 & nrow(clinvar.info2)==0){
+      clinvar.info <- clinvar.info1
+    }else{
+      clinvar.info <- clinvar.info2
+    }
+
     if(nrow(clinvar.info)>0){
       clinvar.info <- clinvar.info %>%
                       dplyr::filter((stringr::str_detect(.data$V2, paste0(aa.search, "[A-Z]+")) | stringr::str_detect(.data$V2, paste0(aa.search, "[a-z]+"))) &
-                                      stringr::str_detect(.data$V2,object$gene) & !stringr::str_detect(.data$V2, "del")& !stringr::str_detect(.data$V2, "Ter") &!stringr::str_detect(.data$V2, "fs"))
+                                      stringr::str_detect(.data$V2,object$gene) & !stringr::str_detect(.data$V2, "del")& !stringr::str_detect(.data$V2, "Ter") &!stringr::str_detect(.data$V2, "fs")&!stringr::str_detect(.data$V2, "dup"))
     }
     if(nrow(clinvar.info)>0){
       clinvar.info <- clinvar.info %>%
@@ -752,8 +760,8 @@ reviewStatus <- function(table.clinvar){
 #' @noRd
 clinVarTable <- function(table, verbose = FALSE){
   a <- lapply(table$url, function(g, verbose){
-    page <- readUrl(g)
-    if (!is.na(page)){
+    page <- try(readUrl(g))
+    if (!is.na(page) && any(class(page[1])!="try-error")){
       table.ex <- rvest::html_table(page, fill=TRUE)
       colnames(table.ex[[4]]) <- c("Interpretation", "Review_status",  "Condition", "Submitter", "More_information", "more")
       interpret <- table.ex[[4]][1] %>%
