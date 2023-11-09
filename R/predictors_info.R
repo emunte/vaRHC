@@ -22,7 +22,7 @@ predicInfo <- function(object, gene.specific, bbdd, gnomad, output.dir, spliceai
       dbnsfp$PROVEAN_score <- proveanR(object = object, provean.sh = provean.sh , bbdd = bbdd, output.dir = output.dir)
   }
   align.gvgd <- alignGvgd(object, bbdd)
-  spliceai <- spliceaiR(object = object, ext.spliceai = gnomad, output.dir = output.dir, bbdd = bbdd, spliceai.program = spliceai.program, reference.splice = spliceai.reference, annotation.splice = spliceai.annotation, distance = spliceai.distance, mask = spliceai.masked, verbose = verbose, spliceai.10k = TRUE)
+  spliceai <- spliceaiR(object = object, ext.spliceai = gnomad, output.dir = output.dir, bbdd = bbdd, spliceai.program = spliceai.program, reference.splice = spliceai.reference, annotation.splice = spliceai.annotation, distance = spliceai.distance, mask = spliceai.masked, verbose = verbose, spliceai.10k = spliceai.10k)
   spliceai.score <- spliceai[1:4]
   if(spliceai.10k== TRUE){
     spliceai.output.10k <- spliceai$spliceai10k
