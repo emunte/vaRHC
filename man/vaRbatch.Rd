@@ -12,6 +12,7 @@ vaRbatch(
   remote = FALSE,
   browser = "firefox",
   spliceai.program = FALSE,
+  spliceai.genome = "hg19",
   spliceai.reference = NULL,
   spliceai.annotation = NULL,
   spliceai.distance = 4999,
@@ -29,7 +30,7 @@ vaRbatch(
 \arguments{
 \item{all.variants}{it requires a dataframe object or the path to a file vcf. For the dataframe object variants must be coding dna sequence and it may have two columns gene and variant (see vignette to know ho to prepare the dataframe)}
 
-\item{assembly}{Assembly used for the vcf generation. It can only be "hg19" or "hg38" assembly. By default is NULL.}
+\item{assembly}{Assembly used for the vcf generation and the one that want to be used for SpliceAI calculation. It can only be "hg19" or "hg38" assembly. If is NULL it will be calculated in hg19.}
 
 \item{annotation}{character. Only needed if a vcf file is provided. It can only be LRG or MANE_select. Variants will be annotated considering LRG or MANE_select transcripts.}
 
@@ -41,7 +42,9 @@ vaRbatch(
 
 \item{spliceai.program}{Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.}
 
-\item{spliceai.reference}{Path to the Reference genome hg19 fasta file. Can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.}
+\item{spliceai.genome}{Fasta file assembly provided. It can only be "hg19" or "hg38" assembly. By default it will be hg19.}
+
+\item{spliceai.reference}{Path to the Reference genome hg19 or hg38 fasta file. hg19 fasta file can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.}
 
 \item{spliceai.annotation}{Path to gene annotation file. By default it uses the file data(gencode_spliceai_hg19). It must be txt.}
 
