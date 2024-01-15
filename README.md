@@ -16,7 +16,10 @@ The current version of the package works for single substitutions, deletions and
 Installation and user guide are available at the [vignette](https://htmlpreview.github.io/?https://github.com/emunte/vaRHC/blob/main/inst/doc/vaRHC.html).
 
 ## Citation
-vaRHC was developed by Elisabet Munté Roca. The paper is now being submitted. 
+vaRHC was developed by Elisabet Munté Roca. 
+Please cite us if you use vaRHC to help classify variants.
+Elisabet Munté, Lidia Feliubadaló, Marta Pineda, Eva Tornero, Maribel Gonzalez, José Marcos Moreno-Cabrera, Carla Roca, Joan Bales Rubio, Laura Arnaldo, Gabriel Capellá, Jose Luis Mosquera, Conxi Lázaro, vaRHC: an R package for semi-automation of variant classification in hereditary cancer genes according to ACMG/AMP and gene-specific ClinGen guidelines, Bioinformatics, Volume 39, Issue 3, March 2023, btad128, https://doi.org/10.1093/bioinformatics/btad128
+
 
 ## Legal advice and privacy policy for users
 ### Legal advice
