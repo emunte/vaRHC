@@ -104,6 +104,7 @@ Optional parameters of *vaR()* are described below.
 
 - ***CCDS***: Consensus CDS ID retrieved from NCBI CCDS database (which can be found in the following link https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi). By default is set to NULL. vaRHC will consider the IDs detailed in the table above. 
 
+
 ##### 3.1.1.2.2 gene.specific.df
 **gene.specific.df**: By default the parameter is set to NULL as it considers the gene-specific cutoffs, frequencies and additional parameters queried in the IDIBELL database as described in the paper *vaRHC: an R package for semi-automation of variant classification in hereditary cancer genes according to ACMG/AMP and gene-specific ClinGen guidelines [Manuscript submitted for publication]*.
 This table contains gene-specific information for applying the following criteria: BA1, BS1, BS2, PM2, predictors cut-off and BP7. If the user wants to modify any of these criteria or specify another additional gene, a table containing all these criteria can be loaded to the R environment, and set as the gene.specific.df parameter. 
@@ -161,7 +162,8 @@ The ***browser*** parameter is used to set which browser to start Rselenium serv
 ##### 3.1.1.2.4 SpliceAI related parameters
 - ***spliceai.program*** : *Logical*. By default is FALSE , assuming that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants considering a spliceAI distance of 1000 and will show masked results for *ATM*, *BRCA1*, *BRCA2*, MMR genes, *TP53* and *PTEN*. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set the parameter to TRUE.
 
-- ***spliceai.reference*** : Path to the Reference genome hg19 fasta file. It can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
+- ***spliceai.genome***: It can be either "hg19" or "hg38". By default "hg19".
+- ***spliceai.reference*** : Path to the Reference genome hg19 or hg38 fasta file. Hg19 file can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
 
 - ***spliceai.annotation*** : Path to gene annotation file. By default it uses the file stored in package docs folder: "../docs/gencode.v38lift37.annotation.txt"
 
@@ -313,7 +315,7 @@ batch.results <- vaRbatch( all.variants = eg.variants, spliceai.program =FALSE, 
 
 #Example 3
 vcf.file <- "path/to/vcf.vcf"
-results <- vaRbatch(all.variants= vcf.file, annotation="hg19", spliceai.program = TRUE, spliceai.reference = "/path/to/vcf.vcf", remote=TRUE, output.dir = output.dir, excel.results = FALSE, print.data.frame = TRUE)
+results <- vaRbatch(all.variants= vcf.file, assembly="hg19", spliceai.program = TRUE, spliceai.reference = "/path/to/vcf.vcf", remote=TRUE, output.dir = output.dir, excel.results = FALSE, print.data.frame = TRUE)
 ```
 
 #### 3.1.2 Output
