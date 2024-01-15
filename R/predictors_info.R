@@ -544,7 +544,8 @@ spliceaiR <- function(object, ext.spliceai, output.dir, genome = 37, distance = 
                 row.names=FALSE,
                 sep="\t",
                 quote=FALSE)
-    vcf.header <- system.file("extdata", "vcf_spliceAI.vcf", package="vaRHC")
+
+    vcf.header <- system.file("extdata", ifelse(genome==37,"vcf_spliceAI.vcf","vcf_spliceAI_hg38.vcf"), package="vaRHC")
     cmd <- paste0("cat ", vcf.header, " ", file.path(.tmp, paste0("var_splice", time, ".txt"))," > ", file.path(.tmp, paste0("spliceAI_R",time,".vcf")))
     try(system(cmd))
     inputVCF <- file.path(.tmp, paste0("spliceAI_R",time,".vcf"))
