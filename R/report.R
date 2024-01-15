@@ -472,7 +472,7 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
 
 
   #············Predictors----
-  XLConnect::writeWorksheet(wb, vaRinfo$predictors$predictor.table, sheet="Predictors",
+  XLConnect::writeWorksheet(wb, vaRinfo$predictors$predictor.table$predictors.table2, sheet="Predictors",
                             startRow=8, startCol=1,
                             header=FALSE, rownames= FALSE)
 
@@ -513,7 +513,7 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
                             header=FALSE, rownames= FALSE)
 
 if(nrow(vaRinfo$predictors$predictor.table$spliceai.10k)>0){
-  XLConnect::writeWorksheet(wb, vaRinfo$predictors$predictor.table$spliceai.10k[1,10:19], sheet="NMD",
+  XLConnect::writeWorksheet(wb, vaRinfo$predictors$predictor.table$spliceai.10k[1,c(1:5,10:19)], sheet="NMD",
                             startRow=12, startCol=1,
                             header=FALSE, rownames= FALSE)
   XLConnect::writeWorksheet(wb, vaRinfo$predictors$predictor.table$spliceai.10k[1,20:32], sheet="NMD",
@@ -546,7 +546,7 @@ if(nrow(vaRinfo$predictors$predictor.table$spliceai.10k)>0){
                               sheet="Bibliography data vaRHC", startRow=8, startCol=1, header=FALSE)
     if (!(gene %in% c("BRCA1", "BRCA2"))) XLConnect::setRowHeight(wb, sheet="Bibliography data vaRHC", row=c(5:9), height = 0 )
   }else{
-    XLConnect::writeWorksheet(wb,  vaRinfo$functional.assays$parsons,
+    XLConnect::writeWorksheet(wb,  vaRinfo$functional.assays$parsons[1,2:ncol(vaRinfo$functional.assays$parsons)],
                               sheet="Bibliography data vaRHC", startRow=8, startCol=1, header=FALSE)
   }
 
@@ -578,7 +578,7 @@ if(nrow(vaRinfo$predictors$predictor.table$spliceai.10k)>0){
                               sheet="Bibliography data vaRHC", startRow=27, startCol=1, header=FALSE)
     if (!(gene %in% c("MSH2"))) XLConnect::setRowHeight(wb, sheet="Bibliography data vaRHC", row=c(25:27), height = 0 )
   }else{
-    XLConnect::writeWorksheet(wb, vaRinfo$functional.assays$jia,
+    XLConnect::writeWorksheet(wb, vaRinfo$functional.assays$jia[1, 2:ncol(vaRinfo$functional.assays$jia)],
                               sheet="Bibliography data vaRHC", startRow=27, startCol=1, header=FALSE)
   }
 
