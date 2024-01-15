@@ -31,7 +31,7 @@ NULL
 # #' @importFrom IRanges IRanges
 # #' @importFrom seqinr write.fasta
 
-#' @name gencode_spliceai_hg19
+#' @name gencode_spliceaihg19_
 #' @title gencode_spliceai_hg19
 #' @docType data
 #' @references adapted from SpliceAI-lookup \url{https://github.com/broadinstitute/SpliceAI-lookup/blob/master/annotations/gencode.v38lift37.annotation.txt.gz}
@@ -72,7 +72,8 @@ NULL
 #' @param remote Logical. Connect remotely to RSelenium server? By default is TRUE and will start Rselenium server.If it is FALSE vaRHC will not connect to insight database.
 #' @param browser Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".
 #' @param spliceai.program Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.
-#' @param spliceai.reference Path to the Reference genome hg19 fasta file. Can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
+#' @param spliceai.genome Fasta file assembly provided. It can only be "hg19" or "hg38" assembly. By default it will be hg19.
+#' @param spliceai.reference Path to the Reference genome hg19 hg38 fasta file. hg19 file can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
 #' @param spliceai.annotation Path to gene annotation file. By default it uses the file data(gencode_spliceai_hg19). It must be txt.
 #' @param spliceai.distance  Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)
 #' @param spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
@@ -100,7 +101,7 @@ NULL
 #' Feliubadaló, L., Moles-Fernández, A., Santamariña-Pena, M., Sánchez, A. T., López-Novo, A., Porras, L. M., Blanco, A., Capellá, G., de la Hoya, M., Molina, I. J., Osorio, A., Pineda, M., Rueda, D., de la Cruz, X., Diez, O., Ruiz-Ponte, C., Gutiérrez-Enríquez, S., Vega, A., & Lázaro, C. (2021). A Collaborative Effort to Define Classification Criteria for ATM Variants in Hereditary Cancer Patients. Clinical chemistry, 67(3), 518–533. https://doi.org/10.1093/clinchem/hvaa250
 #' @export
 
-vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote=TRUE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, spliceai.10k= FALSE, excel.results = FALSE,  output.dir = NULL, google.search = FALSE, verbose = FALSE ){
+vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote=TRUE, browser="firefox", spliceai.program = FALSE, spliceai.genome="hg19", spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 1000, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, spliceai.10k= FALSE, excel.results = FALSE,  output.dir = NULL, google.search = FALSE, verbose = FALSE ){
   if(!is.null(output.dir))assertthat::assert_that(dir.exists(output.dir), msg = "Output directory does not exists, please enter a valid one.")
   cat("looking for VariantInfo, please wait\n")
   info <- vaRinfo(gene = gene,
@@ -112,6 +113,7 @@ vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote
                   remote = remote,
                   browser = browser,
                   spliceai.program = spliceai.program,
+                  spliceai.genome = spliceai.genome,
                   spliceai.reference = spliceai.reference,
                   spliceai.annotation = spliceai.annotation,
                   spliceai.distance = spliceai.distance,
@@ -136,13 +138,14 @@ vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote
 #' vaRbatch()
 #' @description  vaRbatch function allows to perform vaR function in batch. It also returns a logfile.
 #' @param all.variants it requires a dataframe object or the path to a file vcf. For the dataframe object variants must be coding dna sequence and it may have two columns gene and variant (see vignette to know ho to prepare the dataframe)
-#' @param assembly Assembly used for the vcf generation. It can only be "hg19" or "hg38" assembly. By default is NULL.
+#' @param assembly Assembly used for the vcf generation and the one that want to be used for SpliceAI calculation. It can only be "hg19" or "hg38" assembly. If is NULL it will be calculated in hg19.
 #' @param annotation  character. Only needed if a vcf file is provided. It can only be LRG or MANE_select. Variants will be annotated considering LRG or MANE_select transcripts.
 #' @param gene.specific.df By default is NULL, it uses the default parameters described in README. If you would like to change some defaults or include another gene, a template can be downloaded from Github: https://github.com/emunte/Class_variants/tree/main/documents/gen_especific.csv or in the package docs folder and some parameters can be modified taking into account your preferences
 #' @param remote Logical. Connect remotely to RSelenium server? By default is FALSE and it will not start Rselenium server.If it is TRUE vaRHC will connect to insight database.
 #' @param browser Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".
 #' @param spliceai.program Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.
-#' @param spliceai.reference Path to the Reference genome hg19 fasta file. Can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
+#' @param spliceai.genome Fasta file assembly provided. It can only be "hg19" or "hg38" assembly. By default it will be hg19.
+#' @param spliceai.reference Path to the Reference genome hg19 or hg38 fasta file. hg19 fasta file can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
 #' @param spliceai.annotation Path to gene annotation file. By default it uses the file data(gencode_spliceai_hg19). It must be txt.
 #' @param spliceai.distance  Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)
 #' @param spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
@@ -164,7 +167,7 @@ vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote
 #' all <- vaRbatch( all.variants = ex_vaRbatch, spliceai.program = FALSE, output.dir = output.dir)
 #' }
 #' @export
-vaRbatch <- function (all.variants, assembly = NULL, annotation = NULL, gene.specific.df=NULL, remote = FALSE, browser="firefox", spliceai.program = FALSE, spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 4999, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, spliceai.10k= FALSE, print.data.frame = TRUE, excel.results = FALSE, output.dir = NULL, google.search = FALSE, verbose = FALSE){
+vaRbatch <- function (all.variants, assembly = NULL, annotation = NULL, gene.specific.df=NULL, remote = FALSE, browser="firefox", spliceai.program = FALSE, spliceai.genome= "hg19", spliceai.reference = NULL, spliceai.annotation = NULL, spliceai.distance = 4999, spliceai.masked = 1, provean.program = FALSE, provean.sh = NULL, spliceai.10k= FALSE, print.data.frame = TRUE, excel.results = FALSE, output.dir = NULL, google.search = FALSE, verbose = FALSE){
   time <-  Sys.time() %>%
     stringr::str_replace_all("-|:| ", "_")
   log.folder<- checkDir (output.dir, "log")
@@ -204,6 +207,7 @@ vaRbatch <- function (all.variants, assembly = NULL, annotation = NULL, gene.spe
                     remote = remote,
                     browser = browser,
                     spliceai.program = spliceai.program,
+                    spliceai.genome = spliceai.genome,
                     spliceai.reference = spliceai.reference,
                     spliceai.annotation = spliceai.annotation,
                     spliceai.distance = spliceai.distance,
@@ -224,6 +228,13 @@ vaRbatch <- function (all.variants, assembly = NULL, annotation = NULL, gene.spe
         prot.pred <- ifelse(is.na(info.R$vaRinfo$codon.stop)[5],
                             NA,
                             info.R$vaRinfo$codon.stop$canonical.skip.pred$protein)
+        if (length(info.R$vaRinfo$predictors$predictor.table$spliceai.10k)==0){
+          splice.10k <- rep(NA,47 ) %>% as.data.frame() %>% t()
+        }else{
+          splice.10k <- info.R$vaRinfo$predictors$predictor.table$spliceai.10k
+        }
+
+
         df.var <- data.frame(info.R$vaRinfo$Variant.Info$NM,
                    info.R$vaRinfo$Variant.Info$gene,
                    info.R$vaRinfo$Variant.Info$variant,
@@ -257,15 +268,30 @@ vaRbatch <- function (all.variants, assembly = NULL, annotation = NULL, gene.spe
                    info.R$vaRinfo$predictors$predictor.table$predictors.table2[4,"values"],
                    var.pred,
                    prot.pred,
-                   info.R$vaRinfo$predictors$predictor.table$spliceai.10k
+                   splice.10k
+
         )
         names(df.var) <- c("NM", "gene", "variant", "prot", "final_class", "all_criteria",
-                                 "PVS1", "PS1", "PS3",
-                                 "PM1", "PM2",  "PM4", "PM5",  "PP3",
-                                 "BA1", "BS1", "BS2", "BS3", "BP4", "BP7",
-                                 "clinvar_class", "clinvar_review",
-                                 "spliceAI_AG_score", "spliceAI_AG_dis","spliceAI_AL_score", "spliceAI_AL_dis", "spliceAI_DG_score", "spliceAI_DG_dis",  "spliceAI_DL_score", "spliceAI_DL_dis",
-                                 "REVEL", "variant_pred", "prot.pred")
+                           "PVS1", "PS1", "PS3",
+                           "PM1", "PM2",  "PM4", "PM5",  "PP3",
+                           "BA1", "BS1", "BS2", "BS3", "BP4", "BP7",
+                           "clinvar_class", "clinvar_review",
+                           "spliceAI_AG_score", "spliceAI_AG_dis","spliceAI_AL_score", "spliceAI_AL_dis", "spliceAI_DG_score", "spliceAI_DG_dis",  "spliceAI_DL_score", "spliceAI_DL_dis",
+                           "REVEL", "variant_pred", "prot.pred",
+                           "CHROM",	"POS",	"ID",	"REF",	"ALT",	"QUAL",	"FILTER",
+                           "ALLELE",	"SYMBOL",	"DS_AG",	"DS_AL",	"DS_DG",
+                           "DS_DL",	"DP_AG",	"DP_AL",	"DP_DG",	"DP_DL",
+                           "Used_RefSeq_Transcript",	"strand",	"Cryptic_Acceptor_activation",
+                           "Cryptic_Donor_activation",	"Any_splicing_aberration",	"bp_5prime",
+                           "bp_3prime",	"Partial_intron_retention",	"Partial_exon_deletion",
+                           "Partial_exon_start",	"Partial_exon_end",	"Partial_frameshift",
+                           "Partial_intron_retention_aaseq",	"Partial_exon_deletion_aaseq",	"Gained_exon_size",
+                           "Pseudoexon_activation",	"Pseudoexon_start",	"Pseudoexon_end",
+                           "Pseudoexon_frameshift",	"Pseudoexon_intron",	"Pseudoexon_activation_aaseq",
+                           "Exon_skipping",	"Lost_exons",	"Exon_skipping_frameshift",
+                           "Exon_skipping_aaseq",	"Retained_intron_size",	"Intron_retention",	"Retained_intron",
+                           "Intron_retention_frameshift",	"Intron_retention_aaseq"
+)
 
         df.variants2 <- rbind(df.variants2,
                               df.var)

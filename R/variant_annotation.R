@@ -349,7 +349,8 @@ varDetails <- function (NM, NC=NULL, CCDS, gene, variant, variant.mutalyzer=NULL
   ensembl.id <- ensemblTranscript(NM, gene)$id
 
   #we construct vep extension
-  server.ensembl <- "http://grch37.rest.ensembl.org" #Ensembl's REST API
+  server.ensembl <- "http://grch37.rest.ensembl.org" #Ensembl's REST API hg19
+  server.ensembl.hg38 <- "http://rest.ensembl.org"#Ensembl's REST API hg38
   ext.vep <-  paste0("/vep/human/hgvs/",ensembl.id,":",variant.mutalyzer$variant)
   # ext.vep <-  paste0("/vep/human/hgvs/",NM,":",variant.mutalyzer$variant)
   # if(NM=="NM_000314.6")ext.vep <- paste0("/vep/human/hgvs/NM_000314.8:",variant.mutalyzer$variant)
@@ -362,16 +363,24 @@ varDetails <- function (NM, NC=NULL, CCDS, gene, variant, variant.mutalyzer=NULL
 
   ##to get the correct start and end
   ext.vep2 <- paste0("/vep/human/hgvs/",chr,":",unlist(stringr::str_split(variant.mutalyzer$genomic_hg37, ":"))[2])
-
+  ext.vep.hg38 <- paste0("/vep/human/hgvs/",chr,":",unlist(stringr::str_split(variant.mutalyzer$genomic_hg38, ":"))[2])
   #we get the information
   coordinates2 <- api2(server.ensembl, ext.vep2)
+  coordinates3 <- api2(server.ensembl.hg38, ext.vep.hg38)
   assertthat::assert_that(length(coordinates2$error)==0, msg=coordinates2$error)
-  end <-coordinates2$end[[1]]#coordenada final
-  start <-coordinates2$start[[1]]#coordenada inicio
+  end <-coordinates2$end[[1]]#final coordinate
+  start <-coordinates2$start[[1]]#start coordinate
+  end.hg38 <- coordinates3$end[[1]]#coordenada final
+  start.hg38 <- coordinates3$start[[1]]#start coordinate
   allele.string <- coordinates2$allele_string[[1]] %>%
     stringr::str_split("/") %>% unlist
   ref <- allele.string[1]#reference
   alt <- allele.string[2]#alternative
+
+  allele.string.hg38 <- coordinates3$allele_string[[1]] %>%
+    stringr::str_split("/") %>% unlist
+  ref.hg38 <- allele.string.hg38[1]#reference
+  alt.hg38 <- allele.string.hg38[2]#alternative
   most.severe.consequence <- tibble::tibble(coordinates$transcript_consequences[[1]])
   if(ncol(most.severe.consequence)==0) most.severe.consequence <- tibble::tibble(coordinates2$transcript_consequences[[1]])
   most.severe.consequence <- most.severe.consequence %>%
@@ -408,6 +417,8 @@ varDetails <- function (NM, NC=NULL, CCDS, gene, variant, variant.mutalyzer=NULL
       }
     }
   }
+
+
   object <- data.frame(NM=variant.mutalyzer$NM, variant=variant, protein=variant.mutalyzer$protein, strand=strand, gene=gene, most.severe.consequence=most.severe.consequence[1])
   exons <- coordNonCoding(variant.mutalyzer, object)
   #%>%
@@ -440,6 +451,12 @@ varDetails <- function (NM, NC=NULL, CCDS, gene, variant, variant.mutalyzer=NULL
   }
   domain.info <- domainProt(chr, start, end) %>%
                  unique
+
+  if(gene=="BRCA1"){
+    domains <- data.frame(domain=c("RING", "coiled-coil", "BRCT"), start_aa=c(2,1391,1650), end_aa=c(101,1424,1857))
+  }else if(gene=="BRCA2"){
+    domains <- data.frame(domain= c("PALB2", "DNA binding"), start_aa=c(10, 2481), end_aa=c(40,3186))
+  }
   uvs.df <- tibble::tibble (gene = variant.mutalyzer$gene,
                             NM= variant.mutalyzer$NM,
                             initial.var = variant,
@@ -450,8 +467,12 @@ varDetails <- function (NM, NC=NULL, CCDS, gene, variant, variant.mutalyzer=NULL
                             chr = chr,
                             start = start,
                             end = end,
+                            start.hg38 = start.hg38,
+                            end.hg38 = end.hg38,
                             ref = ref,
                             alt = alt ,
+                            ref.hg38 = ref.hg38,
+                            alt.hg38 = alt.hg38,
                             strand = strand,
                             exon_intron = variant.exon,
                             ensembl.id = ensembl.id,
@@ -571,10 +592,13 @@ aaShort <- function (aa){
 }
 
 
-gnomADnomen <- function(object){
+gnomADnomen <- function(object, genome=37){
   del.ins.sel <- stringr::str_detect(object$variant,"dup")|stringr::str_detect(object$variant,"del")|stringr::str_detect(object$variant,"ins")
   if (del.ins.sel== TRUE){
-    web.mutalyzer <- xml2::read_html(utils::URLencode(paste0("https://v2.mutalyzer.nl/name-checker?description=",object$genomic)))
+    web.mutalyzer <- xml2::read_html(utils::URLencode(paste0("https://v2.mutalyzer.nl/name-checker?description=",
+                                                             ifelse(genome==37,
+                                                                    object$genomic,
+                                                                    object$genomic_hg38))))
     sequence <- web.mutalyzer %>% rvest::html_nodes("pre")
     sequence1 <- sequence[1]
     seq1 <- stringr::str_split (as.character(sequence1), "\\>|\\<")[[1]][3]
@@ -600,10 +624,12 @@ gnomADnomen <- function(object){
     part1 <- stringr::str_sub(str.look, 1, y)
     part2 <- stringr::str_sub(str.look, y+length.pattern+1, stringr::str_length(str.look))
     string <- paste0(part1, part2)
-    position<- string==str.compare #matrix for each position of this string, we will save if the mutation is in that position if we obtain the same result (true), or not (FALSE)
+    position<- string == str.compare #matrix for each position of this string, we will save if the mutation is in that position if we obtain the same result (true), or not (FALSE)
     values <- grep(TRUE, position) %>% as.numeric()
     num.rest<-n-values[1] #we obtain the value where is the mutation located to the most leff position, and we do n-that number
-    start2<-object$start-num.rest-1 #-1 as gnomAD gives the position of one base before the change
+    start2<-ifelse(genome==37,
+                   object$start,
+                   object$start_hg38)-num.rest-1 #-1 as gnomAD gives the position of one base before the change
     ref <-ifelse(stringr::str_detect(object$variant, "del"),
                  stringr::str_sub(str.look, values[1], values[1]+length.pattern),
                  stringr::str_sub(str.look, values[1],values[1]))
@@ -625,7 +651,12 @@ gnomADnomen <- function(object){
     #   }
     # }
   }else{
-    gnomAD<-c(object$chr, object$start, object$ref, object$alt)
+    gnomAD<-c(object$chr, ifelse(genome==37,
+                                 object$start,
+                                 object$start.hg38), ifelse(genome==37,
+                                                            object$ref,
+                                                            object$ref.hg38), ifelse(genome==37,
+                                                                                     object$alt, object$alt.hg38))
   }
 
   gnomAD.variant<-paste0(object$chr, "-", gnomAD[2],"-",gnomAD[3], "-", gnomAD[4])#variants name in gnomAD
@@ -658,8 +689,10 @@ protsyn2 <- function(object, var.mut){
     seq.prot <- stringr::str_sub(var.mut$protein_predicted, pos.aa, pos.aa)
     aa <- Biostrings::AMINO_ACID_CODE[seq.prot]
     protein <- paste0("p.(", aa, pos.aa, "=)")
+  }else if(object$most.severe.consequence %in% c("intron_variant")){
+    protein <- "p.?"
   }
-  prot <- ifelse(object$most.severe.consequence %in% c("synonymous_variant"), protein, object$protein)
+  prot <- ifelse(object$most.severe.consequence %in% c("synonymous_variant", "intron_variant"), protein, object$protein)
   return(prot)
 }
 

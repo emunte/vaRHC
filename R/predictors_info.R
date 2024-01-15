@@ -4,7 +4,7 @@
 
 ## General
 #' @noRd
-predicInfo <- function(object, gene.specific, bbdd, gnomad, output.dir, spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation = NULL, spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL, spliceai.10k= FALSE, verbose){
+predicInfo <- function(object, gene.specific, bbdd, gnomad, output.dir, spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation = NULL, spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL, spliceai.10k= FALSE, genome=37, verbose){
   httr::set_config(httr::config(ssl_verifypeer = 0L))
   ensembl.id <- ensemblTranscript(object$NM, object$gene)
   #scores
@@ -22,7 +22,7 @@ predicInfo <- function(object, gene.specific, bbdd, gnomad, output.dir, spliceai
       dbnsfp$PROVEAN_score <- proveanR(object = object, provean.sh = provean.sh , bbdd = bbdd, output.dir = output.dir)
   }
   align.gvgd <- alignGvgd(object, bbdd)
-  spliceai <- spliceaiR(object = object, ext.spliceai = gnomad, output.dir = output.dir, bbdd = bbdd, spliceai.program = spliceai.program, reference.splice = spliceai.reference, annotation.splice = spliceai.annotation, distance = spliceai.distance, mask = spliceai.masked, verbose = verbose, spliceai.10k = spliceai.10k)
+  spliceai <- spliceaiR(object = object, ext.spliceai = gnomad, output.dir = output.dir, bbdd = bbdd, spliceai.program = spliceai.program, reference.splice = spliceai.reference, annotation.splice = spliceai.annotation, distance = spliceai.distance, mask = spliceai.masked, verbose = verbose, spliceai.10k = spliceai.10k, genome = genome)
   spliceai.score <- spliceai[1:4]
   if(spliceai.10k== TRUE){
     spliceai.output.10k <- spliceai$spliceai10k
@@ -167,10 +167,9 @@ intronicCutoff <- function (object){
     pos.intronic.signe <-  stringr::str_extract(object$variant, "[-|+]")
     pos.intronic <- stringr::str_extract(object$variant, "[-|+]+[0-9]*")
     pos.intronic <- as.numeric(stringr::str_extract(pos.intronic, "[0-9]+[0-9]*" ))
-    exp.gene <- object$gene %in% c("ATM", "PALB2", "CHEK2", "TP53")
+    exp.gene <- object$gene %in% c("ATM", "CHEK2", "TP53")
     intronic <- ifelse(exp.gene==FALSE & (pos.intronic.signe=="+"& pos.intronic >= 7 | pos.intronic.signe=="-"&pos.intronic >= 21) |
-                         (object$gene=="ATM"& (pos.intronic.signe=="+"& pos.intronic>7 | pos.intronic.signe=="-"&pos.intronic >40))|
-                         (object$gene=="PALB2"& (pos.intronic.signe=="+"& pos.intronic>20 | pos.intronic.signe=="-"&pos.intronic >40)),
+                         (object$gene=="ATM"& (pos.intronic.signe=="+"& pos.intronic>7 | pos.intronic.signe=="-"&pos.intronic >40)),
                        "yes",
                        ifelse(pos.intronic.signe%in% c("+", "-"),
                               "no",
@@ -196,8 +195,8 @@ predictorsUse <- function (table.predictor, gene.specific, object){
   table.predictor[c("Phylop", "Phastcons"), "use"][intronic=="yes" & (exp.gene|object$gene=="PALB2")] <-"yes"
   table.predictor[c("Gerp"), "use"]<- "no"
 
-  # REVEL is used for missense variants  in all genes except except MLH1, MSH2, MSH6 and PMS2 , PTEN, CDH1,PALB2 , TP53
-  sel.gen <- object$gene %in% c("MLH1", "MSH2", "MSH6", "PMS2", "PTEN", "CDH1", "TP53")
+  # REVEL is used for missense variants  in all genes except except MLH1, MSH2, MSH6 and PMS2 , PTEN, CDH1,PALB2 , TP53 and APC
+  sel.gen <- object$gene %in% c("APC", "MLH1", "MSH2", "MSH6", "PMS2", "PTEN", "CDH1", "TP53")
   #sel.consequence <- object$most.severe.consequence %in% c( "synonymous_variant", "splice", "frameshift_variant")
   table.predictor["Revel", "use"] <- ifelse ( sel.gen|object$most.severe.consequence !="missense_variant",  "no", "yes")
 
@@ -471,7 +470,7 @@ proveanR <- function(object, provean.sh, bbdd, output.dir, verbose, cores=1){
 #' @references Jaganathan, K., Panagiotopoulou, S. K., McRae, J. F., Darbandi, S. F., Knowles, D., Li, Y. I., ... & Farh, K. K. H. (2019). Predicting splicing from primary sequence with deep learning. Cell, 176(3), 535-548.
 #' Canson DM, Davidson AL et al. Bioinformatics 2023 https://doi.org/10.1093/bioinformatics/btad179
 #' @noRd
-spliceaiR <- function(object, ext.spliceai, output.dir, genome = 37, distance = 4999, precomputed = 1, mask = 1, bbdd, spliceai.program = FALSE,  reference.splice = NULL, annotation.splice = NULL, verbose, spliceai.10k= FALSE) {
+spliceaiR <- function(object, ext.spliceai, output.dir, genome = 37, distance = 4999, precomputed = 1, mask = 1, bbdd, spliceai.program = FALSE,  reference.splice = NULL, annotation.splice = NULL, verbose, spliceai.10k = FALSE) {
   ignore <- ifelse(isTRUE(verbose),
                    FALSE,
                    TRUE)
@@ -561,16 +560,15 @@ spliceaiR <- function(object, ext.spliceai, output.dir, genome = 37, distance = 
 
 
 
-    vcf <- vcfR::read.vcfR(outputFile, "hg19", verbose = verbose)
+    vcf <- vcfR::read.vcfR(outputFile, ifelse(genome==37,"hg19", "hg38"), verbose = verbose)
     input <- readr::read_tsv(outputFile, comment="##",
                              col_types = c(`#CHROM` = "c",
-                                           REF="c"))
-    annotation.splice <-
-
-    if(spliceai.10k==TRUE){
+                                           REF="c",
+                                           ALT="c"))
+    output.spliceai10k <- data.frame()
+    if(spliceai.10k==TRUE && !stringr::str_detect(object$variant,"del|dup|ins")){
       #output.file <- file.path(.tmp, "SAI_10k_calc/variants_parsed.tsv" )
-      output.spliceai10k <- spliceai10k(input, refseq.table)
-
+      try(output.spliceai10k <- spliceai10k(input, refseq.table, genome = genome))
     }
     splice <- vcf@fix [,8] %>%
       stringr::str_split (paste0(",[A-z]\\|", object$gene, "| [A-Z]\\|", object$gene, "|", object$gene)) %>%

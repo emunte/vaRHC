@@ -10,7 +10,8 @@
 #' @param remote Logical. Connect remotely to RSelenium server? By default is TRUE and will start Rselenium server.If it is FALSE vaRHC will not connect to insight database.
 #' @param browser Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".
 #' @param spliceai.program Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.
-#' @param spliceai.reference Path to the Reference genome hg19 fasta file. Can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
+#' @param spliceai.genome Fasta file assembly provided. It can only be "hg19" or "hg38" assembly. By default it will be hg19.
+#' @param spliceai.reference Path to the Reference genome hg19 or hg38 fasta file. hg19 file can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
 #' @param spliceai.annotation Path to gene annotation file. By default it uses the file data(gencode_spliceai_hg19). It must be txt.
 #' @param spliceai.distance  Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)
 #' @param spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
@@ -22,7 +23,12 @@
 #' @author Elisabet Munté Roca
 #' @references
 #' Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17, 405–424. https://doi.org/10.1038/gim.2015.30
-vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, output.dir = NULL, remote = TRUE, browser="firefox",  spliceai.program=FALSE, spliceai.reference=NULL, spliceai.annotation =  NULL , spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL, spliceai.10k= FALSE, google.search = FALSE, verbose = FALSE){
+vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, output.dir = NULL, remote = TRUE, browser="firefox",  spliceai.program=FALSE, spliceai.genome = "hg19", spliceai.reference=NULL, spliceai.annotation =  NULL , spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL, spliceai.10k= FALSE, google.search = FALSE, verbose = FALSE){
+
+  genome= ifelse(spliceai.genome=="hg38",
+                38,
+                37)
+
   assembly = "hg19"
   nm.nc <- NMparam(gene, NM = NM,  CCDS = CCDS)
   cat("0% completed ... correcting variant nomenclature \n")
@@ -45,7 +51,8 @@ vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, ou
   }
 
   cat("15% completed ... extracting bbdd information\n")
-  gnom <- gnomADnomen(object = variant.info)
+  gnom <- gnomADnomen(object = variant.info, genome=37)
+  gnom.hg38 <- gnomADnomen(object = variant.info, genome=38)
   bbdd.info <- extractBBDD(mutalyzer = variant.mutalyzer, object = variant.info, gnom = gnom) %>% connectionDB()
   if(is.null(gene.specific.df)) gene.specific.df <- bbdd.info$gene.specific
   gene.specific <- geneSpecific(gene = gene, gene.specific.df= gene.specific.df)
@@ -65,7 +72,8 @@ vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, ou
   predictor.table <- predicInfo(object = variant.info,
                                 gene.specific =  gene.specific,
                                 bbdd = bbdd.info,
-                                gnomad = gnom,
+                                gnomad = ifelse(genome==37, gnom, gnom.hg38),
+                                genome= genome,
                                 output.dir = output.dir,
                                 spliceai.program = spliceai.program,
                                 spliceai.reference = spliceai.reference,
@@ -203,8 +211,8 @@ extractBBDD <- function(mutalyzer, object, gnom){
   pos <- stringr::str_extract(object$variant, "[0-9]+")
   #PVS1 cdh1
   pvs1.cdh1 <- paste0("SELECT PVS1 FROM canonicals WHERE location='c.", pos.nt ,"'")
-  #PVS1 ATM
-  pvs1.atm.apc <- paste0("SELECT PVS1_strength, reasoning FROM canonicals_ATM WHERE variant='", object$variant,"'")
+  #PVS1 ATM, APC, PALB2 OR BRCA1 and 2
+  pvs1.atm.apc <- paste0("SELECT PVS1_strength, reasoning FROM canonicals_ATM WHERE variant='", object$variant,"' AND gene='", object$gene, "'")
 
   #gnomad
   exomes.gnomad <- queriesGnomad("exomes", gnom)
@@ -761,7 +769,7 @@ reviewStatus <- function(table.clinvar){
 clinVarTable <- function(table, verbose = FALSE){
   a <- lapply(table$url, function(g, verbose){
     page <- try(readUrl(g))
-    if (!is.na(page) && any(class(page[1])!="try-error")){
+    if (!is.na(page) && !is.null(page) && class(page)!="try-error" &&  any(class(page[1])!="try-error")){
       table.ex <- rvest::html_table(page, fill=TRUE)
       colnames(table.ex[[4]]) <- c("Interpretation", "Review_status",  "Condition", "Submitter", "More_information", "more")
       interpret <- table.ex[[4]][1] %>%
