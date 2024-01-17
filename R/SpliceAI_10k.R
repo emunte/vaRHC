@@ -452,7 +452,8 @@ spliceai10k <- function(input, refseq.table, genome, DS_AGDG_MIN_T= 0.02, DS_AGD
                                                              varPos = POS,
                                                              ref = REF,
                                                              alt = ALT,
-                                                             ref.seq=ref.seq),"-"))
+                                                             ref.genome=ref.genome),
+                                           "-"))
   # clean up the partial frameshift column
   output <- output %>%
     dplyr::rowwise() %>%
