@@ -629,7 +629,7 @@ gnomADnomen <- function(object, genome=37){
     num.rest<-n-values[1] #we obtain the value where is the mutation located to the most leff position, and we do n-that number
     start2<-ifelse(genome==37,
                    object$start,
-                   object$start_hg38)-num.rest-1 #-1 as gnomAD gives the position of one base before the change
+                   object$start.hg38)-num.rest-1 #-1 as gnomAD gives the position of one base before the change
     ref <-ifelse(stringr::str_detect(object$variant, "del"),
                  stringr::str_sub(str.look, values[1], values[1]+length.pattern),
                  stringr::str_sub(str.look, values[1],values[1]))
