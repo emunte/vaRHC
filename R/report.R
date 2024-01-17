@@ -57,12 +57,16 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
 
   if(length(vaRinfo$Variant.Info.other) > 0){
     for(i in 1:length(vaRinfo$Variant.Info.other)){
-      XLConnect::writeWorksheet(wb,  vaRinfo$Variant.Info.other[[i]][,1:17], sheet="Classification Summary", #variant info
-                                startRow=4+i, startCol=2,
+      j=1
+      if(nrow(vaRinfo$Variant.Info.other[[i]])>0){
+      XLConnect::writeWorksheet(wb,  vaRinfo$Variant.Info.other[[i]][,1:24], sheet="Classification Summary", #variant info
+                                startRow=4+j, startCol=2,
                                 header=FALSE)
-      XLConnect::writeWorksheet(wb,  vaRinfo$Variant.Info.other[[i]][,18], sheet="Classification Summary", #variant info
-                                startRow=4+i, startCol=20,
-                                header=FALSE)
+      j=j+1
+      # XLConnect::writeWorksheet(wb,  vaRinfo$Variant.Info.other[[i]][,18], sheet="Classification Summary", #variant info
+      #                           startRow=4+i, startCol=20,
+      #                           header=FALSE)
+      }
     }
   }
 
