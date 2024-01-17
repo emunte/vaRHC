@@ -36,9 +36,9 @@ vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, ou
   cat("10% completed ... getting variant coordinates\n")
   variant.info <- varDetails(NM=nm.nc$NM, NC=nm.nc$NC, CCDS=nm.nc$CCDS, gene = gene, variant = variant, variant.mutalyzer, skip.pred=FALSE)
   variant.info.other <- list()
-  if (!is.na(variant.mutalyzer$other.important.transcripts[1]) && length(variant.mutalyzer$other.important.transcripts)>0){
-    NM.other <- stringr::str_split(variant.mutalyzer$other.important.transcripts, ":") %>% purrr::map(1) %>% unlist()
-    variant.other <- stringr::str_split(variant.mutalyzer$other.important.transcripts, ":") %>% purrr::map(2) %>% unlist()
+  if (any(!is.na(variant.mutalyzer$other.important.transcripts[1])) && length(variant.mutalyzer$other.important.transcripts)>0){
+    NM.other <- stringr::str_split(variant.mutalyzer$other.important.transcripts[,1], ":") %>% purrr::map(1) %>% unlist()
+    variant.other <- stringr::str_split(variant.mutalyzer$other.important.transcripts[,1], ":") %>% purrr::map(2) %>% unlist()
     for (i in 1:length(NM.other)){
       cat(paste("getting information from other transcripts:", NM.other[i], "\n"))
       NM.other.b <- stringr::str_extract(NM.other[i], "NM_[0-9]+.[0-9]")
@@ -491,7 +491,7 @@ positionToLook <- function (track, gnomAD.ID, bbdd){
     position.query <- stringr::str_c(position[1], position[2], sep=paste0("' OR ", track,"_id ='"))}else{
       position.query <- position
     }
-  con <- DBI::dbConnect(RMySQL::MySQL(), user='userguest', dbname='class_variants', host='varhcdb001.cluster-ro-ca55bxrovxyt.eu-central-1.rds.amazonaws.com', password='jNU%cd%Xjw*tY*%')
+  con <- DBI::dbConnect(RMySQL::MySQL(), user='userguest', dbname='class_variants', host='idivarhcdb001-cluster.cluster-c38m6cy2udz0.eu-central-1.rds.amazonaws.com', password='jNU%cd%Xjw*tY*%')
   query.info.gnomad <- paste0("SELECT * from ", track, "_gnomad WHERE ", track,"_id = '", position.query ,"';")
   on.exit(DBI::dbDisconnect(con))
   info <- DBI::dbGetQuery(con, query.info.gnomad)
@@ -581,6 +581,8 @@ clinVarIds <- function(object){
   clinvar.info <- data.frame()
   server.clinvar <- "https://clinicaltables.nlm.nih.gov/api/variants/v3/search?"
   server2.clinvar <- "https://clinicaltables.nlm.nih.gov/api/variants/v4/search?"
+  variant.clinvar <- stringr::str_replace_all(object$variant, "\\+", "\\\\+")
+  variant.clinvar <- stringr::str_replace_all(variant.clinvar, "\\-", "\\\\-")
   if (object$most.severe.consequence == "missense_variant"){
     utils::data("BLOSUM62", package="Biostrings", envir = environment())
     aa.search <- paste0("p.", toProtein(object$protein)$aa.ref, toProtein(object$protein)$aa.pos)
@@ -621,7 +623,8 @@ clinVarIds <- function(object){
     ext.clinvar.all <- paste0("terms=(", object$gene,")",object$variant,"&ef=HGVS_exprs")
     clinvar.info <- api2(server.clinvar, ext.clinvar.all)
     if(length(clinvar.info[[3]]$HGVS_exprs)!=0){
-      number <- stringr::str_detect(clinvar.info[[3]]$HGVS_exprs, object$variant)
+
+      number <- stringr::str_detect(clinvar.info[[3]]$HGVS_exprs, variant.clinvar)
       number.variant <- which(number)
       if(length(number.variant)>0){
         clinvar.info <- clinvar.info[[4]][number.variant] %>%
@@ -652,7 +655,7 @@ clinVarIds <- function(object){
     }
     if(nrow(clinvar.info)>0){
       clinvar.info <- clinvar.info%>%
-                      dplyr::filter(stringr::str_detect(.data$V2,object$variant) & stringr::str_detect(.data$V2,object$gene))
+                      dplyr::filter(stringr::str_detect(.data$V2,variant.clinvar) & stringr::str_detect(.data$V2,object$gene))
       names(clinvar.info) <- c("V1", "V2")
     }
   }
@@ -673,6 +676,8 @@ clinVarIds <- function(object){
 #' @noRd
 
 clinVarInfo <- function (clinvar.id, object, verbose = FALSE){
+  variant.clinvar <- stringr::str_replace_all(object$variant, "\\+", "\\\\+")
+  variant.clinvar <- stringr::str_replace_all(variant.clinvar, "\\-", "\\\\-")
   if (clinvar.id$message!="Warning: It is not a missense variant."& clinvar.id$message!="Warning: There are not variants reported in clinvar at this codon"){
     clinvar.ids <- clinvar.id$table %>%
       tibble::as_tibble() %>%
@@ -685,7 +690,7 @@ clinVarInfo <- function (clinvar.id, object, verbose = FALSE){
       }
     }
     b <- Filter(Negate(is.null), b)
-    return(list(variant = b[stringr::str_detect(names(b), object$variant)], same_codon = b[!stringr::str_detect(names(b), object$variant)]))
+    return(list(variant = b[stringr::str_detect(names(b), variant.clinvar)], same_codon = b[!stringr::str_detect(names(b), variant.clinvar)]))
   }
 
 
