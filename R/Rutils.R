@@ -11,7 +11,8 @@ connectionDB <- function(query){
   con <- DBI::dbConnect(RMySQL::MySQL(),
                         user='userguest',
                         dbname='class_variants',
-                        host='varhcdb001.cluster-ro-ca55bxrovxyt.eu-central-1.rds.amazonaws.com',
+                        port=3306,
+                        host='idivarhcdb001-cluster.cluster-ro-c38m6cy2udz0.eu-central-1.rds.amazonaws.com',
                         password='jNU%cd%Xjw*tY*%')
   on.exit(DBI::dbDisconnect(con))
   results <- lapply(query, function(x){
@@ -67,6 +68,8 @@ ensemblTranscript <- function(NM, gene){
     }
   }
   ensembl.id <- ensembl.id[stringr::str_detect(ensembl.id$id, "ENST")==T,]
+  if(stringr::str_detect(NM, "NM_001127500")) ensembl.id <- data.frame(id="ENST00000318493", type = "transcript") #to solve ensembl error
+
   return(ensembl.id)
 }
 
