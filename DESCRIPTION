@@ -1,6 +1,6 @@
 Package: vaRHC
 Title: Variant Classification in Hereditary Cancer Following Specific ACMG/AMP Guidelines
-Version: 0.0.9
+Version: 3.0.0
 Authors@R: 
     person("Elisabet", 
            "Munté Roca", 
