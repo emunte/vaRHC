@@ -468,6 +468,7 @@ gnomADinfo <- function(track, gnomAD.ID, porc, bbdd){
 }
 
 #' @noRd
+
 positionToLook <- function (track, gnomAD.ID, bbdd){
   positions <- unlist(gnomAD(track, gnomAD.ID, bbdd))
   if (all(is.na(positions)==TRUE)) {
