@@ -6,6 +6,7 @@
 ################################################################################
 ## Connection to IDIBELL DB
 ################################################################################
+#' @noRd
 connectionDB <- function(query){
   assertthat::assert_that(is.character(query)|is.list(query), msg="please enter a character vector or list")
   con <- DBI::dbConnect(RMySQL::MySQL(),
