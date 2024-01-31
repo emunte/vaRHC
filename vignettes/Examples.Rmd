@@ -1,17 +1,23 @@
 ---
-title: "vaRHC"
+title: "Examples"
 header-includes:
 - \usepackage{pdflscape}
 - \newcommand{\blandscape}{\begin{landscape}}
 - \newcommand{\elandscape}{\end{landscape}}
 author: "Elisabet Munté Roca <emunte@idibell.cat>"
 date: "`r Sys.Date()`"
-package: "`r pkgload::pkg_version(path='.')"
-output: rmarkdown::html_vignette
+package: "`r pkgload::pkg_version(path='.')`"
+output: 
+  html_document:
+    pandoc_args: [
+      "--number-offset=1,0"
+      ]
+    number_sections: yes
+    toc: yes
 vignette: >
-  %\VignetteIndexEntry{vaRHC}
-  %\VignetteEngine{knitr::knitr}
-  %\usepackage[utf8]{inputenc}
+  %\VignetteIndexEntry{Examples}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
@@ -29,17 +35,17 @@ knitr::opts_chunk$set(
 )
 library(dplyr)
 ```
-## Contents
+<!-- ## Contents -->
 
-  1. [Introduction](#intro)
-  2. [Installation](#install)
-  3. [Main functions](#functions)<br><br>
-    3.1 [vaR()](#func1) <br>
-    3.2 [vaRbatch()](#func2)<br>
-  4. [Legal advice and privacy policy for users](#legal)
-  5. [Supplementary Tables](#Supplement)
-  6. [Session Info](#session)
-  
+<!--   1. [Introduction](#intro) -->
+<!--   2. [Installation](#install) -->
+<!--   3. [Main functions](#functions)<br><br> -->
+<!--     3.1 [vaR()](#func1) <br> -->
+<!--     3.2 [vaRbatch()](#func2)<br> -->
+<!--   4. [Legal advice and privacy policy for users](#legal) -->
+<!--   5. [Supplementary Tables](#Supplement) -->
+<!--   6. [Session Info](#session) -->
+
 
 
 ## 1. Introduction {#intro}
