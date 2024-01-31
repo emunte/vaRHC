@@ -7,3 +7,6 @@
 ^LICENSE\.md$
 ^LICENSE
 ^extdata$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
