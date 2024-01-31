@@ -437,7 +437,7 @@ gnomADinfo <- function(track, gnomAD.ID, porc, bbdd){
   AN <- rep(0,20)
   if (all(!is.na(positions[["position.to.check"]]))){
     AN <- positions[["info.gnomad"]] %>%
-          dplyr::select (tidyselect ::all_of(AN_columns))
+          dplyr::select(dplyr::all_of(AN_columns))
     AN<-apply(AN, 2, mean)}
   AF <- AC/AN
   #IC interval
