@@ -165,7 +165,7 @@ The ***browser*** parameter is used to set which browser to start Rselenium serv
 - ***spliceai.genome***: It can be either "hg19" or "hg38". By default "hg19".
 - ***spliceai.reference*** : Path to the Reference genome hg19 or hg38 fasta file. Hg19 file can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
 
-- ***spliceai.annotation*** : Path to gene annotation file. By default it uses the file stored in package docs folder: "../docs/gencode.v38lift37.annotation.txt"
+- ***spliceai.annotation*** : Path to gene annotation file. By default is null and it uses UCSC ncbiRefSeq table. This page sometimes is out of service. Then the file must be provided (see and example in package docs folder: "../docs/gencode.v38lift37.annotation.txt")
 
 - ***spliceai.distance*** :  *Integer*. Maximum distance between the variant and gained/lost splice site (default: 1000)
 
@@ -184,7 +184,7 @@ The ***browser*** parameter is used to set which browser to start Rselenium serv
 
 
 ##### 3.1.1.2.7 Output dir
-- ***output.dir***:  By default is NULL and the output will be saved in the working directory. If yu want to save the output in another folder please enter here the path. 
+- ***output.dir***:  By default is NULL and the output will be saved in the working directory. If you want to save the output in another folder please enter here the path. 
 
 ####  3.1.2 Output
 The result is stored in a list but it can also be exported in a xlsx file.
