@@ -570,9 +570,14 @@ domainProt <- function(chr, start, end){
                     paste0(";start=",start-1, ";end=", end),
                     paste0(";start=",end, ";end=", start))
   ext.domain.prot <- paste0("genome=hg19;track=unipDomain;chrom=chr", chr, strandi)
-  domain.ucsc <- api2(server.ucsc, ext.domain.prot)
+  domain.ucsc <- try(api2(server.ucsc, ext.domain.prot))
+  if(class(domain.ucsc)!="try-error"){
   domain.info <- domain.ucsc$unipDomain$name
   domain.info[is.null(domain.info)]<-NA
+  }else{
+  domain.info <- NA
+  }
+
   return(domain.info)
 }
 

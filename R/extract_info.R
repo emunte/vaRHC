@@ -334,7 +334,7 @@ gnomADcov <- function(assembly, track, gnomAD.nomenclature, chr=NULL, start=NULL
   chr.gnom<- paste0("chr",chr)
   ext.coverage<-paste0("genome=", assembly, ";track=gnomad",track,  "MeanCoverage;chrom=", chr.gnom, ";start=",start,";end=",end)
   server.ucsc <- "http://api.genome.ucsc.edu/getData/track?" #UCSC's REST API
-  coverage <- api2(server.ucsc, ext.coverage)
+  coverage <- try(api2(server.ucsc, ext.coverage))
   ge <- paste0("gnomad", track, "MeanCoverage")
   cover <- coverage[[ge]][chr.gnom] #we check the coverage for the specific genome and chromosome
   value.cov <- cover[[chr.gnom]]["value"]
@@ -687,7 +687,7 @@ clinVarInfo <- function (clinvar.id, object, verbose = FALSE){
     names(b) <- clinvar.ids$V2
     for (i in 1:nrow(clinvar.ids)){
       if(!is.null(b[[i]])){
-        names(b[[i]]) <- c("Nomenclature", "Condition", "Gene(s)", "Submitted.interpretations.and.evidence", "Functional", "Citations", "Classification")
+        names(b[[i]]) <- c("Timeline","Nomenclature",  "Gene(s)", "Condition", "Submitted.interpretations.and.evidence", "Functional", "Citations", "Classification")
       }
     }
     b <- Filter(Negate(is.null), b)
@@ -775,36 +775,43 @@ reviewStatus <- function(table.clinvar){
 clinVarTable <- function(table, verbose = FALSE){
   a <- lapply(table$url, function(g, verbose){
     page <- try(readUrl(g))
-    if (!is.na(page) && !is.null(page) && class(page)!="try-error" &&  any(class(page[1])!="try-error")){
+    if (!is.na(page) && !is.null(page) && class(page)[1]!="try-error" &&  any(class(page[1])!="try-error")){
       table.ex <- rvest::html_table(page, fill=TRUE)
-      colnames(table.ex[[4]]) <- c("Interpretation", "Review_status",  "Condition", "Submitter", "More_information", "more")
-      interpret <- table.ex[[4]][1] %>%
+      colnames(table.ex[[1]]) <- c("Condition", "First ClinVar", "Last submission", "Last evaluated")
+      colnames(table.ex[[4]]) <- c("Condition", "Classitication", "Review status", "Last evaluated", "Variation/conditions record")
+      colnames(table.ex[[5]]) <- c("Interpretation", "Review_status",  "Condition", "Submitter", "More_information", "more")
+      if(table.ex[[5]][nrow(table.ex[[5]]),1]=="click to load more\n                    click to collapse"){
+      table.ex[[5]] <- table.ex[[5]][1:nrow(table.ex[[5]])-1,]
+      }
+      interpret <- table.ex[[5]][1] %>%
                    as.data.frame() %>%
                    dplyr::mutate (Interpretation= purrr::map(stringr::str_split(.data$Interpretation, "\\n"),1))
-      date.clin <- table.ex[[4]][1] %>%
+      date.clin <- table.ex[[5]][1] %>%
                    as.data.frame() %>%
                    dplyr::mutate (date= purrr::map(stringr::str_split(.data$Interpretation, "\\(|\\)"),2))
-      review <- table.ex[[4]][2] %>%
+      review <- table.ex[[5]][2] %>%
                 as.data.frame() %>%
                 dplyr::mutate (review= purrr::map(stringr::str_split(.data$Review_status, "\\n"),1)) %>%
                 dplyr::select("review")
-      review.mode <- table.ex[[4]][2] %>%
+      review.mode <- table.ex[[5]][2] %>%
                      as.data.frame() %>%
                      dplyr::mutate (review2= purrr::map(stringr::str_split(.data$Review_status, "\\n"),3)) %>%
                      dplyr::select("review2")
-      table.ex[[4]][1] <- unlist(interpret$Interpretation)
-      table.ex[[4]][2] <- unlist(review)
-      table.ex[[4]][6] <- unlist(date.clin$date)
-      table.ex[[4]]$review_mode <- unlist(review.mode)
-      table.ex[[4]] <- table.ex[[4]] %>%
+      table.ex[[5]][1] <- unlist(interpret$Interpretation)
+      table.ex[[5]][2] <- unlist(review)
+      table.ex[[5]][6] <- unlist(date.clin$date)
+      table.ex[[5]]$review_mode <- unlist(review.mode)
+      table.ex[[5]] <- table.ex[[5]] %>%
                        dplyr::rowwise() %>%
                        dplyr::mutate(More_information=stringr::str_replace_all(.data$More_information, "\n", "") %>%
                        stringr::str_replace_all("  ", ""), Condition=stringr::str_replace_all(.data$Condition, "\n", ""))
-      summary <- reviewStatus(as.data.frame(table.ex[[4]]))
-      text.ex <- rvest::html_nodes(page, "dd")
+      summary <- reviewStatus(as.data.frame(table.ex[[5]]))
+      text.ex <- rvest::html_elements(page, ".single-item-value")
+      text.ex2 <- rvest::html_elements(page, ".section-cnt")
+      text.ex3 <- rvest::html_elements(page, ".smaller")
       interpret <- stringr::str_replace_all(rvest::html_text(text.ex)[1], "  |\\n","")
-      status <- stringr::str_replace_all(rvest::html_text(text.ex)[2], "  |\\n","")
-      submissions <- stringr::str_replace_all(rvest::html_text(text.ex)[3], "  |\\n","")
+      status <- stringr::str_replace_all(rvest::html_text(text.ex2)[1], "  |\\n","")
+      submissions <- stringr::str_replace_all(rvest::html_text(text.ex3)[2], "  |\\n|Help|Stars represent the aggregate review status, or the level of review supporting the aggregate germline classification for this VCV record. This value is calculated by NCBI based on data from submitters. Read our rules for calculating the review status. The number of submissions which contribute to this review status is shown in parentheses.","")
       mix <- data.frame(interpret=interpret, status=status, submissions=submissions)
       table.ex$mix <- mix
       table.ex[["summary"]] <- summary

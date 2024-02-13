@@ -7,7 +7,7 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
   path.original.file = system.file("extdata", "template.xlsx", package="vaRHC")
   #if(!(file.exists(path.original.file))) stop("The excel template path must be provided, you can download it from https://github.com/emunte/vaRHC/inst/extdata/template.xlsx")
   file.name <- paste0(vaRinfo$Variant.Info$gene,"_", stringr::str_replace(vaRinfo$Variant.Info$variant,">","-"),"_", Sys.Date(),".xlsx", "")  %>%
-    stringr::str_replace("\\*", "asterisk")#name of the file, with the variant
+    stringr::str_replace_all("\\*", "asterisk")#name of the file, with the variant
 
   ## -------------------Check output directory and create excel subfolder
   output.dir.excels <- checkDir (output.dir, "excels")
@@ -51,8 +51,12 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
   XLConnect::writeWorksheet(wb,  vaRinfo$Variant.Info[,1:17], sheet="Classification Summary", #variant info
                             startRow=4, startCol=2,
                             header=FALSE)
-  XLConnect::writeWorksheet(wb,  unlist(vaRinfo$Variant.Info[,18]), sheet="Classification Summary", #variant info
-                            startRow=4, startCol=20,
+  XLConnect::writeWorksheet(wb,  vaRinfo$Variant.Info[,18:23] %>% as.data.frame(), sheet="Classification Summary", #variant info
+                            startRow=4, startCol=19,
+                            header=FALSE)
+
+  XLConnect::writeWorksheet(wb,  vaRinfo$Variant.Info$domain.info, sheet="Classification Summary", #variant info
+                            startRow=4, startCol=25,
                             header=FALSE)
 
   if(length(vaRinfo$Variant.Info.other) > 0){
@@ -106,10 +110,10 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
                              header=FALSE)
 
   if(length(vaRinfo$clinVar$clinVar.info$variant) >0 &&length(vaRinfo$clinVar$clinVar.info$variant[[1]]) > 0){
-    XLConnect:: writeWorksheet(wb,vaRinfo$clinVar$clinVar.info$variant[[1]][7]$Classification$status , sheet="Classification Summary",
+    XLConnect:: writeWorksheet(wb,vaRinfo$clinVar$clinVar.info$variant[[1]]$Classification$status , sheet="Classification Summary",
                                startRow=9, startCol=13,
                                header=FALSE)
-    XLConnect:: writeWorksheet(wb,vaRinfo$clinVar$clinVar.info$variant[[1]][7]$Classification$interpret , sheet="Classification Summary",
+    XLConnect:: writeWorksheet(wb,vaRinfo$clinVar$clinVar.info$variant[[1]]$Classification$interpret , sheet="Classification Summary",
                                startRow=12, startCol=13,
                                header=FALSE)
 
@@ -364,36 +368,34 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
                               startRow=13, startCol=2,
                               header=FALSE, rownames= FALSE)
 
-    XLConnect::writeWorksheet(wb, purrr::map(vaRinfo$clinVar$clinVar.info$variant[[1]][7],2)%>%unlist, sheet="ClinVar", #non_cancer exomes
+    XLConnect::writeWorksheet(wb, purrr::map(vaRinfo$clinVar$clinVar.info$variant[[1]][8],2)%>%unlist, sheet="ClinVar", #non_cancer exomes
                               startRow=2, startCol=5,
                               header=FALSE, rownames= TRUE)
-    XLConnect::writeWorksheet(wb, purrr::map(vaRinfo$clinVar$clinVar.info$variant[[1]][7],1)%>%unlist, sheet="ClinVar",
+    XLConnect::writeWorksheet(wb, purrr::map(vaRinfo$clinVar$clinVar.info$variant[[1]][8],1)%>%unlist, sheet="ClinVar",
                               startRow=3, startCol=5,
                               header=FALSE, rownames= TRUE)
-    XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$variant[[1]][4]%>% as.data.frame(), sheet="ClinVar",
+    XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$variant[[1]]$Submitted.interpretations.and.evidence%>% as.data.frame(), sheet="ClinVar",
                               startRow=15, startCol=1,
                               header=FALSE, rownames= FALSE)
-    XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$variant[[1]][6]%>% as.data.frame(), sheet="ClinVar",
+    XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$variant[[1]]$Citations%>% as.data.frame(), sheet="ClinVar",
                               startRow=15, startCol=9,
                               header=FALSE, rownames= FALSE)
 
-    XLConnect::writeWorksheet(wb, matrix(unlist(vaRinfo$clinVar$clinVar.info$variant[[1]][8]), nrow=5), sheet="ClinVar",
+    XLConnect::writeWorksheet(wb, matrix(unlist(vaRinfo$clinVar$clinVar.info$variant[[1]][9]), nrow=5), sheet="ClinVar",
                               startRow=6, startCol=2,
                               header=FALSE, rownames= FALSE)
-    var.clin <- ifelse( exists("vaRinfo$clinVar$clinVar.ids$table$blosum"),
-                        vaRinfo$clinVar$clinVar.ids$table %>%
-                                                          dplyr::mutate(url=paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", .data$V1))  %>%
-                                                          dplyr::filter(stringr::str_detect(.data$V2, vaRinfo$Variant.Info$variant)) %>%
-                                                          dplyr::select("V2","url", "blosum", "grantham", "prior"), vaRinfo$clinVar$clinVar.ids$table %>%
-                                                          dplyr::mutate(url=paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", .data$V1))  %>%
-                                                          dplyr::filter(stringr::str_detect(.data$V2, vaRinfo$Variant.Info$variant)) %>%
-                                                          dplyr::select("V2","url"))
+    #var.clin <- ifelse( exists("vaRinfo$clinVar$clinVar.ids$table$blosum"),
+   var.clin <-    vaRinfo$clinVar$clinVar.ids$table %>%
+     dplyr::mutate(url=paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", .data$V1))  %>%
+     dplyr::filter(stringr::str_detect(.data$V2, vaRinfo$Variant.Info$variant)) %>%
+     dplyr::select(-"V1", -"variant", -"protein") %>%
+     dplyr::relocate(.data$url, .after= .data$V2)
 
     XLConnect::writeWorksheet(wb, var.clin , sheet="ClinVar Variants",
                               startRow=9, startCol=1,
                               header=FALSE, rownames= FALSE)
     XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$variant[[1]]$Classification , sheet="ClinVar Variants",
-                              startRow=9, startCol=6,
+                              startRow=9, startCol=8,
                               header=FALSE, rownames= FALSE)
   }else{
     XLConnect::writeWorksheet(wb, "The variant is not found in clinVar db.", sheet="ClinVar",
@@ -430,11 +432,11 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
       XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.ids$table %>%
                                                                       dplyr::filter(stringr::str_detect(.data$V2, var)) %>%
                                                                       dplyr::mutate(url=paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", .data$V1))  %>%
-                                                                      dplyr::select("V2", "url", "blosum", "grantham", "prior") %>% as.data.frame(), sheet="ClinVar Variants",
+                                                                      dplyr::select("V2", "url", "a1", "a2","blosum", "grantham", "prior") %>% as.data.frame(), sheet="ClinVar Variants",
                                 startRow=9+j, startCol=1,
                                 header=FALSE, rownames= FALSE)
-      XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$same_codon[[j]][7]$Classification , sheet="ClinVar Variants",
-                                startRow=9+j, startCol=6,
+      XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$same_codon[[j]]$Classification , sheet="ClinVar Variants",
+                                startRow=9+j, startCol=8,
                                 header=FALSE, rownames= FALSE)
       XLConnect::writeWorksheet(wb, paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", id.variant), sheet=sheet.name,
                                 startRow=15, startCol=2,
@@ -455,19 +457,19 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
                                   startRow=5, startCol=5,
                                   header=FALSE, rownames= FALSE)
       }
-      XLConnect::writeWorksheet(wb, purrr::map(vaRinfo$clinVar$clinVar.info$same_codon[[j]][7],2) %>% unlist, sheet=sheet.name,
+      XLConnect::writeWorksheet(wb, purrr::map(vaRinfo$clinVar$clinVar.info$same_codon[[j]][8],2) %>% unlist, sheet=sheet.name,
                                 startRow=8, startCol=5,
                                 header=FALSE, rownames= TRUE)
-      XLConnect::writeWorksheet(wb, purrr::map(vaRinfo$clinVar$clinVar.info$same_codon[[j]][7],1) %>% unlist, sheet=sheet.name,
+      XLConnect::writeWorksheet(wb, purrr::map(vaRinfo$clinVar$clinVar.info$same_codon[[j]][8],1) %>% unlist, sheet=sheet.name,
                                 startRow=9, startCol=5,
                                 header=FALSE, rownames= TRUE)
-      XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$same_codon[[j]][4], sheet=sheet.name,
+      XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$same_codon[[j]][5], sheet=sheet.name,
                                 startRow=20, startCol=1,
                                 header=FALSE, rownames= FALSE)
-      XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$same_codon[[j]][6], sheet=sheet.name,
+      XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$same_codon[[j]][7], sheet=sheet.name,
                                 startRow=20, startCol=9,
                                 header=FALSE, rownames= FALSE)
-      XLConnect::writeWorksheet(wb, matrix(unlist(vaRinfo$clinVar$clinVar.info$same_codon[[j]][8]),nrow=5), sheet=sheet.name,
+      XLConnect::writeWorksheet(wb, matrix(unlist(vaRinfo$clinVar$clinVar.info$same_codon[[j]][9]),nrow=5), sheet=sheet.name,
                                 startRow=12, startCol=2,
                                 header=FALSE, rownames= FALSE)
     }
