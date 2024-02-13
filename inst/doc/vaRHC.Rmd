@@ -50,11 +50,8 @@ In the last 5 years, some programs have been developed with the aim to semi-auto
 The current version of the package  works for single substitutions, deletions and insertions up to 25 bp, intronic variants and 5’ or 3’-UTR variants.
 
 ## 2. Installation {#install}
-vaRHC can be downloaded from CRAN:
-```{r, eval=FALSE}
-install.packages("vaRHC")
-```
-vaRHC can also be downloaded from GitHub using the remotes package:
+
+vaRHC can  be downloaded from GitHub using the remotes package:
 ```{r, eval=FALSE}
 if(!require("remotes", quietly = TRUE)) install.packages('remotes') ## Only the first time
 library(remotes)

@@ -398,15 +398,12 @@ variants.</p>
 </div>
 <div id="install" class="section level2">
 <h2>2. Installation</h2>
-<p>vaRHC can be downloaded from CRAN:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;vaRHC&quot;</span>)</span></code></pre></div>
-<p>vaRHC can also be downloaded from GitHub using the remotes
-package:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">&quot;remotes&quot;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) <span class="fu">install.packages</span>(<span class="st">&#39;remotes&#39;</span>) <span class="do">## Only the first time</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(remotes)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;emunte/vaRHC&quot;</span>)</span></code></pre></div>
+<p>vaRHC can be downloaded from GitHub using the remotes package:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">&quot;remotes&quot;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) <span class="fu">install.packages</span>(<span class="st">&#39;remotes&#39;</span>) <span class="do">## Only the first time</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(remotes)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;emunte/vaRHC&quot;</span>)</span></code></pre></div>
 <p>Next, it has to be loaded into the workspace:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;vaRHC&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;vaRHC&quot;</span>)</span></code></pre></div>
 </div>
 <div id="functions" class="section level2">
 <h2>3. Main functions</h2>
@@ -431,11 +428,11 @@ metastructure and also considering most of CanVIG-UK
 recommendations.</p>
 <p>The following example shows how to call the <strong>vaR()</strong>
 function for the variant c.1137+1G&gt;A in <em>CDH1</em> gene.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>eg.gene <span class="ot">&lt;-</span> <span class="st">&quot;CDH1&quot;</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>eg.variant <span class="ot">&lt;-</span> <span class="st">&quot;c.1137+1G&gt;A&quot;</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>var.information <span class="ot">&lt;-</span> <span class="fu">vaR</span>(<span class="at">gene =</span> eg.gene, <span class="at">variant =</span> eg.variant)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>eg.gene <span class="ot">&lt;-</span> <span class="st">&quot;CDH1&quot;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>eg.variant <span class="ot">&lt;-</span> <span class="st">&quot;c.1137+1G&gt;A&quot;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>var.information <span class="ot">&lt;-</span> <span class="fu">vaR</span>(<span class="at">gene =</span> eg.gene, <span class="at">variant =</span> eg.variant)</span></code></pre></div>
 </div>
 <div id="optional-parameters" class="section level5">
 <h5>3.1.1.2 Optional parameters</h5>
@@ -1547,12 +1544,12 @@ the guidelines specify to use that predictor.</p>
 criteria is dependent on splicing prediction not being altered or not.
 Possible options are <em>dependent</em>, <em>indpendent</em>.</li>
 </ul>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>eg.gene <span class="ot">&lt;-</span> <span class="st">&quot;CDH1&quot;</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>eg.variant <span class="ot">&lt;-</span> <span class="st">&quot;c.1137+1G&gt;A&quot;</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;gene_specific&quot;</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>eg.gene.specific <span class="ot">&lt;-</span> gene_specific</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>var.information <span class="ot">&lt;-</span> <span class="fu">vaR</span>(<span class="at">gene =</span> eg.gene, <span class="at">variant =</span> eg.variant, <span class="at">gene.specific.df =</span> eg.gene.specific)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>eg.gene <span class="ot">&lt;-</span> <span class="st">&quot;CDH1&quot;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>eg.variant <span class="ot">&lt;-</span> <span class="st">&quot;c.1137+1G&gt;A&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;gene_specific&quot;</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>eg.gene.specific <span class="ot">&lt;-</span> gene_specific</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>var.information <span class="ot">&lt;-</span> <span class="fu">vaR</span>(<span class="at">gene =</span> eg.gene, <span class="at">variant =</span> eg.variant, <span class="at">gene.specific.df =</span> eg.gene.specific)</span></code></pre></div>
 </div>
 <div id="connecting-to-webpages-using-javascript" class="section level5">
 <h5>3.1.1.2.3 Connecting to webpages using javascript</h5>
@@ -1641,15 +1638,15 @@ file. The list has to dimensions.</p>
 <h5>3.1.2.1 vaRinfo</h5>
 <p>Where all the information retrieved is stored. The names of the list
 elements are the following.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(var.information<span class="sc">$</span>vaRinfo)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;Variant.Info&quot;                 &quot;Variant.Info.other&quot;          </span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [3] &quot;variant.correction&quot;           &quot;gene.specific.info&quot;          </span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [5] &quot;gnomAD&quot;                       &quot;flossies.db&quot;                 </span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7] &quot;clinVar&quot;                      &quot;predictors&quot;                  </span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [9] &quot;codon.stop&quot;                   &quot;second.met&quot;                  </span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [11] &quot;insight.info&quot;                 &quot;functional.assays&quot;           </span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [13] &quot;google.scholar.30.references&quot; &quot;cancer.hotspots&quot;             </span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [15] &quot;class.info&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(var.information<span class="sc">$</span>vaRinfo)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;Variant.Info&quot;                 &quot;Variant.Info.other&quot;          </span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [3] &quot;variant.correction&quot;           &quot;gene.specific.info&quot;          </span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [5] &quot;gnomAD&quot;                       &quot;flossies.db&quot;                 </span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7] &quot;clinVar&quot;                      &quot;predictors&quot;                  </span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [9] &quot;codon.stop&quot;                   &quot;second.met&quot;                  </span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [11] &quot;insight.info&quot;                 &quot;functional.assays&quot;           </span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [13] &quot;google.scholar.30.references&quot; &quot;cancer.hotspots&quot;             </span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [15] &quot;class.info&quot;</span></span></code></pre></div>
 <ul>
 <li><strong>Variant.Info</strong>: a data.frame containing a summary of
 variant location, different nomenclatures and variant consequences.</li>
@@ -1692,18 +1689,18 @@ nomeclature, coverage and alleles information for non_cancer and
 non_neuro datasets. See below examples of how to obtain the gnomAD
 data</li>
 </ul>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#nomenclature</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>var.information<span class="sc">$</span>vaRinfo<span class="sc">$</span>gnomAD<span class="sc">$</span>nomenclature</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;16-68846167-G-A&quot;</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#coverage</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>var.information<span class="sc">$</span>vaRinfo<span class="sc">$</span>gnomAD<span class="sc">$</span>coverage</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $exomes</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 92.4</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $genomes</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 33.94</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co">#information from exomes non cancer separated by subpopulations</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(var.information<span class="sc">$</span>vaRinfo<span class="sc">$</span>gnomAD<span class="sc">$</span>info<span class="sc">$</span>exomes<span class="sc">$</span>non.cancer<span class="sc">$</span>subpopulations)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#nomenclature</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>var.information<span class="sc">$</span>vaRinfo<span class="sc">$</span>gnomAD<span class="sc">$</span>nomenclature</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;16-68846167-G-A&quot;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#coverage</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>var.information<span class="sc">$</span>vaRinfo<span class="sc">$</span>gnomAD<span class="sc">$</span>coverage</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $exomes</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 92.4</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $genomes</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 33.94</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">#information from exomes non cancer separated by subpopulations</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(var.information<span class="sc">$</span>vaRinfo<span class="sc">$</span>gnomAD<span class="sc">$</span>info<span class="sc">$</span>exomes<span class="sc">$</span>non.cancer<span class="sc">$</span>subpopulations)</span></code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -1782,8 +1779,8 @@ data</li>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#information from exomes + genomes non neuro overall frequency</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(var.information<span class="sc">$</span>vaRinfo<span class="sc">$</span>gnomAD<span class="sc">$</span>info<span class="sc">$</span>exomes.genomes<span class="sc">$</span>non.neuro<span class="sc">$</span>overall)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#information from exomes + genomes non neuro overall frequency</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(var.information<span class="sc">$</span>vaRinfo<span class="sc">$</span>gnomAD<span class="sc">$</span>info<span class="sc">$</span>exomes.genomes<span class="sc">$</span>non.neuro<span class="sc">$</span>overall)</span></code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -2383,8 +2380,8 @@ Hotspots (<a href="http://www.insight-database.org/classifications/mmr_integrati
 <p>All the assigned and denied criteria are stored in this list as well
 as final classification.</p>
 <p>The list has the following items:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(var.information<span class="sc">$</span>vaRclass)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;final.classification&quot; &quot;final.criteria&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(var.information<span class="sc">$</span>vaRclass)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;final.classification&quot; &quot;final.criteria&quot;</span></span></code></pre></div>
 <p>The final.classification element contains:<br></p>
 <ul>
 <li><strong>final.class</strong>: variant’s final classification</li>
@@ -2738,20 +2735,20 @@ variant call format (vcf or compressed vcf). The file will be annotated
 using Mutalyzer v3 API. Vcfs resulting from WES or WGS will take too
 long (although they work as well). Assembly parameter must be then
 specified</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Example 1</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>output.dir <span class="ot">&lt;-</span> <span class="st">&quot;/path/to/output_dir&quot;</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Example 1</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;ex_vaRbatch&quot;</span>)</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>ex_vaRbatch[] <span class="ot">&lt;-</span> <span class="fu">lapply</span>(ex_vaRbatch, as.character) <span class="co">#convert to character</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>all <span class="ot">&lt;-</span> <span class="fu">vaRbatch</span>( <span class="at">all.variants =</span> ex_vaRbatch, <span class="at">spliceai.program =</span> <span class="cn">TRUE</span>,  <span class="at">splieai.reference=</span> <span class="st">&quot;dir to /hg19.fa&quot;</span>, <span class="at">output.dir =</span> <span class="at">excel.results =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co">#Example2</span></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>eg.variants <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">gene=</span><span class="fu">c</span>(<span class="st">&quot;ATM&quot;</span>, <span class="st">&quot;MSH6&quot;</span>, <span class="st">&quot;BRCA1&quot;</span>), <span class="at">variants =</span> <span class="fu">c</span>(<span class="st">&quot;c.8420A&gt;T&quot;</span>, <span class="st">&quot;c.1559G&gt;A&quot;</span>, <span class="st">&quot;c.211A&gt;G&quot;</span>))</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>batch.results <span class="ot">&lt;-</span> <span class="fu">vaRbatch</span>( <span class="at">all.variants =</span> eg.variants, <span class="at">spliceai.program =</span><span class="cn">FALSE</span>, <span class="at">output.dir =</span> ouput.dir, <span class="at">print.data.frame =</span> <span class="cn">FALSE</span> <span class="at">excel.results =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co">#Example 3</span></span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>vcf.file <span class="ot">&lt;-</span> <span class="st">&quot;path/to/vcf.vcf&quot;</span></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">vaRbatch</span>(<span class="at">all.variants=</span> vcf.file, <span class="at">assembly=</span><span class="st">&quot;hg19&quot;</span>, <span class="at">spliceai.program =</span> <span class="cn">TRUE</span>, <span class="at">spliceai.reference =</span> <span class="st">&quot;/path/to/vcf.vcf&quot;</span>, <span class="at">remote=</span><span class="cn">TRUE</span>, <span class="at">output.dir =</span> output.dir, <span class="at">excel.results =</span> <span class="cn">FALSE</span>, <span class="at">print.data.frame =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Example 1</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>output.dir <span class="ot">&lt;-</span> <span class="st">&quot;/path/to/output_dir&quot;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Example 1</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;ex_vaRbatch&quot;</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>ex_vaRbatch[] <span class="ot">&lt;-</span> <span class="fu">lapply</span>(ex_vaRbatch, as.character) <span class="co">#convert to character</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>all <span class="ot">&lt;-</span> <span class="fu">vaRbatch</span>( <span class="at">all.variants =</span> ex_vaRbatch, <span class="at">spliceai.program =</span> <span class="cn">TRUE</span>,  <span class="at">splieai.reference=</span> <span class="st">&quot;dir to /hg19.fa&quot;</span>, <span class="at">output.dir =</span> <span class="at">excel.results =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co">#Example2</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>eg.variants <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">gene=</span><span class="fu">c</span>(<span class="st">&quot;ATM&quot;</span>, <span class="st">&quot;MSH6&quot;</span>, <span class="st">&quot;BRCA1&quot;</span>), <span class="at">variants =</span> <span class="fu">c</span>(<span class="st">&quot;c.8420A&gt;T&quot;</span>, <span class="st">&quot;c.1559G&gt;A&quot;</span>, <span class="st">&quot;c.211A&gt;G&quot;</span>))</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>batch.results <span class="ot">&lt;-</span> <span class="fu">vaRbatch</span>( <span class="at">all.variants =</span> eg.variants, <span class="at">spliceai.program =</span><span class="cn">FALSE</span>, <span class="at">output.dir =</span> ouput.dir, <span class="at">print.data.frame =</span> <span class="cn">FALSE</span> <span class="at">excel.results =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="co">#Example 3</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>vcf.file <span class="ot">&lt;-</span> <span class="st">&quot;path/to/vcf.vcf&quot;</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">vaRbatch</span>(<span class="at">all.variants=</span> vcf.file, <span class="at">assembly=</span><span class="st">&quot;hg19&quot;</span>, <span class="at">spliceai.program =</span> <span class="cn">TRUE</span>, <span class="at">spliceai.reference =</span> <span class="st">&quot;/path/to/vcf.vcf&quot;</span>, <span class="at">remote=</span><span class="cn">TRUE</span>, <span class="at">output.dir =</span> output.dir, <span class="at">excel.results =</span> <span class="cn">FALSE</span>, <span class="at">print.data.frame =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 </div>
 <div id="output-1" class="section level4">
 <h4>3.1.2 Output</h4>
@@ -66543,57 +66540,57 @@ following Privacy Policy. <br></p>
 </div>
 <div id="session" class="section level3">
 <h3>6. Session info</h3>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; R version 4.2.2 Patched (2022-11-10 r83330)</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Platform: x86_64-pc-linux-gnu (64-bit)</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Running under: Ubuntu 20.04.5 LTS</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Matrix products: default</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.9.0</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.9.0</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; locale:</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              </span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_US.UTF-8    </span></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_US.UTF-8   </span></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 </span></span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [9] LC_ADDRESS=C               LC_TELEPHONE=C            </span></span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       </span></span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; attached base packages:</span></span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; other attached packages:</span></span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] vaRHC_3.0.0 dplyr_1.1.1</span></span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] Rcpp_1.0.10            mvtnorm_1.1-3          lattice_0.20-45       </span></span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [4] class_7.3-21           Biostrings_2.66.0      assertthat_0.2.1      </span></span>
-<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7] digest_0.6.30          utf8_1.2.2             cellranger_1.1.0      </span></span>
-<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [10] R6_2.5.1               GenomeInfoDb_1.34.9    stats4_4.2.2          </span></span>
-<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [13] rootSolve_1.8.2.3      evaluate_0.20          e1071_1.7-13          </span></span>
-<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [16] httr_1.4.4             pillar_1.8.1           zlibbioc_1.44.0       </span></span>
-<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [19] rlang_1.1.0            readxl_1.4.1           Exact_3.2             </span></span>
-<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [22] curl_5.0.0             rstudioapi_0.14        data.table_1.14.8     </span></span>
-<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [25] jquerylib_0.1.4        S4Vectors_0.36.2       R.utils_2.12.2        </span></span>
-<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [28] R.oo_1.25.0            Matrix_1.5-4           rmarkdown_2.20        </span></span>
-<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [31] RMySQL_0.10.27         selectr_0.4-2          stringr_1.5.0         </span></span>
-<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [34] RCurl_1.98-1.10        proxy_0.4-27           compiler_4.2.2        </span></span>
-<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [37] xfun_0.38              pkgconfig_2.0.3        BiocGenerics_0.44.0   </span></span>
-<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [40] DescTools_0.99.48      htmltools_0.5.4        tidyselect_1.2.0      </span></span>
-<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [43] tibble_3.2.1           lmom_2.9               GenomeInfoDbData_1.2.9</span></span>
-<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [46] expm_0.999-7           codetools_0.2-18       IRanges_2.32.0        </span></span>
-<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [49] XML_3.99-0.14          fansi_1.0.4            crayon_1.5.2          </span></span>
-<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [52] withr_2.5.0            MASS_7.3-59            bitops_1.0-7          </span></span>
-<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [55] brio_1.1.3             R.methodsS3_1.8.2      grid_4.2.2            </span></span>
-<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [58] jsonlite_1.8.3         lifecycle_1.0.3        DBI_1.1.3             </span></span>
-<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [61] magrittr_2.0.3         gld_2.6.6              cli_3.6.1             </span></span>
-<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [64] stringi_1.7.12         cachem_1.0.6           XVector_0.38.0        </span></span>
-<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [67] testthat_3.1.7         xml2_1.3.3             bslib_0.4.1           </span></span>
-<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [70] generics_0.1.3         vctrs_0.6.1            boot_1.3-28.1         </span></span>
-<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [73] tools_4.2.2            glue_1.6.2             purrr_1.0.1           </span></span>
-<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [76] fastmap_1.1.0          yaml_2.3.7             rvest_1.0.3           </span></span>
-<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [79] knitr_1.42             sass_0.4.5</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; R version 4.2.2 Patched (2022-11-10 r83330)</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Platform: x86_64-pc-linux-gnu (64-bit)</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Running under: Ubuntu 20.04.5 LTS</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Matrix products: default</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.9.0</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.9.0</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; locale:</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              </span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_US.UTF-8    </span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_US.UTF-8   </span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 </span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [9] LC_ADDRESS=C               LC_TELEPHONE=C            </span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       </span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; attached base packages:</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; other attached packages:</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] vaRHC_3.0.0 dplyr_1.1.1</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] Rcpp_1.0.10            mvtnorm_1.1-3          lattice_0.20-45       </span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [4] class_7.3-21           Biostrings_2.66.0      assertthat_0.2.1      </span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7] digest_0.6.30          utf8_1.2.2             cellranger_1.1.0      </span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [10] R6_2.5.1               GenomeInfoDb_1.34.9    stats4_4.2.2          </span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [13] rootSolve_1.8.2.3      evaluate_0.20          e1071_1.7-13          </span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [16] httr_1.4.4             pillar_1.8.1           zlibbioc_1.44.0       </span></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [19] rlang_1.1.0            readxl_1.4.1           Exact_3.2             </span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [22] curl_5.0.0             rstudioapi_0.14        data.table_1.14.8     </span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [25] jquerylib_0.1.4        S4Vectors_0.36.2       R.utils_2.12.2        </span></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [28] R.oo_1.25.0            Matrix_1.5-4           rmarkdown_2.20        </span></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [31] RMySQL_0.10.27         selectr_0.4-2          stringr_1.5.0         </span></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [34] RCurl_1.98-1.10        proxy_0.4-27           compiler_4.2.2        </span></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [37] xfun_0.38              pkgconfig_2.0.3        BiocGenerics_0.44.0   </span></span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [40] DescTools_0.99.48      htmltools_0.5.4        tidyselect_1.2.0      </span></span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [43] tibble_3.2.1           lmom_2.9               GenomeInfoDbData_1.2.9</span></span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [46] expm_0.999-7           codetools_0.2-18       IRanges_2.32.0        </span></span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [49] XML_3.99-0.14          fansi_1.0.4            crayon_1.5.2          </span></span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [52] withr_2.5.0            MASS_7.3-59            bitops_1.0-7          </span></span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [55] brio_1.1.3             R.methodsS3_1.8.2      grid_4.2.2            </span></span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [58] jsonlite_1.8.3         lifecycle_1.0.3        DBI_1.1.3             </span></span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [61] magrittr_2.0.3         gld_2.6.6              cli_3.6.1             </span></span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [64] stringi_1.7.12         cachem_1.0.6           XVector_0.38.0        </span></span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [67] testthat_3.1.7         xml2_1.3.3             bslib_0.4.1           </span></span>
+<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [70] generics_0.1.3         vctrs_0.6.1            boot_1.3-28.1         </span></span>
+<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [73] tools_4.2.2            glue_1.6.2             purrr_1.0.1           </span></span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [76] fastmap_1.1.0          yaml_2.3.7             rvest_1.0.3           </span></span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [79] knitr_1.42             sass_0.4.5</span></span></code></pre></div>
 </div>
 </div>
 
