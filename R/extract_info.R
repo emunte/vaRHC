@@ -17,12 +17,13 @@
 #' @param spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
 #' @param provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
 #' @param provean.sh Path to provean.sh. By default is NULL and will only be taken into account if provean.program is set to TRUE.
+#' @param spliceai.10k #TO DOCUMENT
 #' @param google.search Logical. By default is FALSE and it will not look for variant results in google.
 #' @param verbose logic. By default is FALSE and it will not show intermediate process messages
 #' @return information about the variant.
 #' @author Elisabet Munté Roca
-#' @references
-#' Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17, 405–424. https://doi.org/10.1038/gim.2015.30
+# @references
+# Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17, 405–424. https://doi.org/10.1038/gim.2015.30
 vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, output.dir = NULL, remote = TRUE, browser="firefox",  spliceai.program=FALSE, spliceai.genome = "hg19", spliceai.reference=NULL, spliceai.annotation =  NULL , spliceai.distance=1000, spliceai.masked=1, provean.program=FALSE, provean.sh=NULL, spliceai.10k= FALSE, google.search = FALSE, verbose = FALSE){
 
   genome= ifelse(spliceai.genome=="hg38",
@@ -274,13 +275,13 @@ queriesGnomad <- function (track, gnom){
 #' @return The name of the gene if there are special ACMG rules for it and if not it returns general ACMG rules.
 #' if it follows general ACMG rules (only for hereditary cancer related genes)
 #' @author Elisabet Munté Roca
-#' @references
-#' Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17(5), 405–424. https://doi.org/10.1038/gim.2015.30
-#' Tavtigian, S. V., Harrison, S. M., Boucher, K. M., & Biesecker, L. G. (2020). Fitting a naturally scaled point system to the ACMG/AMP variant classification guidelines. Human mutation, 41(10), 1734–1737. https://doi.org/10.1002/humu.24088
-#' Garrett, A., Durkie, M., Callaway, A., Burghel, G. J., Robinson, R., Drummond, J., Torr, B., Cubuk, C., Berry, I. R., Wallace, A. J., Ellard, S., Eccles, D. M., Tischkowitz, M., Hanson, H., Turnbull, C., & CanVIG-UK (2021). Combining evidence for and against pathogenicity for variants in cancer susceptibility genes: CanVIG-UK consensus recommendations. Journal of medical genetics, 58(5), 297–304. https://doi.org/10.1136/jmedgenet-2020-107248
-#' ClinGen CDH1 Expert Panel Specifications to the ACMG/AMP Variant Interpretation Guidelines Version 3: https://clinicalgenome.org/site/assets/files/7118/clingen_cdh1_acmg_specifications_v3.pdf
-#' ClinGen PTEN Expert Panel Specifications to the ACMG/AMP Variant Interpretation Guidelines Version 2: https://clinicalgenome.org/site/assets/files/4000/clingen_pten_acmg_specifications_v2.pdf
-#' ClinGen InSiGHT Hereditary Colorectal Cancer/Polyposis Variant Curation Expert Panel Specifications to the ACMG/AMP Variant Interpretation Guidelines Version 1 (draft): https://www.insight-group.org/content/uploads/2021/11/DRAFT_Nov_2021_TEMPLATE_SVI.ACMG_Specifications_InSiGHT_MMR_V1.pdf
+# @references
+# Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17(5), 405–424. https://doi.org/10.1038/gim.2015.30
+# Tavtigian, S. V., Harrison, S. M., Boucher, K. M., & Biesecker, L. G. (2020). Fitting a naturally scaled point system to the ACMG/AMP variant classification guidelines. Human mutation, 41(10), 1734–1737. https://doi.org/10.1002/humu.24088
+# Garrett, A., Durkie, M., Callaway, A., Burghel, G. J., Robinson, R., Drummond, J., Torr, B., Cubuk, C., Berry, I. R., Wallace, A. J., Ellard, S., Eccles, D. M., Tischkowitz, M., Hanson, H., Turnbull, C., & CanVIG-UK (2021). Combining evidence for and against pathogenicity for variants in cancer susceptibility genes: CanVIG-UK consensus recommendations. Journal of medical genetics, 58(5), 297–304. https://doi.org/10.1136/jmedgenet-2020-107248
+# ClinGen CDH1 Expert Panel Specifications to the ACMG/AMP Variant Interpretation Guidelines Version 3: https://clinicalgenome.org/site/assets/files/7118/clingen_cdh1_acmg_specifications_v3.pdf
+# ClinGen PTEN Expert Panel Specifications to the ACMG/AMP Variant Interpretation Guidelines Version 2: https://clinicalgenome.org/site/assets/files/4000/clingen_pten_acmg_specifications_v2.pdf
+# ClinGen InSiGHT Hereditary Colorectal Cancer/Polyposis Variant Curation Expert Panel Specifications to the ACMG/AMP Variant Interpretation Guidelines Version 1 (draft): https://www.insight-group.org/content/uploads/2021/11/DRAFT_Nov_2021_TEMPLATE_SVI.ACMG_Specifications_InSiGHT_MMR_V1.pdf
 
 geneSpecific <- function (gene, gene.specific.df) {
   assertthat::assert_that(!is.null(gene.specific.df), msg="You must provide either the information collected with extractBBDD()$gene.specific or your own specific file")

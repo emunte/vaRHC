@@ -41,11 +41,6 @@ file <- "/path/to/vcf/file.vcf"
 variants <- vcfToCodingDNA(file.vcf = file, assembly="hg19")
 }
 }
-\references{
-Morales, J., Pujar, S., Loveland, J.E. et al. A joint NCBI and EMBL-EBI transcript set for clinical genomics and research. Nature. 2022 Apr;604(7905):310-315. PubMed; PubMed Central; DOI: 10.1038/s41586-022-04558-8 . https://www.ncbi.nlm.nih.gov/refseq/MANE/
-Lefter M et al. (2021). Mutalyzer 2: Next Generation HGVS Nomenclature Checker. Bioinformatics, 2021 Sep 15; 37(28):2811-7 (version 3: https://mutalyzer.nl/ )
-Knaus, Brian J., and Niklaus J. Grünwald. "vcfr: a package to manipulate and visualize variant call format data in R." Molecular ecology resources 17.1 (2017): 44-53. (http://dx.doi.org/10.1101/041277)
-}
 \author{
 Elisabet Munté Roca
 }

@@ -17,7 +17,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Elisabet MuntC) Roca \email{emunte@idibell.cat} (\href{https://orcid.org/0000-0001-8396-8284}{ORCID})
+\strong{Maintainer}: Elisabet Munté Roca \email{emunte@idibell.cat} (\href{https://orcid.org/0000-0001-8396-8284}{ORCID})
 
 }
 \keyword{internal}

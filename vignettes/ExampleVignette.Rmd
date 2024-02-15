@@ -1,5 +1,5 @@
 ---
-title: "Examples"
+title: "ExampleVignette"
 header-includes:
 - \usepackage{pdflscape}
 - \newcommand{\blandscape}{\begin{landscape}}
@@ -15,7 +15,7 @@ output:
     number_sections: yes
     toc: yes
 vignette: >
-  %\VignetteIndexEntry{Examples}
+  %\VignetteIndexEntry{ExampleVignette}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

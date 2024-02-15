@@ -59,6 +59,8 @@ vaRinfo(
 
 \item{provean.sh}{Path to provean.sh. By default is NULL and will only be taken into account if provean.program is set to TRUE.}
 
+\item{spliceai.10k}{#TO DOCUMENT}
+
 \item{google.search}{Logical. By default is FALSE and it will not look for variant results in google.}
 
 \item{verbose}{logic. By default is FALSE and it will not show intermediate process messages}
@@ -68,9 +70,6 @@ information about the variant.
 }
 \description{
 Collect different types of criteria used by ACMG to classify variants.
-}
-\references{
-Richards, S., Aziz, N., Bale, S., Bick, D., Das, S., Gastier-Foster, J., Grody, W. W., Hegde, M., Lyon, E., Spector, E., Voelkerding, K., Rehm, H. L., & ACMG Laboratory Quality Assurance Committee (2015). Standards and guidelines for the interpretation of sequence variants: a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology. Genetics in medicine : official journal of the American College of Medical Genetics, 17, 405–424. https://doi.org/10.1038/gim.2015.30
 }
 \author{
 Elisabet Munté Roca
