@@ -47,9 +47,9 @@ vaRinfo(
 
 \item{spliceai.genome}{Fasta file assembly provided. It can only be "hg19" or "hg38" assembly. By default it will be hg19.}
 
-\item{spliceai.reference}{Path to the Reference genome hg19 or hg38 fasta file. hg19 file can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.}
+\item{spliceai.reference}{Path to the Reference genome hg19 or hg38 fasta file. hg19 file can be downloaded from https://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.}
 
-\item{spliceai.annotation}{Path to gene annotation file. By default it uses the file data(gencode_spliceai_hg19). It must be txt.}
+\item{spliceai.annotation}{Path to gene annotation file. By default is null and it uses UCSC ncbiRefSeq table. This page is sometimes temporarily out of service. Then the file must be provided (see and example in package docs folder: "../docs/gencode.v38lift37.annotation.txt")}
 
 \item{spliceai.distance}{Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)}
 
@@ -58,6 +58,8 @@ vaRinfo(
 \item{provean.program}{Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.}
 
 \item{provean.sh}{Path to provean.sh. By default is NULL and will only be taken into account if provean.program is set to TRUE.}
+
+\item{spliceai.10k}{Logical. By default is FALSE and SpliceAI-10k will not be computed. It can only be computed if provean.program is TRUE.}
 
 \item{google.search}{Logical. By default is FALSE and it will not look for variant results in google.}
 
