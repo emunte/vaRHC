@@ -978,7 +978,8 @@ PS3_BS3 <- function (all.information, final.criteria){
         }
 
       }}
-    if (!is.na(all.information$functional.assays$cimra) && nrow(all.information$functional.assays$cimra)>0){
+    #if (!is.na(all.information$functional.assays$cimra) && nrow(all.information$functional.assays$cimra)>0){
+    if (class(all.information$functional.assays$cimra)=="data.frame" && nrow(all.information$functional.assays$cimra)>0){
       cimra <- all.information$functional.assays$cimra
       final.criteria$criteria.res["PS3", 2] <- ifelse(cimra$Odds_pat > 18.7, 1, 0)
       final.criteria$criteria.res["PS3", 3] <- ifelse(cimra$Odds_pat > 4.3 & cimra$Odds_pat <= 18.7, 1, 0)
@@ -995,9 +996,9 @@ PS3_BS3 <- function (all.information, final.criteria){
       final.criteria$criteria.res["BS3", 4] <- ifelse(cimra$Odds_pat <= 0.48 & cimra$Odds_pat > 0.05 , 1, 0)
       BS3.message <- ifelse ( cimra$Odds_pat <= 0.05,
                               paste("BS3 is assigned because the variant is found in CIMRA with an Odds_pat of", cimra$Odds_pat, "which is <= 0.05."),
-                              ifelse(cimra<= 0.48 & cimra$Odds_pat > 0.05,
-                                     paste ("BS3_supporting is assigned because the variant is found in CIMRA with an Odds_pat of", cimra$Odds_pat, "whivh is <=0.48 and > 0.05 ."),
-                                     paste ("BS3 is not met because although the variant is found in CIMRA, the odds_pat is of", cimra$Odds_pat, "which is > 0.48 .")))
+                              ifelse(cimra$Odds_pat<= 0.48 & cimra$Odds_pat > 0.05,
+                                     paste ("BS3_supporting is assigned because the variant is found in CIMRA with an Odds_pat of", cimra$Odds_pat, "which is <=0.48 and > 0.05 ."),
+                                     paste ("BS3 is not met because although the variant is found in CIMRA, the odds_pat is ", cimra$Odds_pat, "which is > 0.48 or < 0.05.")))
     }
   } else if(all.information$Variant.Info$gene %in% c("TP53")){
     functionals.tp53 <- all.information$functional.assays$tp53.functionals
@@ -1063,7 +1064,7 @@ PS3_BS3 <- function (all.information, final.criteria){
 
   }else if (all.information$Variant.Info$gene %in% c("ATM")){
     atm.functionals <- all.information$functional.assays$atm.functionals
-    if (!is.na(atm.functionals) && nrow(atm.functionals)>0){
+    if (!any(is.na(atm.functionals)) && nrow(atm.functionals)>0){
       final.criteria$criteria.res["PS3", c(2:4)] <- ifelse(rep(atm.functionals$final_criteria == "PS3_mod",3),
                                                            c(0,1,0),
                                                            ifelse(rep(atm.functionals$final_criteria =="PS3_sup",3),
@@ -1078,7 +1079,7 @@ PS3_BS3 <- function (all.information, final.criteria){
       BS3.message <- atm.functionals$reasoning_BS3
     }}else if(all.information$Variant.Info$gene %in% c("CHEK2")){
       chek2.functionals <- all.information$functional.assays$chek2.functionals
-      if (!is.na(chek2.functionals) && nrow(chek2.functionals)>0){
+      if (!any(is.na(chek2.functionals)) && nrow(chek2.functionals)>0){
         final.criteria$criteria.res["PS3", 2] <- ifelse(chek2.functionals$PS3_criteria=="PS3", 1, 0)
         PS3.message <- ifelse(chek2.functionals$PS3_criteria=="PS3",
                               "PS3 is assigned because there are some functional assays that prove the pathogenic effect",
@@ -1493,7 +1494,7 @@ BP7 <- function (all.information, final.criteria){
   }else if ((!all.information$gene.specific.info$BP7_splicing =="Independent"  & !(all.information$Variant.Info$gene%in%c("TP53")) & all.information$Variant.Info$most.severe.consequence %in% c("synonymous_variant", "intron_variant","splice_region_variant", "splice_donor_region_variant", "splice_acceptor_region_variant")) |
              (all.information$Variant.Info$gene%in% c("TP53") & all.information$Variant.Info$most.severe.consequence %in% c("synonymous_variant"))){
     alt.splicing <- insilico (all.information$predictors$predictor.table$predictors.table2, "Splicing Predictor", "Pathogenic") %>%
-                                                                                                          dplyr::filter(stringr::str_detect(predictor, "SpliceAI"))
+                                                                                                          dplyr::filter(stringr::str_detect(.data$predictor, "SpliceAI"))
     if(nrow(alt.splicing)==0){
       if (gene %in% c("CHEK2", "PTEN", "TP53", "PALB2")){
       predictors.conservation <- insilico (all.information$predictors$predictor.table$predictors.table2, "Nucleotide conservation", "Not strongly conserved")

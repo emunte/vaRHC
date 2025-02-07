@@ -239,7 +239,7 @@ ucscRPredictor <- function(track, object){
   ext.predictor <- ifelse(stringr::str_detect(object$variant, "dup")|stringr::str_detect(object$variant, "ins"),
                           paste0("genome=hg19;track=", track, ";chrom=chr", object$chr, ";start=", object$end,";end=", object$start),
                           paste0("genome=hg19;track=", track, ";chrom=chr", object$chr, ";start=", object$start-1,";end=", object$end))
-  server.ucsc <- "http://api.genome.ucsc.edu/getData/track?" #UCSC's REST API
+  server.ucsc <- "https://api.genome.ucsc.edu/getData/track?" #UCSC's REST API
   pred.score <- api2 (server.ucsc, ext.predictor)
   cromo <- paste0("chr", object$chr)
   if (track == "allHg19RS_BW"){
@@ -273,7 +273,7 @@ alignGvgd <- function(object, bbdd){
 #' @references Gelfman, S., Q. Wang, K.M McSweeney, Z. Ren, F. La Carpia, M. Halvorsen, K. Schoch, F. Ratzon, E.L. Heinzen, M.J. Boland, S. Petrovski and D. B. Goldstein. 2017. Annotating Pathogenic Non-Coding Variants in Genic Regions. Accepted June 5th, 2017.
 #' @noRd
 traPscore <- function(gnom){
-  url <- paste0("http://trap-score.org/Search?query=", gnom)
+  url <- paste0("https://trap-score.org/Search?query=", gnom)
   traPscore <- readUrl(url)
   if(!is.na(traPscore)){
     traPscore <- traPscore %>%
@@ -306,7 +306,7 @@ dbnsfpDbQuery <- function(object, ensembl.id, bbdd){
 
 
 #Prior Utah
-#' @references information obtained from http://priors.hci.utah.edu/PRIORS/ and stored in IDIBELL database
+#' @references information obtained from https://priors.hci.utah.edu/PRIORS/ and stored in IDIBELL database
 #' @noRd
 priorUtahProb <- function(object, gene=NULL, variant =NULL){
   if(is.null(object)) {
@@ -417,7 +417,7 @@ proveanR <- function(object, provean.sh, bbdd, output.dir, verbose, cores=1){
 
   #obtain protein sequence
    if(!is.na(protein)){
-    server.ensembl <- "http://grch37.rest.ensembl.org"
+    server.ensembl <- "https://grch37.rest.ensembl.org"
      ext.ensembl <- paste0("/sequence/id/", ensemblTranscript(object$NM, object$gene)$id ,"?multiple_sequences=0;content-type=text/x-seqxml%2Bxml;type=protein")
      prot.seq <- api(server.ensembl, ext.ensembl)$seq
      .tmp <- file.path(output.dir, ".tmp")
@@ -435,7 +435,7 @@ proveanR <- function(object, provean.sh, bbdd, output.dir, verbose, cores=1){
   # if (web.scrapping==TRUE){
   #   rD <- RSelenium::rsDriver(browser=c("firefox"), port=4570L)
   #   driver <- rD[["client"]]
-  #   url.provean <- "http://provean.jcvi.org/seq_submit.php"
+  #   url.provean <- "https://provean.jcvi.org/seq_submit.php"
   #   driver$navigate(url.provean)
   #   Sys.sleep(3)
   #
@@ -493,29 +493,30 @@ spliceaiR <- function(object, ext.spliceai, output.dir, genome = 37, distance = 
 
     #NM exeptions
     if(object$NM=="NM_007194.3"){#CHEK2
-      ensembl.id <- api ("http://rest.ensembl.org", "/xrefs/symbol/homo_sapiens/NM_007194.4?content-type=application/json") %>%
-                                                                                                                            dplyr::filter(type=="transcript") %>%
+      ensembl.id <- api ("https://rest.ensembl.org", "/xrefs/symbol/homo_sapiens/NM_007194.4?content-type=application/json") %>%
+                                                                                                                            dplyr::filter(.data$type=="transcript") %>%
                                                                                                                             dplyr::select("id") %>%
                                                                                                                             unlist() %>%
                                                                                                                             as.character()
     } else if (object$gene=="MUTYH"){ #MUTYH
-      ensembl.id <- api ("http://rest.ensembl.org", "/xrefs/symbol/homo_sapiens/NM_001128425.2?content-type=application/json") %>%
-                                                                                                                               dplyr::filter(type=="transcript") %>%
+      ensembl.id <- api ("https://rest.ensembl.org", "/xrefs/symbol/homo_sapiens/NM_001128425.2?content-type=application/json") %>%
+                                                                                                                               dplyr::filter(.data$type=="transcript") %>%
                                                                                                                                dplyr::select("id") %>%
                                                                                                                                unlist() %>%
                                                                                                                               as.character()
     }else if (object$gene=="ERCC5"){ #ERCC5
-      ensembl.id <- api ("http://rest.ensembl.org", "/xrefs/symbol/homo_sapiens/NM_000123.4?content-type=application/json") %>%
-                                                                                                                            dplyr::filter(type=="transcript") %>%
+      ensembl.id <- api ("https://rest.ensembl.org", "/xrefs/symbol/homo_sapiens/NM_000123.4?content-type=application/json") %>%
+                                                                                                                            dplyr::filter(.data$type=="transcript") %>%
                                                                                                                             dplyr::select("id") %>%
                                                                                                                             as.character()
     }else if (object$NM=="NM_004448.2"){ #ERBB2
-      ensembl.id <- api ("http://rest.ensembl.org", "/xrefs/symbol/homo_sapiens/NM_004448.4?content-type=application/json") %>%
-                                                                                                                            dplyr::filter(type=="transcript") %>%
+      ensembl.id <- api ("https://rest.ensembl.org", "/xrefs/symbol/homo_sapiens/NM_004448.4?content-type=application/json") %>%
+                                                                                                                            dplyr::filter(.data$type=="transcript") %>%
                                                                                                                             dplyr::select("id") %>%
                                                                                                                             unlist() %>%
                                                                                                                             as.character()
     }
+
 
     #SPLICEAI PROGRAM
     #temporarly directory to store spliceAI output
@@ -566,6 +567,7 @@ spliceaiR <- function(object, ext.spliceai, output.dir, genome = 37, distance = 
                              col_types = c(`#CHROM` = "c",
                                            REF="c",
                                            ALT="c"))
+
     output.spliceai10k <- data.frame()
     if(spliceai.10k==TRUE && !stringr::str_detect(object$variant,"del|dup|ins")){
       #output.file <- file.path(.tmp, "SAI_10k_calc/variants_parsed.tsv" )
@@ -574,6 +576,7 @@ spliceaiR <- function(object, ext.spliceai, output.dir, genome = 37, distance = 
     splice <- vcf@fix [,8] %>%
       stringr::str_split (paste0(",[A-z]\\|", object$gene, "| [A-Z]\\|", object$gene, "|", object$gene)) %>%
       unlist()
+
     #delete intermediate files and directory
     unlink(.tmp, recursive=TRUE)
     spliceai.score <- splice[stringr::str_detect(splice, ensembl.id)==T]

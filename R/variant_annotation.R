@@ -349,8 +349,8 @@ varDetails <- function (NM, NC=NULL, CCDS, gene, variant, variant.mutalyzer=NULL
   ensembl.id <- ensemblTranscript(NM, gene)$id
 
   #we construct vep extension
-  server.ensembl <- "http://grch37.rest.ensembl.org" #Ensembl's REST API hg19
-  server.ensembl.hg38 <- "http://rest.ensembl.org"#Ensembl's REST API hg38
+  server.ensembl <- "https://grch37.rest.ensembl.org" #Ensembl's REST API hg19
+  server.ensembl.hg38 <- "https://rest.ensembl.org"#Ensembl's REST API hg38
   ext.vep <-  paste0("/vep/human/hgvs/",ensembl.id,":",variant.mutalyzer$variant)
   # ext.vep <-  paste0("/vep/human/hgvs/",NM,":",variant.mutalyzer$variant)
   # if(NM=="NM_000314.6")ext.vep <- paste0("/vep/human/hgvs/NM_000314.8:",variant.mutalyzer$variant)
@@ -382,11 +382,12 @@ varDetails <- function (NM, NC=NULL, CCDS, gene, variant, variant.mutalyzer=NULL
   ref.hg38 <- allele.string.hg38[1]#reference
   alt.hg38 <- allele.string.hg38[2]#alternative
   most.severe.consequence <- tibble::tibble(coordinates$transcript_consequences[[1]])
+
   if(ncol(most.severe.consequence)==0) most.severe.consequence <- tibble::tibble(coordinates2$transcript_consequences[[1]])
   most.severe.consequence <- most.severe.consequence %>%
     dplyr::filter (.data$transcript_id==as.character(ensembl.id)) %>%
     dplyr::select("consequence_terms") %>%
-    unlist
+    unlist  #we select the transcript of interest
   if(length(most.severe.consequence)>1){
     if(isFALSE(skip.pred)){
       num <- which(!stringr::str_detect("splice_region_variant", most.severe.consequence) & !stringr::str_detect("splice_polypyrimidine_tract_variant", most.severe.consequence))
@@ -442,12 +443,14 @@ varDetails <- function (NM, NC=NULL, CCDS, gene, variant, variant.mutalyzer=NULL
   #adjust synonymous nomenclature
   protein <- protsyn2(object, variant.mutalyzer)
   if(skip.pred == FALSE && any( stringr::str_detect(most.severe.consequence, "frameshift_variant"))){
-    most.severe.consequence <- ifelse(rep(most.severe.consequence=="frameshift_variant" && length(stringr::str_extract_all(variant.mutalyzer$protein, "[0-9]+"))==1,3),
+    most.severe.consequence[1] <- ifelse(any(most.severe.consequence=="frameshift_variant") && length(stringr::str_extract_all(variant.mutalyzer$protein, "[0-9]+")%>% unlist())==1,
                                       "stop_gained",
-                                      most.severe.consequence) #sometimes frameshift variants are nonsense
-    most.severe.consequence <- ifelse(rep(stringr::str_detect(variant.mutalyzer$protein, "fs"),3),
-                                      "frameshift_variant",
                                       most.severe.consequence)
+    most.severe.consequence[1] <- ifelse(any(most.severe.consequence=="splice_region_variant" & stringr::str_detect(variant.mutalyzer$variant, "\\+|\\-")),"splice_region_variant", most.severe.consequence)  #sometimes intronic dups and dels are considered  frameshifts
+    #sometimes frameshift variants are nonsense
+    # most.severe.consequence <- ifelse(rep(stringr::str_detect(variant.mutalyzer$protein, "fs"),3),
+    #                                   "frameshift_variant",
+    #                                   most.severe.consequence)
   }
   domain.info <- domainProt(chr, start, end) %>%
                  unique
@@ -565,7 +568,7 @@ coordNonCoding <- function (variant.mutalyzer, object){
 #' @author Elisabet Munté Roca
 #' @noRd
 domainProt <- function(chr, start, end){
-  server.ucsc <- "http://api.genome.ucsc.edu/getData/track?" #UCSC's REST API
+  server.ucsc <- "https://api.genome.ucsc.edu/getData/track?" #UCSC's REST API
   strandi <- ifelse(end >= start,
                     paste0(";start=",start-1, ";end=", end),
                     paste0(";start=",end, ";end=", start))
@@ -634,7 +637,7 @@ gnomADnomen <- function(object, genome=37){
     num.rest<-n-values[1] #we obtain the value where is the mutation located to the most leff position, and we do n-that number
     start2<-ifelse(genome==37,
                    object$start,
-                   object$start.hg38)-num.rest-1 #-1 as gnomAD gives the position of one base before the change
+                   object$start.hg38)-num.rest-1+ ifelse(stringr::str_detect(object$variant, "dup"), length.pattern, 0) #-1 as gnomAD gives the position of one base before the change . For dups we have to consider the patterns length!!!
     ref <-ifelse(stringr::str_detect(object$variant, "del"),
                  stringr::str_sub(str.look, values[1], values[1]+length.pattern),
                  stringr::str_sub(str.look, values[1],values[1]))
@@ -707,7 +710,7 @@ toGenomic <- function(NM, NC, cor.variant, gene){
 }
 
 CodingTranscriptCds <- function(object){
-  server.ucsc <- "http://api.genome.ucsc.edu/getData/track?" #UCSC's REST API
+  server.ucsc <- "https://api.genome.ucsc.edu/getData/track?" #UCSC's REST API
   ext.ucsc <- paste0("genome=hg19;track=ccdsGene;chrom=chr", unique(object$chr))
   ucsc <- api2(server.ucsc, ext.ucsc)
   exo <- ucsc$ccdsGene[ucsc$ccdsGene$name==object$CCDS,]
