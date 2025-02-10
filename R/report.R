@@ -388,7 +388,9 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
    var.clin <-    vaRinfo$clinVar$clinVar.ids$table %>%
      dplyr::mutate(url=paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", .data$V1))  %>%
      dplyr::filter(stringr::str_detect(.data$V2, vaRinfo$Variant.Info$variant)) %>%
-     dplyr::select(-"V1", -"variant", -"protein") %>%
+     dplyr::select(-"V1"
+                   #, -"variant", -"protein"
+                   ) %>%
      dplyr::relocate(.data$url, .after= .data$V2)
 
     XLConnect::writeWorksheet(wb, var.clin , sheet="ClinVar Variants",
