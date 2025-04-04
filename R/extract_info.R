@@ -11,12 +11,13 @@
 #' @param browser Which browser to start Rselenium server. By default is "firefox" (the recommended). If you do not have firefox installed try either "chrome" or "phantomjs".
 #' @param spliceai.program Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.
 #' @param spliceai.genome Fasta file assembly provided. It can only be "hg19" or "hg38" assembly. By default it will be hg19.
-#' @param spliceai.reference Path to the Reference genome hg19 or hg38 fasta file. hg19 file can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
-#' @param spliceai.annotation Path to gene annotation file. By default it uses the file data(gencode_spliceai_hg19). It must be txt.
+#' @param spliceai.reference Path to the Reference genome hg19 or hg38 fasta file. hg19 file can be downloaded from https://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
+#' @param spliceai.annotation Path to gene annotation file. By default is null and it uses UCSC ncbiRefSeq table. This page is sometimes temporarily out of service. Then the file must be provided (see and example in package docs folder: "../docs/gencode.v38lift37.annotation.txt")
 #' @param spliceai.distance  Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)
 #' @param spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
 #' @param provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
 #' @param provean.sh Path to provean.sh. By default is NULL and will only be taken into account if provean.program is set to TRUE.
+#' @param spliceai.10k Logical. By default is FALSE and SpliceAI-10k will not be computed. It can only be computed if provean.program is TRUE.
 #' @param google.search Logical. By default is FALSE and it will not look for variant results in google.
 #' @param verbose logic. By default is FALSE and it will not show intermediate process messages
 #' @return information about the variant.
@@ -333,7 +334,7 @@ gnomADcov <- function(assembly, track, gnomAD.nomenclature, chr=NULL, start=NULL
   }
   chr.gnom<- paste0("chr",chr)
   ext.coverage<-paste0("genome=", assembly, ";track=gnomad",track,  "MeanCoverage;chrom=", chr.gnom, ";start=",start,";end=",end)
-  server.ucsc <- "http://api.genome.ucsc.edu/getData/track?" #UCSC's REST API
+  server.ucsc <- "https://api.genome.ucsc.edu/getData/track?" #UCSC's REST API
   coverage <- try(api2(server.ucsc, ext.coverage))
   ge <- paste0("gnomad", track, "MeanCoverage")
   cover <- coverage[[ge]][chr.gnom] #we check the coverage for the specific genome and chromosome
@@ -368,7 +369,7 @@ gnomAD <- function(track, gnomAD.ID, bbdd){
 upDownPos<-function(gnomAD.nomen, track, id.gnomad, id.same.position){ #x means location of the variant and table, exomes or genomes
   gnomad <- stringr::str_split(gnomAD.nomen, "-")[[1]]
   up.down <-c(NA,NA)
-  if (is.na(id.gnomad) && is.na(id.same.position)){
+  if (is.na(id.gnomad) && any(is.na(id.same.position))){
     query.down <- paste0("SELECT ", track, "_id from ", track, "_gnomad WHERE POS> '", as.numeric(gnomad[2])-50 ,"'AND POS<'", gnomad[2], "'AND CHROM='", gnomad[1],"';")
     chrom1 <- connectionDB(query.down) %>%
               unlist() %>%
@@ -594,7 +595,7 @@ clinVarIds <- function(object){
 
     if(nrow(clinvar.info1)>0 & nrow(clinvar.info2)>0){
     clinvar.info <- merge(clinvar.info1, clinvar.info2, by ="V1", all=TRUE) %>%
-      dplyr::mutate(V2=ifelse(is.na(.data$V2.x), .data$V2.y, .data$V2.x)) %>% select(V1, V2) %>%tibble::as_tibble()
+      dplyr::mutate(V2=ifelse(is.na(.data$V2.x), .data$V2.y, .data$V2.x)) %>% dplyr::select(.data$V1, .data$V2) %>%tibble::as_tibble()
     }else if(nrow(clinvar.info1)>0 & nrow(clinvar.info2)==0){
       clinvar.info <- clinvar.info1
     }else{
@@ -622,7 +623,7 @@ clinVarIds <- function(object){
     }
   }else{
     ext.clinvar.all <- paste0("terms=(", object$gene,")",object$variant,"&ef=HGVS_exprs")
-    clinvar.info <- api2(server.clinvar, ext.clinvar.all)
+    clinvar.info <- api2(server2.clinvar, ext.clinvar.all)
     if(length(clinvar.info[[3]]$HGVS_exprs)!=0){
 
       number <- stringr::str_detect(clinvar.info[[3]]$HGVS_exprs, variant.clinvar)
@@ -776,12 +777,31 @@ clinVarTable <- function(table, verbose = FALSE){
   a <- lapply(table$url, function(g, verbose){
     page <- try(readUrl(g))
     if (!is.na(page) && !is.null(page) && class(page)[1]!="try-error" &&  any(class(page[1])!="try-error")){
-      table.ex <- rvest::html_table(page, fill=TRUE)
+      print(g)
+      table.ex <- rvest::html_table(page, header=TRUE)
+      headers.tables <- page %>%
+        rvest::html_nodes("h3") %>%
+        rvest::html_nodes(xpath = "./text()") %>%
+        rvest::html_text(trim = TRUE) %>%
+        .[. != ""]
+      names(table.ex) <- c("Timeline", headers.tables[-length(headers.tables)])
+      headers.mantain <- c("Timeline",
+        "Variant Details",
+        "Genes",
+        "Conditions - Germline",
+        "Submissions - Germline",
+        "Germline Functional Evidence",
+        "Citations for germline classification of this variant"
+      )
+      table.ex <- table.ex[names(table.ex) %in% headers.mantain]
       colnames(table.ex[[1]]) <- c("Condition", "First ClinVar", "Last submission", "Last evaluated")
       colnames(table.ex[[4]]) <- c("Condition", "Classitication", "Review status", "Last evaluated", "Variation/conditions record")
       colnames(table.ex[[5]]) <- c("Interpretation", "Review_status",  "Condition", "Submitter", "More_information", "more")
-      if(table.ex[[5]][nrow(table.ex[[5]]),1]=="click to load more\n                    click to collapse"){
-      table.ex[[5]] <- table.ex[[5]][1:nrow(table.ex[[5]])-1,]
+      which.no.chose <- table.ex[[5]] %>%
+        dplyr::mutate(which.no.chose = stringr::str_detect(.data$Interpretation,"click to load more\n                    click to collapse|Flagged submissions do not contribute to the aggregate classification|click to load more submissions\n                    click to collapse")) %>%
+        dplyr::select(which.no.chose) %>% as.data.frame()
+      if(length(which(which.no.chose$which.no.chose))>0){
+      table.ex[[5]] <- table.ex[[5]][-which(which.no.chose$which.no.chose),]
       }
       interpret <- table.ex[[5]][1] %>%
                    as.data.frame() %>%
@@ -796,7 +816,7 @@ clinVarTable <- function(table, verbose = FALSE){
       review.mode <- table.ex[[5]][2] %>%
                      as.data.frame() %>%
                      dplyr::mutate (review2= purrr::map(stringr::str_split(.data$Review_status, "\\n"),3)) %>%
-                     dplyr::select("review2")
+                    dplyr::select("review2")
       table.ex[[5]][1] <- unlist(interpret$Interpretation)
       table.ex[[5]][2] <- unlist(review)
       table.ex[[5]][6] <- unlist(date.clin$date)
@@ -841,7 +861,7 @@ secondMet <- function(variant.mutalyzer, object, assembly){
                          as.numeric(coordinates.exon[nrow(coordinates.exon),2]))
 
     ext.clinvar.pvs1 <- paste0("track=clinvarMain;chrom=chr", object$chr,";start=",start.sec, ";end=", end.sec)
-    server.ucsc <- "http://api.genome.ucsc.edu/getData/track?" #UCSC's REST API
+    server.ucsc <- "https://api.genome.ucsc.edu/getData/track?" #UCSC's REST API
     clinvar.pvs1.info <- api2(paste0(server.ucsc, "genome=", assembly,";"), ext.clinvar.pvs1)[["clinvarMain"]] %>%
       tibble::as_tibble()
     if(length(clinvar.pvs1.info)>0){
@@ -978,8 +998,8 @@ fsWindow <- function(object){
     dntp.var <- NA
   }
   salt.fs <- NA
-  salt.fs[object$most.severe.consequence=="frameshift_variant"] <- stringr::str_extract_all(object$protein, "[0-9]+")  #obtain number of codon until stop
-  salt.fs[object$most.severe.consequence=="frameshift_variant"]<-salt.fs[[1]][length(salt.fs[[1]])] %>%
+  salt.fs[object$most.severe.consequence=="frameshift_variant"& object$protein!="p.?"] <- stringr::str_extract_all(object$protein, "[0-9]+")  #obtain number of codon until stop
+  salt.fs[object$most.severe.consequence=="frameshift_variant" & object$protein!="p.?"]<-salt.fs[[1]][length(salt.fs[[1]])] %>%
                                                                  as.numeric()
   salt.fs[object$most.severe.consequence=="stop_gained"] <- 0
   dntp.stop <- dntp.var + as.numeric(salt.fs)*3
@@ -998,7 +1018,7 @@ lenCodingTranscriptCds <- function(coordinates.exon){
 
 #' @noRd
 CodingTranscriptCds <- function(object){
-  server.ucsc <- "http://api.genome.ucsc.edu/getData/track?" #UCSC's REST API
+  server.ucsc <- "https://api.genome.ucsc.edu/getData/track?" #UCSC's REST API
   ext.ucsc <- paste0("genome=hg19;track=ccdsGene;chrom=chr", unique(object$chr))
   ucsc <- api2(server.ucsc, ext.ucsc)
   exo <- ucsc$ccdsGene[ucsc$ccdsGene$name==object$CCDS,]
@@ -1014,7 +1034,7 @@ CodingTranscriptCds <- function(object){
 #' @noRd
 insightUrl <- function (object, list.genes, database, browser, verbose = FALSE){
   insight <- NA
-  if(object$gene %in% list.genes)insight <- readTableUrlJavascript(paste0("http://www.insight-database.org/classifications/",database, ".html?gene=", object$gene, "&variant=", URLencode(object$variant), "&protein="), browser = browser, verbose = verbose)
+  if(object$gene %in% list.genes)insight <- readTableUrlJavascript(paste0("https://www.insight-database.org/classifications/",database, ".html?gene=", object$gene, "&variant=", URLencode(object$variant), "&protein="), browser = browser, verbose = verbose)
   return (insight)
 }
 
@@ -1301,7 +1321,7 @@ nomenclatureScholaR <- function(object){
   }else if (object$most.severe.consequence %in% c("5_prime_UTR_variant", "3_prime_UTR_variant", "start_lost")){
     biblio.variant <- paste("'",object$gene, "'('", no.c, "' | '", rs, "')")
   }else if(object$most.severe.consequence %in% c("inframe_deletion", "inframe_insertion")){
-    if(stringr::str_detect(object$variant, "del|dup")){
+    if(stringr::str_detect(object$variant, "del|dup|ins")){
       # web_mutalyzer <- xml2::read_html(URLencode(paste0("https://mutalyzer.nl/name-checker?description=",object$genomic)))
       # bases <- web_mutalyzer %>%
       #                        rvest::html_nodes("pre") %>%

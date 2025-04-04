@@ -354,7 +354,8 @@ PS1 <- function (all.information, final.criteria){
 clinVarEvidence <- function(all.information){
   score.total <- c()
   clinvar.evidence.calc <- sapply(all.information$clinVar$clinVar.info$same_codon,  function (x){
-    score <- x[[9]]
+    num.len <- length(x)
+    score <- x[[num.len]]
     score.total <-rbind(score.total, as.matrix(score))
     return(score.total)
   })
