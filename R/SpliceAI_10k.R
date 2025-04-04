@@ -13,7 +13,7 @@ annotationSplice <- function(object, .tmp, genome ){
   ref.genome <- ifelse(genome==37, "hg19", "hg38" )
 
   genes <- genes %>%
-    tidyr::separate(RefSeq_ID, into = c("RefSeq_ID_no_v"), sep = "[.]",
+    tidyr::separate(.data$RefSeq_ID, into = c("RefSeq_ID_no_v"), sep = "[.]",
                     extra = "drop", remove = FALSE)
 
   # Read or download UCSC ncbiRefSeq table
@@ -27,34 +27,34 @@ annotationSplice <- function(object, .tmp, genome ){
 
   # only use refseq ID for matching not version
   refseq.table <- refseq.table %>%
-    tidyr::separate(name, into = c("refseq_nov","refseq_version"),
+    tidyr::separate(.data$name, into = c("refseq_nov","refseq_version"),
                     sep = "[.]", extra = "drop", remove = FALSE)
 
   # subsetting refseq list by gene list
   refseq.table.filtered <- refseq.table %>%
     dplyr::right_join(genes, by = c("refseq_nov"="RefSeq_ID_no_v")) %>%
-    dplyr::filter(!str_detect(chrom, "_")) %>%
-    dplyr::mutate(refseq_match = dplyr::if_else(RefSeq_ID == name, TRUE, FALSE))  %>%
-    dplyr::mutate(chrom = stringr::str_remove(chrom, "chr"))
+    dplyr::filter(!stringr::str_detect(.data$chrom, "_")) %>%
+    dplyr::mutate(refseq_match = dplyr::if_else(.data$RefSeq_ID == .data$name, TRUE, FALSE))  %>%
+    dplyr::mutate(chrom = stringr::str_remove(.data$chrom, "chr"))
 
   refseq.table.filtered %>%
     readr::write_tsv(output.refseq)
 
   cat("The following RefSeq ID versions have been updated")
   refseq.table.filtered %>%
-    dplyr::filter(!refseq_match) %>%
-    dplyr::rename(RefSeq_found = name, RefSeq_submitted = RefSeq_ID) %>%
-    dplyr::select(RefSeq_submitted,RefSeq_found)
+    dplyr::filter(!.data$refseq_match) %>%
+    dplyr::rename(RefSeq_found = .data$name, RefSeq_submitted = .data$RefSeq_ID) %>%
+    dplyr::select(.data$RefSeq_submitted,.data$RefSeq_found)
 
   refseq.table.spliceAI <- refseq.table.filtered %>%
-    dplyr::mutate(`#NAME` = paste0("RefSeqTx-",name),
-                  CHROM = str_remove(chrom,"chr"),
-                  STRAND = strand,
-                  TX_START = txStart,
-                  TX_END = txEnd,
-                  EXON_START = exonStarts,
-                  EXON_END = exonEnds) %>%
-    dplyr::select(`#NAME`,CHROM, STRAND, TX_START, TX_END, EXON_START, EXON_END) %>%
+    dplyr::mutate(`#NAME` = paste0("RefSeqTx-",.data$name),
+                  CHROM = stringr::str_remove(.data$chrom,"chr"),
+                  STRAND = .data$strand,
+                  TX_START = .data$txStart,
+                  TX_END = .data$txEnd,
+                  EXON_START = .data$exonStarts,
+                  EXON_END = .data$exonEnds) %>%
+    dplyr::select(.data$`#NAME`,.data$CHROM, .data$STRAND, .data$TX_START, .data$TX_END, .data$EXON_START, .data$EXON_END) %>%
     dplyr::distinct()
 
   refseq.table.spliceAI %>%
@@ -80,28 +80,28 @@ spliceai10k <- function(input, refseq.table, genome, DS_AGDG_MIN_T= 0.02, DS_AGD
   #load input
   input.splice.all <- input %>%
     # Splitting SpliceAI predictions if multiple transcripts included
-    tidyr::separate_rows(INFO, sep = ",") %>%
+    tidyr::separate_rows(.data$INFO, sep = ",") %>%
     # Splitting info field
-    tidyr::separate(INFO,
+    tidyr::separate(.data$INFO,
              into = c("ALLELE","SYMBOL","DS_AG","DS_AL","DS_DG",
                       "DS_DL","DP_AG","DP_AL","DP_DG","DP_DL"),
              sep="[|]",
              fill="right") %>%
-    dplyr::mutate(ALLELE = dplyr::if_else((str_detect(ALLELE,"SpliceAI=") | ALLELE == "."),
-                            ALLELE,
-                            paste0("SpliceAI=",ALLELE))) %>%
+    dplyr::mutate(ALLELE = dplyr::if_else((stringr::str_detect(.data$ALLELE,"SpliceAI=") | .data$ALLELE == "."),
+                            .data$ALLELE,
+                            paste0("SpliceAI=",.data$ALLELE))) %>%
     # Stripping "chr" in case vcf contains "chr"
-    dplyr::mutate(`#CHROM` = as.character(str_remove(`#CHROM`,"chr")))
+    dplyr::mutate(`#CHROM` = as.character(stringr::str_remove(.data$`#CHROM`,"chr")))
 
   # Only including variants with SPLICE AI annotation & SNVs
   input.splice.annot <- input.splice.all %>%
-    dplyr::filter(DS_AG != "." & ALLELE != ".") %>%
-    dplyr::filter(stringr::str_count(REF) == 1 & stringr::str_count(ALT) == 1)
+    dplyr::filter(.data$DS_AG != "." & .data$ALLELE != ".") %>%
+    dplyr::filter(stringr::str_count(.data$REF) == 1 & stringr::str_count(.data$ALT) == 1)
 
   # Keeping the rest of the variants for later to add to the final output
   input.splice.other <- input.splice.all %>%
-    dplyr::filter((DS_AG == "." | ALLELE == ".") |
-                    (stringr::str_count(REF) != 1 | stringr::str_count(ALT) != 1))  %>%
+    dplyr::filter((.data$DS_AG == "." | .data$ALLELE == ".") |
+                    (stringr::str_count(.data$REF) != 1 | stringr::str_count(.data$ALT) != 1))  %>%
     dplyr::mutate_at(dplyr::vars(c("DS_AG","DS_AL","DS_DG","DS_DL",
                             "DP_AG","DP_AL","DP_DG","DP_DL")), ~NA_real_)
 
@@ -110,31 +110,31 @@ spliceai10k <- function(input, refseq.table, genome, DS_AGDG_MIN_T= 0.02, DS_AGD
   cat("\nPrepare transcripts\n")
 
   refseq.table.expanded <- refseq.table %>%
-    tidyr::separate_rows(exonStarts, exonEnds, exonFrames, sep = ",", convert=TRUE) %>%
-    dplyr::filter(exonStarts != "") %>%
+    tidyr::separate_rows(.data$exonStarts, .data$exonEnds, .data$exonFrames, sep = ",", convert=TRUE) %>%
+    dplyr::filter(.data$exonStarts != "") %>%
     # mutate(chrom_nochr = str_remove(chrom,"chr")) %>%
-    dplyr::mutate(strand = dplyr::if_else(strand == "-", -1, 1))
+    dplyr::mutate(strand = dplyr::if_else(.data$strand == "-", -1, 1))
 
 
   # Reformatting transcript table to have previous and next exons and
   # introns as columns (with exon and intron numbering).
   refseq.boundaries <- refseq.table.expanded %>%
-    dplyr::group_by(name) %>%
-    dplyr::arrange(exonStarts) %>%
+    dplyr::group_by(.data$name) %>%
+    dplyr::arrange(.data$exonStarts) %>%
     dplyr::mutate(exon_num_chrom = dplyr::row_number(),
            eNum = dplyr::if_else(strand == -1,
-                          as.integer(max(exon_num_chrom) - exon_num_chrom + 1),
-                          (exon_num_chrom))) %>%
-    dplyr::select(-exon_num_chrom) %>%
-    dplyr::rename(eStart = exonStarts,
-                  eEnd = exonEnds,
-                  eFrame = exonFrames) %>%
-    dplyr::arrange(name,eNum) %>%
+                          as.integer(max(.data$exon_num_chrom) - .data$exon_num_chrom + 1),
+                          (.data$exon_num_chrom))) %>%
+    dplyr::select(-.data$exon_num_chrom) %>%
+    dplyr::rename(eStart = .data$exonStarts,
+                  eEnd = .data$exonEnds,
+                  eFrame = .data$exonFrames) %>%
+    dplyr::arrange(.data$name, .data$eNum) %>%
     dplyr::mutate_at(dplyr::vars(c("exonCount")), ~as.integer(.)) %>%
-    dplyr::mutate(prev_eStart = dplyr::if_else(eNum > 1, dplyr::lag(eStart), NA_integer_),
-           prev_eEnd = dplyr::if_else(eNum > 1, dplyr::lag(eEnd), NA_integer_),
-           prev_eFrame = dplyr::if_else(eNum > 1, dplyr::lag(eFrame), NA_integer_)) %>%
-    dplyr::mutate(next_eStart = dplyr::if_else(eNum < exonCount, dplyr::lead(eStart), NA_integer_),
+    dplyr::mutate(prev_eStart = dplyr::if_else(.data$eNum > 1, dplyr::lag(.data$eStart), NA_integer_),
+           prev_eEnd = dplyr::if_else(.data$eNum > 1, dplyr::lag(.data$eEnd), NA_integer_),
+           prev_eFrame = dplyr::if_else(.data$eNum > 1, dplyr::lag(.data$eFrame), NA_integer_)) %>%
+    dplyr::mutate(next_eStart = dplyr::if_else(.data$eNum < exonCount, dplyr::lead(eStart), NA_integer_),
            next_eEnd = dplyr::if_else(eNum < exonCount, dplyr::lead(eEnd), NA_integer_),
            next_eFrame = dplyr::if_else(eNum < exonCount, dplyr::lead(eFrame), NA_integer_)) %>%
     dplyr::mutate(intronStart = dplyr::case_when(eNum == 1 ~ NA_integer_,
@@ -152,8 +152,8 @@ spliceai10k <- function(input, refseq.table, genome, DS_AGDG_MIN_T= 0.02, DS_AGD
                                        TRUE ~ as.integer(eStart - 1)),
            next_intron_num = dplyr::if_else(eNum == exonCount, NA_integer_, as.integer(eNum))) %>%
     dplyr::rowwise() %>%
-    dplyr::mutate(exon_size = as.integer(eEnd - eStart),
-           intron_size = as.integer(intronEnd - intronStart))
+    dplyr::mutate(exon_size = as.integer(.data$eEnd - .data$eStart),
+           intron_size = as.integer(.data$intronEnd - .data$intronStart))
 
   ################## Perform calculations ########################################
 
@@ -203,7 +203,7 @@ spliceai10k <- function(input, refseq.table, genome, DS_AGDG_MIN_T= 0.02, DS_AGD
   output <- input.splice.distance %>%
     dplyr::ungroup() %>%
     dplyr::rowwise() %>%
-    dplyr::mutate(., GEO_AG = POS+DP_AG,
+    dplyr::mutate(GEO_AG = POS+DP_AG,
            GEO_AL = POS+DP_AL,
            GEO_DG = POS+DP_DG,
            GEO_DL = POS+DP_DL)
@@ -251,9 +251,9 @@ spliceai10k <- function(input, refseq.table, genome, DS_AGDG_MIN_T= 0.02, DS_AGD
   # Predicted exon sizes
   output <- output %>%
     dplyr::rowwise() %>%
-    dplyr::mutate(Gained_exon_size = GEX_size,
-           Lost_exon_size = LEX_predict,
-           Retained_intron_size = RET_predict,
+    dplyr::mutate(Gained_exon_size = .data$GEX_size,
+           Lost_exon_size = .data$LEX_predict,
+           Retained_intron_size = .data$RET_predict,
            bp_5prime = dplyr::case_when(Cryptic_Acceptor_activation == "YES" & strand == 1 & Cryptic_Acceptor_orientation == "PASS" ~ GEO_AG-(eStart+1),
                                  Cryptic_Acceptor_activation == "YES" & strand == -1 & Cryptic_Acceptor_orientation == "PASS" ~ eEnd-GEO_AG,
                                  TRUE ~ 0),
@@ -281,11 +281,11 @@ spliceai10k <- function(input, refseq.table, genome, DS_AGDG_MIN_T= 0.02, DS_AGD
     dplyr::mutate(Partial_intron_retention = dplyr::if_else(d_250bp == "NO" &
                                                 (Cryptic_Acceptor_activation == "YES" |
                                                    Cryptic_Donor_activation == "YES") &
-                                                ((bp_5prime < 0 & bp_5prime > -251) |
-                                                   (bp_3prime > 0 & bp_3prime < 251)),
+                                                ((.data$bp_5prime < 0 & .data$bp_5prime > -251) |
+                                                   (.data$bp_3prime > 0 & .data$bp_3prime < 251)),
                                               "YES", "NO")) %>%
-    dplyr::mutate(Pseudoexon_activation = dplyr::if_else(d_50bp == "YES" &
-                                             GEX_predict == "PASS" &
+    dplyr::mutate(Pseudoexon_activation = dplyr::if_else(.data$d_50bp == "YES" &
+                                             .data$GEX_predict == "PASS" &
                                              !is.na(Gained_exon_size) &
                                              !is.na(Pseudoexon_intron),
                                            "YES", "NO")) %>%
@@ -324,15 +324,15 @@ spliceai10k <- function(input, refseq.table, genome, DS_AGDG_MIN_T= 0.02, DS_AGD
            Pseudoexon_frameshift = dplyr::case_when(Pseudoexon_activation == "NO" ~ as.character(NA),
                                              is.na(Pseudoexon_intron_type)==TRUE ~ as.character(NA),
                                              as.numeric(Pseudoexon_intron_type)==-1 ~ as.character(NA),
-                                             (abs(Pseudoexon_start-Pseudoexon_end)+1) %% 3 != 0 ~ "YES",
+                                             (abs(.data$Pseudoexon_start-.data$Pseudoexon_end)+1) %% 3 != 0 ~ "YES",
                                              TRUE ~ "NO"))
 
   # Add additional retained intron information
   output <- output %>%
     dplyr::rowwise() %>%
     dplyr::mutate(Retained_intron_info = ifelse(Intron_retention == "YES",
-                                         find_retained_intron(ALpos = GEO_AL,
-                                                              DLpos = GEO_DL,
+                                         find_retained_intron(ALpos = .data$GEO_AL,
+                                                              DLpos = .data$GEO_DL,
                                                               transcript = name,
                                                               refseqTab = refseq.boundaries),"NA|NA")) %>%
     tidyr::separate(., col = Retained_intron_info, into = c("Retained_intron","Retained_intron_type"), sep = "[|]", remove = TRUE) %>%
@@ -433,14 +433,14 @@ spliceai10k <- function(input, refseq.table, genome, DS_AGDG_MIN_T= 0.02, DS_AGD
   output <- output %>%
     dplyr::rowwise() %>%
     dplyr::mutate(Pseudoexon_activation_aaseq = ifelse(Pseudoexon_activation == "YES",
-                                                get_pseudo_SEQ(pseudoStart = Pseudoexon_start,
-                                                               pseudoEnd = Pseudoexon_end,
+                                                get_pseudo_SEQ(pseudoStart = .data$Pseudoexon_start,
+                                                               pseudoEnd = .data$Pseudoexon_end,
                                                                refseqTable = refseq.boundaries,
-                                                               frameshift = Pseudoexon_frameshift,
+                                                               frameshift = .data$Pseudoexon_frameshift,
                                                                transcript = name,
-                                                               varPos = POS,
-                                                               ref = REF,
-                                                               alt = ALT),"-"))
+                                                               varPos = .data$POS,
+                                                               ref = .data$REF,
+                                                               alt = .data$ALT),"-"))
   # for intron retention
   output <- output %>%
     dplyr::rowwise() %>%
@@ -449,9 +449,9 @@ spliceai10k <- function(input, refseq.table, genome, DS_AGDG_MIN_T= 0.02, DS_AGD
                                                              transcript = name,
                                                              intron = Retained_intron,
                                                              frameshift = Intron_retention_frameshift,
-                                                             varPos = POS,
-                                                             ref = REF,
-                                                             alt = ALT,
+                                                             varPos = .data$POS,
+                                                             ref = .data$REF,
+                                                             alt = .data$ALT,
                                                              ref.genome=ref.genome),
                                            "-"))
   # clean up the partial frameshift column
@@ -474,22 +474,23 @@ spliceai10k <- function(input, refseq.table, genome, DS_AGDG_MIN_T= 0.02, DS_AGD
 
   #Drop columns from output
   output.all <- output.all %>%
-    dplyr::select(., c(`#CHROM`:DP_DL,
-                       name,strand,Cryptic_Acceptor_activation,
-                       Cryptic_Donor_activation,Any_splicing_aberration,
-                       bp_5prime,bp_3prime,Partial_intron_retention,
-                       Partial_exon_deletion,Partial_exon_start,
-                       Partial_exon_end,Partial_frameshift,
-                       Partial_intron_retention_aaseq,
-                       Partial_exon_deletion_aaseq,Gained_exon_size,
-                       Pseudoexon_activation,Pseudoexon_start,
-                       Pseudoexon_end,Pseudoexon_frameshift,
-                       Pseudoexon_intron,Pseudoexon_activation_aaseq,
-                       Exon_skipping,Lost_exons,Exon_skipping_frameshift,
-                       Exon_skipping_aaseq,Retained_intron_size,
-                       Intron_retention,Retained_intron,
-                       Intron_retention_frameshift,Intron_retention_aaseq)) %>%
-    dplyr::rename(Used_RefSeq_Transcript = name)
+    #dplyr::select(., c(`#CHROM`:DP_DL,
+    dplyr::select(.data$`#CHROM`:.data$DP_DL,
+                       .data$name,.data$strand,.data$Cryptic_Acceptor_activation,
+                       .data$Cryptic_Donor_activation,.data$Any_splicing_aberration,
+                       .data$bp_5prime,.data$bp_3prime,.data$Partial_intron_retention,
+                       .data$Partial_exon_deletion,.data$Partial_exon_start,
+                       .data$Partial_exon_end,.data$Partial_frameshift,
+                       .data$Partial_intron_retention_aaseq,
+                       .data$Partial_exon_deletion_aaseq,.data$Gained_exon_size,
+                       .data$Pseudoexon_activation,.data$Pseudoexon_start,
+                       .data$Pseudoexon_end,.data$Pseudoexon_frameshift,
+                       .data$Pseudoexon_intron,.data$Pseudoexon_activation_aaseq,
+                       .data$Exon_skipping,Lost_exons,.data$Exon_skipping_frameshift,
+                       .data$Exon_skipping_aaseq,.data$Retained_intron_size,
+                       .data$Intron_retention,.data$Retained_intron,
+                       .data$Intron_retention_frameshift,.data$Intron_retention_aaseq) %>%
+    dplyr::rename(Used_RefSeq_Transcript = .data$name)
 
   return(output.all)
 
@@ -557,22 +558,22 @@ make_consensus_table <- function(transcript,refseqTab,filterNONCOD=TRUE) {
   # Extract the single transcript
   transcriptTab <- refseqTab %>%
     dplyr::ungroup() %>%
-    dplyr::filter(., `name` == transcript)
+    dplyr::filter( .data$`name` == transcript)
   # now correct for the zero UCSC positioning
   transcriptTab <- transcriptTab %>%
-    dplyr::mutate(eStartAdj = dplyr::case_when(is.na(eStart) ~ NA_integer_,
-                                 TRUE ~ as.integer(eStart+1)),
-           intronEndAdj = dplyr::case_when(is.na(intronEnd) ~ NA_integer_,
-                                    TRUE ~ as.integer(intronEnd+1))) %>%
+    dplyr::mutate(eStartAdj = dplyr::case_when(is.na(.data$eStart) ~ NA_integer_,
+                                 TRUE ~ as.integer(.data$eStart+1)),
+           intronEndAdj = dplyr::case_when(is.na(.data$intronEnd) ~ NA_integer_,
+                                    TRUE ~ as.integer(.data$intronEnd+1))) %>%
     tibble::rownames_to_column(., "rows") %>%
     dplyr::mutate_at(dplyr::vars(c("rows")), ~as.numeric(.))
   # fix the exon sizes
   transcriptTab <- transcriptTab %>%
-    dplyr::mutate(exon_size = as.integer(eEnd - eStart))
+    dplyr::mutate(exon_size = as.integer(.data$eEnd - .data$eStart))
   # filter if don't want non-coding exons
   if (filterNONCOD == TRUE) {
     transcriptTab <- transcriptTab %>%
-      dplyr::filter(., eFrame != -1)
+      dplyr::filter(.data$eFrame != -1)
   }
   return(transcriptTab)
 }
@@ -583,13 +584,13 @@ find_retained_intron <- function(ALpos,DLpos,transcript,refseqTab) {
   intronTab <- make_consensus_table(transcript,refseqTab,filterNONCOD = FALSE)
   strand = intronTab$strand[[1]]
   if(strand == 1){
-    intronnum = dplyr::filter(intronTab, intronStart == DLpos+1 & intronEndAdj == ALpos-1)
+    intronnum = dplyr::filter(intronTab, .data$intronStart == DLpos+1 & .data$intronEndAdj == ALpos-1)
   } else {
-    intronnum = dplyr::filter(intronTab, intronStart == ALpos+1 & intronEndAdj == DLpos-1)
+    intronnum = dplyr::filter(intronTab, .data$intronStart == ALpos+1 & .data$intronEndAdj == DLpos-1)
   }
   # find intron and intron type
-  intron = intronnum %>% pull(., intron_num)
-  intron_type = intronnum %>% dplyr::pull(., prev_eFrame)
+  intron = intronnum %>% dplyr::pull(.data$intron_num)
+  intron_type = intronnum %>% dplyr::pull(.data$prev_eFrame)
   if(purrr::is_empty(intron) | purrr::is_empty(intron_type)) {
     return("NA|NA")
   } else {
@@ -602,14 +603,14 @@ find_pseudoexon_position <- function(DGpos,AGpos,strand,refseqTab,transcript) {
   # select exon info for transcript
   intronTab <- make_consensus_table(transcript,refseqTab,filterNONCOD = FALSE)
   if (strand == 1) {
-    intronnum = dplyr::filter(intronTab, intronStart+50 < AGpos & intronEndAdj-50 > DGpos)
+    intronnum = dplyr::filter(intronTab, .data$intronStart+50 < AGpos & .data$intronEndAdj-50 > DGpos)
   } else {
-    intronnum = dplyr::filter(intronTab, intronStart+50 < DGpos & intronEndAdj-50 > AGpos)
+    intronnum = dplyr::filter(intronTab, .data$intronStart+50 < DGpos & .data$intronEndAdj-50 > AGpos)
   }
   # find intron and intron type
   # exclude if branches multiple introns
-  intron = intronnum %>% dplyr::pull(., intron_num)
-  intron_type = intronnum %>% dplyr::pull(., prev_eFrame)
+  intron = intronnum %>% dplyr::pull(.data$intron_num)
+  intron_type = intronnum %>% dplyr::pull(.data$prev_eFrame)
   if(purrr::is_empty(intron) | purrr::is_empty(intron_type) | length(intron) != 1) {
     return("NA|NA")
   } else {
@@ -624,16 +625,18 @@ find_exon_lost <- function(transcript,DLposition,ALposition,refseqTab) {
   size = NA_integer_
   # find the exons, for forward strand
   if (DLposition %in% exonTab$eStartAdj & ALposition %in% exonTab$eEnd) {
-    exons = exonTab %>% dplyr::filter(., DLposition == eStartAdj | ALposition == eEnd)
-    exonNums = exons %>% dplyr::pull(eNum)
-    size = exons %>% dplyr::pull(exon_size) %>% sum()
+    #exons = exonTab %>% dplyr::filter(., DLposition == eStartAdj | ALposition == eEnd)
+    exons = exonTab %>% dplyr::filter(DLposition == .data$eStartAdj | ALposition == .data$eEnd)
+    exonNums = exons %>% dplyr::pull(.data$eNum)
+    size = exons %>% dplyr::pull(.data$exon_size) %>% sum()
     lostExons = paste(unique(exonNums),collapse=",")
   }
   # find the exons, for reverse strand
   if (ALposition %in% exonTab$eStartAdj & DLposition %in% exonTab$eEnd) {
-    exons = exonTab %>% dplyr::filter(., ALposition == eStartAdj | DLposition == eEnd)
-    exonNums = exons %>% dplyr::pull(eNum)
-    size = exons %>% dplyr::pull(exon_size) %>% sum()
+    #exons = exonTab %>% dplyr::filter(., ALposition == eStartAdj | DLposition == eEnd)
+    exons = exonTab %>% dplyr::filter(ALposition == .data$eStartAdj | DLposition == .data$eEnd)
+     exonNums = exons %>% dplyr::pull(.data$eNum)
+    size = exons %>% dplyr::pull(.data$exon_size) %>% sum()
     lostExons = paste(unique(exonNums),collapse=",")
   }
   return(paste(lostExons,size,sep="|"))
@@ -659,7 +662,8 @@ get_partial_SEQ <- function(transcript,consensusStart,consensusEnd,
   partialTable = consensusTable
   strand = consensusTable$strand[[1]]
   if (strand == -1) {
-    partialTable = partialTable %>% dplyr::arrange(., desc(eStartAdj))
+    partialTable = partialTable %>% dplyr::arrange(dplyr::desc(.data$eStartAdj))
+    #partialTable = partialTable %>% dplyr::arrange(., desc(eStartAdj))
   }
   rowNumber = which(partialTable$eStartAdj==consensusStart | partialTable$eEnd == consensusEnd)
   # if can't find the target/affected exons then assume an entirely non-coding exon
@@ -730,15 +734,15 @@ get_partial_SEQ <- function(transcript,consensusStart,consensusEnd,
   }
   # correct for CDS positioning in both tables
   partialTable <- partialTable %>%
-    dplyr::mutate(eStartAdj = ifelse(eStartAdj < cdsStartPos, cdsStartPos, eStartAdj),
-           eEnd = ifelse(eEnd > cdsEndPos, cdsEndPos, eEnd))
+    dplyr::mutate(eStartAdj = ifelse(.data$eStartAdj < cdsStartPos, cdsStartPos, .data$eStartAdj),
+           eEnd = ifelse(.data$eEnd > cdsEndPos, cdsEndPos, .data$eEnd))
   consensusTable <- consensusTable %>%
-    dplyr::mutate(eStartAdj = ifelse(eStartAdj < cdsStartPos, cdsStartPos, eStartAdj),
-           eEnd = ifelse(eEnd > cdsEndPos, cdsEndPos, eEnd))
+    dplyr::mutate(eStartAdj = ifelse(.data$eStartAdj < cdsStartPos, cdsStartPos, .data$eStartAdj),
+           eEnd = ifelse(.data$eEnd > cdsEndPos, cdsEndPos, .data$eEnd))
   # remove any but the immediate upstream exon
   partialTable <- partialTable %>%
     dplyr::ungroup() %>%
-    dplyr::slice(., ((rowNumber-1):dplyr::n()))
+    dplyr::slice((rowNumber-1):dplyr::n())
   predictSEQ = determine_aaSEQ(partialTable,consensusTable,frameshift,varPos,ref,alt, ref.genome)
   return(predictSEQ)
 }
@@ -774,7 +778,7 @@ get_skip_SEQ <- function(exons,refseqTable,frameshift,transcript,varPos,ref,alt)
   minExon = min(exonsList)-1
   strand = consensusTable$strand[[1]]
   if (strand == -1) {
-    skipTable = skipTable %>% dplyr::arrange(., desc(eStartAdj))
+    skipTable = skipTable %>% dplyr::arrange(dplyr::desc(eStartAdj))
   }
   rowNumber = which(skipTable$eNum==minExon)
   # correct for CDS positioning in both tables
@@ -813,25 +817,25 @@ get_pseudo_SEQ <- function(pseudoStart, pseudoEnd, refseqTable, frameshift,
   # add pseudoexon to the transcript table
   pseudoTable = pseudoTable %>%
     dplyr::ungroup() %>%
-    dplyr::add_row(., chrom=currentChr,eStartAdj=pseudoStart,eEnd=pseudoEnd)
+    dplyr::add_row(chrom=currentChr,eStartAdj=pseudoStart,eEnd=pseudoEnd)
   # for reverse strand order the table
   if (strand == -1) {
     pseudoTable = pseudoTable %>%
-      dplyr::arrange(., desc(eStartAdj))
+      dplyr::arrange(dplyr::desc(.data$eStartAdj))
   } else {
     pseudoTable = pseudoTable %>%
-      dplyr::arrange(., eStartAdj)
+      dplyr::arrange(.data$eStartAdj)
   }
   pseudoTable = pseudoTable %>%
-    tibble::rownames_to_column(., "new_rows")
+    tibble::rownames_to_column("new_rows")
   rowNumber = pseudoTable %>%
-    dplyr::filter(is.na(rows)) %>%
+    dplyr::filter(is.na(.data$rows)) %>%
     dplyr::mutate_at(dplyr::vars(c("new_rows")), ~as.numeric(.)) %>%
-    dplyr::pull(., new_rows)
+    dplyr::pull(.data$new_rows)
   # correct for CDS positioning in both tables
   pseudoTable <- pseudoTable %>%
     dplyr::mutate(eStartAdj = ifelse(eStartAdj < cdsstart, cdsstart, eStartAdj),
-           eEnd = ifelse(eEnd > cdsend, cdsend, eEnd))
+           eEnd = ifelse(.data$eEnd > cdsend, cdsend, .data$eEnd))
   consensusTable <- consensusTable %>%
     dplyr::mutate(eStartAdj = ifelse(eStartAdj < cdsstart, cdsstart, eStartAdj),
            eEnd = ifelse(eEnd > cdsend, cdsend, eEnd))
@@ -860,17 +864,17 @@ get_retention_SEQ <- function(refseqTable,intron,frameshift,transcript,varPos,re
   if (strand == 1) {
     neededStart = retentionTable %>%
       dplyr::filter(., eNum==as.integer(intron)) %>%
-      dplyr::pull(., eEnd)
+      dplyr::pull(.data$eEnd)
     neededEnd = retentionTable %>%
       dplyr::filter(., eNum==as.integer(intron)+1) %>%
-      dplyr::pull(., eStartAdj)
+      dplyr::pull(.data$eStartAdj)
   } else {
     neededStart = retentionTable %>%
       dplyr::filter(., eNum==as.integer(intron)+1) %>%
-      dplyr::pull(., eEnd)
+      dplyr::pull(.data$eEnd)
     neededEnd = retentionTable %>%
-      dplyr::filter(., eNum==as.integer(intron)) %>%
-      dplyr::pull(., eStartAdj)
+      dplyr::filter(eNum==as.integer(intron)) %>%
+      dplyr::pull(.data$eStartAdj)
   }
   # assumes that for non-coding introns
   if (purrr::is_empty(neededStart) == TRUE | purrr::is_empty(neededEnd) == TRUE) {
@@ -879,22 +883,22 @@ get_retention_SEQ <- function(refseqTable,intron,frameshift,transcript,varPos,re
   # add the intron to the transcript table
   retentionTable = retentionTable %>%
     dplyr::ungroup() %>%
-    tibble::add_row(., chrom=currentChr,eStartAdj=neededStart+1, eEnd=neededEnd-1)
+    tibble::add_row(chrom=currentChr,eStartAdj=neededStart+1, eEnd=neededEnd-1)
   if (strand == 1) {
     retentionTable = retentionTable %>%
-      dplyr::arrange(., eStartAdj) %>%
-      tibble::rownames_to_column(., "new_rows")
+      dplyr::arrange(.data$eStartAdj) %>%
+      tibble::rownames_to_column("new_rows")
   } else {
     retentionTable = retentionTable %>%
-      dplyr::arrange(., desc(eStartAdj)) %>%
-      tibble::rownames_to_column(., "new_rows")
+      dplyr::arrange(dplyr::desc(.data$eStartAdj)) %>%
+      tibble::rownames_to_column("new_rows")
   }
   rowNumber = retentionTable %>%
-    dplyr::filter(is.na(rows)) %>%
+    dplyr::filter(is.na(.data$rows)) %>%
     dplyr::mutate_at(dplyr::vars(c("new_rows")), ~as.numeric(.)) %>%
     dplyr::pull(., new_rows)
   retentionTable = retentionTable %>%
-    dplyr::select(., -c("rows")) %>%
+    dplyr::select(-c("rows")) %>%
     dplyr::rename("rows" = "new_rows") %>%
     dplyr::mutate_at(dplyr::vars(c("rows")), ~as.numeric(.))
   # correct for CDS positioning in both tables
@@ -921,14 +925,16 @@ determine_aaSEQ <- function(altTable,consensusTab,frameshift,varPos,ref,alt, ref
   # remove the equivalent rows from the consensus table to match the altered table
   if (strand == -1) {
     consensusTab <- consensusTab %>%
-      dplyr::arrange(., desc(eStartAdj))
+      #dplyr::arrange(., desc(eStartAdj))
+      dplyr::arrange(dplyr::desc(.data$eStartAdj))
   }
   minKeepExon = min(altTable$eNum, na.rm = TRUE)
   minKeepExonRow = which(consensusTab$eNum == minKeepExon)
   currentChr = consensusTab$chrom[[1]]
   consensusTab <- consensusTab %>%
     dplyr::ungroup() %>%
-    dplyr::slice(., ((minKeepExonRow):dplyr::n()))
+    dplyr::slice(((minKeepExonRow):dplyr::n()))
+    #dplyr::slice(., ((minKeepExonRow):dplyr::n()))
   # get the DNA sequences
   if(ref.genome =="hg19"){
     alteredExonDNAseqs <- Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg19::Hsapiens,paste0("chr",altTable$chrom),start=altTable$eStartAdj,end=altTable$eEnd)

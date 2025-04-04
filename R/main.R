@@ -74,7 +74,7 @@ NULL
 #' @param spliceai.program Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.
 #' @param spliceai.genome Fasta file assembly provided. It can only be "hg19" or "hg38" assembly. By default it will be hg19.
 #' @param spliceai.reference Path to the Reference genome hg19 hg38 fasta file. hg19 file can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
-#' @param spliceai.annotation Path to gene annotation file. By default it uses the file data(gencode_spliceai_hg19). It must be txt.
+#' @param spliceai.annotation Path to gene annotation file. By default is null and it uses UCSC ncbiRefSeq table. This page is sometimes temporarily out of service. Then the file must be provided (see and example in package docs folder: "../docs/gencode.v38lift37.annotation.txt")
 #' @param spliceai.distance  Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)
 #' @param spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
 #' @param provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
@@ -146,7 +146,7 @@ vaR <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, remote
 #' @param spliceai.program Logical. By default is FALSE and it is assumed that SpliceAI program is not installed in your computer. If this parameter is FALSE, the program will only classify substitutions and simple deletion variants taking into account a spliceAI distance of 1000 and will show masked results. If you want to classify other variants please install SpliceAI (https://pypi.org/project/spliceai/) and set to TRUE the parameter.
 #' @param spliceai.genome Fasta file assembly provided. It can only be "hg19" or "hg38" assembly. By default it will be hg19.
 #' @param spliceai.reference Path to the Reference genome hg19 or hg38 fasta file. hg19 fasta file can be downloaded from http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz . By default is NULL and it will only be taken into account if spliceai.program is set to TRUE.
-#' @param spliceai.annotation Path to gene annotation file. By default it uses the file data(gencode_spliceai_hg19). It must be txt.
+#' @param spliceai.annotation Path to gene annotation file. By default is null and it uses UCSC ncbiRefSeq table. This page is sometimes temporarily out of service. Then the file must be provided (see and example in package docs folder: "../docs/gencode.v38lift37.annotation.txt")
 #' @param spliceai.distance  Integer. Maximum distance between the variant and gained/lost splice site (default: 1000)
 #' @param spliceai.masked Mask scores representing annotated acceptor/donor gain and unannotated acceptor/donor loss (default: 1)
 #' @param provean.program Logical. By default is FALSE and it is assumed that provean program is not installed in your computer.
