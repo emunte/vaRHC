@@ -294,7 +294,6 @@ correctHgvsMutalyzer <- function(NM, NC, gene, variant, skip.pred=FALSE){
   }
 
 if(stringr::str_detect(cor.variant, "\\[[0-9+]\\]")){
-
 server <- "https://rest.variantvalidator.org/VariantValidator/variantvalidator/hg19/"
 ext <- paste0(NM,"%3A", variant, "/", NM, "?content-type=application%2Fjson")
 variant.validator <- api2(server, ext)

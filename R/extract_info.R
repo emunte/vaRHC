@@ -65,7 +65,8 @@ vaRinfo <- function(gene, variant, NM=NULL, CCDS=NULL, gene.specific.df=NULL, ou
   gnomad.info <- gnomADmerge(gnom, gene.specific, bbdd= bbdd.info)
 
   cat("30% completed ... getting information from flossiesdb\n")
-  flossies <- flossiesInfo(nomen.flossies= NULL, nomen.gnomAD=gnom, gene=variant.info$gene)
+  #flossies <- flossiesInfo(nomen.flossies = NULL, nomen.gnomAD=gnom, gene=variant.info$gene)
+  flossies <- flossiesInfoNew(bbdd.info = bbdd.info, gnom = gnom, variant.info$gene)
   cat("40% completed ... getting clinVar information\n")
   clinvar.ids <- clinVarIds(object = variant.info)
   clinvar.info <- clinVarInfo(clinvar.ids, object= variant.info, verbose = verbose)
@@ -150,6 +151,8 @@ extractBBDD <- function(mutalyzer, object, gnom){
   ### provean
   provean <- paste0("SELECT provean_score from provean WHERE variant_g ='", gnom, "' AND gene='", object$gene,"';")
 
+  ##FLOSSIES
+  flossies <-  paste0("SELECT * from FLOSSIES WHERE FLOSSIES_ID ='", flossiesNomenclature(gnom),"';")
   #geneLrgCoord
   #gene.LRG <- paste0("SELECT  l.transcript, l.namegene,l.coordinates, l.transcript2, l.cds_start, l.cds_end, l.strand,  c.exon, c.cStart, c.cStop FROM LRG l LEFT JOIN  transcript t ON t.ensembltranscriptID=l.transcript_id LEFT JOIN LRG_cds c ON l.transcript = c.LRG_id WHERE l.namegene= '",object$gene ,"' AND t.NM='", object$NM, "'; ")
 
@@ -248,7 +251,8 @@ extractBBDD <- function(mutalyzer, object, gnom){
                   gnomad1.genomes = genomes.gnomad[1],
                   gnomad2.genomes = genomes.gnomad[2],
                   gnomad.up.genomes = genomes.gnomad[3],
-                  gnomad.down.genomes = genomes.gnomad[4]
+                  gnomad.down.genomes = genomes.gnomad[4],
+                  flossies= flossies
   )
   return(queries)
 }
@@ -524,6 +528,34 @@ gnomADtotal <- function (datasetA, datasetB, porc){
 }
 
 
+
+flossiesNomenclature <- function(nomen.gnomAD){
+  gnomad <- stringr::str_split(nomen.gnomAD, "-") %>%
+    unlist()
+  dup <- stringr::str_length(gnomad[4]) > 1
+  del <- stringr::str_length(gnomad[3]) > 1
+  nomen.flossies <- nomen.gnomAD
+  nomen.flossies <- ifelse(del,
+                           paste0(gnomad[1], "-", as.numeric(gnomad[2])+1, "-", stringr::str_sub(gnomad[3],2, stringr::str_length(gnomad[3])), "-"),
+                           ifelse(dup,
+                                  paste0(gnomad[1], "-", as.numeric(gnomad[2])+1, "--", stringr::str_sub(gnomad[4],2, stringr::str_length(gnomad[4]))),
+                                  nomen.gnomAD))
+  return(nomen.flossies)
+}
+
+flossiesInfoNew <- function(bbdd.info, gnom, gene){
+  if(nrow(bbdd.info$flossies)>0){
+    flossies <- bbdd.info$flossies %>% dplyr::select(-cHGVS, -pHGVS,-gene, -Annotation)
+  } else if (gene %in% c("BRCA1", "BRCA2", "ATM", "ATR", "BAP1", "BARD1", "BRIP1", "CDH1", "CHEK1", "CHEK2", "CTNNA1", "FAM175A", "FANCM", "GEN1", "MRE11A", "NBN", "PALB2", "PTEN", "RAD51B", "RAD51C", "RAD51D", "RINT1", "SLX4", "STK11", "TP53", "XRCC2")){
+    flossies <- data.frame(FLOSSIES_ID=flossiesNomenclature(gnom), carrier=0, homo=0, hete=0, total=9884, Overall_Frequency=0, European_carriers=0, total_european=7325, African_carriers=0, total_African=2559)
+  }else if (gene %in% c("RECQL")){
+    flossies <- data.frame(FLOSSIES_ID=flossiesNomenclature(gnom), carrier=0, homo=0, hete=0, total=4929, Overall_Frequency=0, European_carriers=0, total_european=3646, African_carriers=0, total_African=1283)
+  }else{
+    flossies <- data.frame(FLOSSIES_ID=flossiesNomenclature(gnom), carrier=0, homo=0, hete=0, total=0, Overall_Frequency=0, European_carriers=0, total_european=0, African_carriers=0, total_African=0)
+  }
+
+  return(flossies)
+}
 #' Information from FLOSSIES db
 #' @param nomen.flossies  character. FlOSSIES Id of the variant of interest. If you don't know it it can be set to NULL
 #' @param nomen.gnomAD character. By default is null. If  nomen.flossies is not known you can use gnomAD nomenclature. gnomAD nomenclature can be infered with gnomADnomen() function.
@@ -554,13 +586,13 @@ flossiesInfo <- function(nomen.flossies, nomen.gnomAD=NULL, gene){
   if (gene %in% c( "BRCA1", "BRCA2", "ATM", "ATR", "BAP1", "BARD1", "BRIP1", "CDH1", "CHEK1", "CHEK2", "CTNNA1", "FAM175A", "FANCM", "GEN1", "MRE11A", "NBN", "PALB2", "PTEN", "RAD51B", "RAD51C", "RAD51D", "RECQL", "RINT1", "SLX4", "STK11", "TP53", "XRCC2")
       && stringr::str_detect(url.flossies, "was not found in the FLOSSIES data set") == FALSE & stringr::str_detect(url.flossies, "have not sequenced and analyzed") == FALSE ){
     flossies <-XML::readHTMLTable(url.flossies, as.data.frame=T, which = 1, stringsAsFactors=FALSE )#we want the frequency_table of flossies
-    flossies2 <- data.frame(population=c("European American", "African American"),
+    flossies2 <- data.frame(population=flossies$Population,
                             carrier=as.numeric(flossies$`Carrier Count`),
                             homo=as.numeric(flossies$Homozygotes),
                             hete=as.numeric(flossies$Heterozygotes),
                             total=as.numeric(flossies$`Total Subjects`),
                             freq=as.numeric(flossies$`Carrier Frequency`))
-    all_flossies <- cbind(population="all", dplyr::summarise(flossies2, carrier=sum(.data$carrier), homo=sum(.data$homo), hete=sum(.data$hete), total=sum(.data$total), freq=mean(.data$freq)))
+    all_flossies <- cbind(population="all", dplyr::summarise(flossies2, carrier=sum(.data$carrier), homo=sum(.data$homo), hete=sum(.data$hete), total=sum(.data$total), freq=carrier/total))
   } else {
     flossies2 <- data.frame(population = c("European American","African American"),carrier=c(0,0), homo=c(0,0), hete=c(0,0), total=c(0,0), freq=c(0,0))
     all_flossies <- data.frame(population="all", carrier=0, homo=0, hete=0, total=0, freq=0)

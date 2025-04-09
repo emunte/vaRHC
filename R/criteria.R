@@ -1250,11 +1250,11 @@ BS2 <- function (all.information, final.criteria){
     #information from db
     #healthy individuals from flossies
     homo.healthy <- all.information$flossies.db %>%
-      dplyr::filter (.data$population == "all") %>%
+      #dplyr::filter (.data$population == "all") %>%
       dplyr::select ("homo") %>%
       as.numeric()
     hete.healthy <- all.information$flossies.db %>%
-      dplyr::filter (.data$population == "all") %>%
+      #dplyr::filter (.data$population == "all") %>%
       dplyr::select ("hete", "homo") %>%
       as.numeric() %>%
       sum()
