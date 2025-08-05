@@ -461,11 +461,13 @@ PM2 <- function (all.information, final.criteria){
                         .data$AC > 1,
                         .data$AF >= 0.00002)
       }else{
+        print("hola1")
         selected <- all.information$gnomAD$info$exomes$non.cancer$subpopulations %>%
-          tibble::rownames_to_column %>%
+          tibble::rownames_to_column() %>%
           dplyr::filter(.data$rowname %in% subpopu.to.look,
                         .data$AC > 1,
                         .data$AF >= 0.00002)
+        print("hola1b")
       }
       final.criteria$criteria.res["PM2",3] <- ifelse( sel.PM2==TRUE & nrow(selected) ==0,
                                                       1,
@@ -492,8 +494,9 @@ PM2 <- function (all.information, final.criteria){
                           .data$AF >= 0.00002)
 
         }else{
+          "hola2"
           selected.sup <- all.information$gnomAD$info$exomes$non.cancer$subpopulations %>%
-            tibble::rownames_to_column %>%
+            tibble::rownames_to_column() %>%
             dplyr::filter(.data$rowname %in% subpopu.to.look,
                           .data$AC > 1,
                           .data$AF >= 0.00002)

@@ -835,6 +835,10 @@ clinVarTable <- function(table, verbose = FALSE){
       if(length(which(which.no.chose$which.no.chose))>0){
       table.ex[[5]] <- table.ex[[5]][-which(which.no.chose$which.no.chose),]
       }
+      table.ex[[5]] <- table.ex[[5]] %>%
+        filter(
+          !dplyr::if_all(everything(), ~ .x == "" | is.na(.x))
+        )
       interpret <- table.ex[[5]][1] %>%
                    as.data.frame() %>%
                    dplyr::mutate (Interpretation= purrr::map(stringr::str_split(.data$Interpretation, "\\n"),1))
