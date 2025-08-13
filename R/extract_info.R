@@ -719,8 +719,8 @@ clinVarInfo <- function (clinvar.id, object, verbose = FALSE){
     b <- clinVarTable(clinvar.ids, verbose = verbose)
     names(b) <- clinvar.ids$V2
     for (i in 1:nrow(clinvar.ids)){
-      if(!is.null(b[[i]])){
-        names(b[[i]]) <- c("Timeline","Nomenclature",  "Gene(s)", "Condition", "Submitted.interpretations.and.evidence", "Functional", "Citations", "Classification")
+      if(!is.null(b[[i]]) & b[[i]][1] != "No data submitted for germline classification."){
+        names(b[[i]]) <- c("Timeline","Nomenclature",  "Gene(s)", "Condition", "Submitted.interpretations.and.evidence", "Functional", "Veredict", "Classification")
       }
     }
     b <- Filter(Negate(is.null), b)
@@ -810,13 +810,20 @@ clinVarTable <- function(table, verbose = FALSE){
     page <- try(readUrl(g))
     if (!is.na(page) && !is.null(page) && class(page)[1]!="try-error" &&  any(class(page[1])!="try-error")){
       print(g)
+
+
       table.ex <- rvest::html_table(page, header=TRUE)
+      if (length(table.ex)>2){
       headers.tables <- page %>%
         rvest::html_nodes("h3") %>%
         rvest::html_nodes(xpath = "./text()") %>%
         rvest::html_text(trim = TRUE) %>%
         .[. != ""]
-      names(table.ex) <- c("Timeline", headers.tables[-length(headers.tables)])
+      headers.tables.clean <- headers.tables[
+        (seq_along(headers.tables) < length(headers.tables)) &
+          (headers.tables != "Submissions - Functional Data")
+      ]
+      names(table.ex) <- c("Timeline", headers.tables.clean)
       headers.mantain <- c("Timeline",
         "Variant Details",
         "Genes",
@@ -841,36 +848,53 @@ clinVarTable <- function(table, verbose = FALSE){
         )
       interpret <- table.ex[[5]][1] %>%
                    as.data.frame() %>%
-                   dplyr::mutate (Interpretation= purrr::map(stringr::str_split(.data$Interpretation, "\\n"),1))
+                   dplyr::mutate (Interpretation= purrr::map(stringr::str_split(.data$Interpretation, "\\n"),1) %>% unlist())
       date.clin <- table.ex[[5]][1] %>%
                    as.data.frame() %>%
-                   dplyr::mutate (date= purrr::map(stringr::str_split(.data$Interpretation, "\\(|\\)"),2))
+                   dplyr::mutate (date= purrr::map(stringr::str_split(.data$Interpretation, "\\(|\\)"),2) %>% unlist())
       review <- table.ex[[5]][2] %>%
                 as.data.frame() %>%
-                dplyr::mutate (review= purrr::map(stringr::str_split(.data$Review_status, "\\n"),1)) %>%
+                dplyr::mutate (review= purrr::map(stringr::str_split(.data$Review_status, "\\n"),1) %>% unlist()) %>%
                 dplyr::select("review")
       review.mode <- table.ex[[5]][2] %>%
-                     as.data.frame() %>%
-                     dplyr::mutate (review2= purrr::map(stringr::str_split(.data$Review_status, "\\n"),3)) %>%
-                    dplyr::select("review2")
-      table.ex[[5]][1] <- unlist(interpret$Interpretation)
-      table.ex[[5]][2] <- unlist(review)
-      table.ex[[5]][6] <- unlist(date.clin$date)
-      table.ex[[5]]$review_mode <- unlist(review.mode)
+        as.data.frame() %>%
+        dplyr::mutate(
+          review2 = stringr::str_extract(Review_status, "\\([^()]*?(\\([^()]*\\)[^()]*)*\\)\\s*$") |>  # captura parèntesis amb parèntesis interns
+            stringr::str_remove_all("^\\(|\\)$") |>
+            stringr::str_squish()
+        ) %>%
+        dplyr::select(review2)
+      #table.ex[[5]][1] <- unlist(interpret$Interpretation)
+      #table.ex[[5]][2] <- unlist(review)
+      #table.ex[[5]][6] <- unlist(date.clin$date)
+      #table.ex[[5]]$review_mode <- unlist(review.mode)
       table.ex[[5]] <- table.ex[[5]] %>%
                        dplyr::rowwise() %>%
                        dplyr::mutate(More_information=stringr::str_replace_all(.data$More_information, "\n", "") %>%
                        stringr::str_replace_all("  ", ""), Condition=stringr::str_replace_all(.data$Condition, "\n", ""))
       summary <- reviewStatus(as.data.frame(table.ex[[5]]))
-      text.ex <- rvest::html_elements(page, ".single-item-value")
-      text.ex2 <- rvest::html_elements(page, ".section-cnt")
-      text.ex3 <- rvest::html_elements(page, ".smaller")
-      interpret <- stringr::str_replace_all(rvest::html_text(text.ex)[1], "  |\\n","")
-      status <- stringr::str_replace_all(rvest::html_text(text.ex2)[1], "  |\\n","")
-      submissions <- stringr::str_replace_all(rvest::html_text(text.ex3)[2], "  |\\n|Help|Stars represent the aggregate review status, or the level of review supporting the aggregate germline classification for this VCV record. This value is calculated by NCBI based on data from submitters. Read our rules for calculating the review status. The number of submissions which contribute to this review status is shown in parentheses.","")
-      mix <- data.frame(interpret=interpret, status=status, submissions=submissions)
+      #text.ex <- rvest::html_elements(page, ".single-item-value")
+      #text.ex2 <- rvest::html_elements(page, ".section-cnt")
+      #text.ex3 <- rvest::html_elements(page, ".smaller")
+      #interpret <- stringr::str_replace_all(rvest::html_text(text.ex)[1], "  |\\n","")
+      #status <- stringr::str_replace_all(rvest::html_text(text.ex2)[1], "  |\\n","")
+      germline.review.status <- page %>%
+        rvest::html_element(xpath = "//h3[starts-with(normalize-space(),'Conditions - Germline')]/following::table[1]//tr[1]/td[3]") %>%
+        rvest::html_text2() %>%
+        stringr::str_squish()
+
+      germline.classification <- page %>%
+        rvest::html_element(xpath = "//h3[starts-with(normalize-space(),'Conditions - Germline')]/following::table[1]//tr[1]/td[2]") %>%
+        rvest::html_text2() %>%
+        stringr::str_squish()
+      #submissions <- stringr::str_replace_all(rvest::html_text(text.ex3)[2], " by \n                                                        \n                                                            \n                                                                Evidence-based Network for the Interpretation of Germline M…\n                                                            \n                                                        \n                                                        \n                                                            \n\n    \n    Help\n\n\n                                                            \n    \n        The classification is calculated by NCBI based on data from submitters. Read our rules for calculating the aggregate classification.\n    \n    \n\n\n                                                        \n                                                    ","")
+      mix <- data.frame(interpret=germline.classification, status=germline.review.status#, submissions=submissions
+                        )
       table.ex$mix <- mix
       table.ex[["summary"]] <- summary
+      }else{
+        table.ex <- "No data submitted for germline classification."
+      }
       return(table.ex)
     }
   })

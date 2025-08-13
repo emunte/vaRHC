@@ -109,7 +109,12 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
                              startRow=12, startCol=10,
                              header=FALSE)
 
-  if(length(vaRinfo$clinVar$clinVar.info$variant) >0 &&length(vaRinfo$clinVar$clinVar.info$variant[[1]]) > 0){
+  if(length(vaRinfo$clinVar$clinVar.info$variant) > 0 && length(vaRinfo$clinVar$clinVar.info$variant[[1]]) > 0 ){
+    if(vaRinfo$clinVar$clinVar.info$variant[[1]][1] == "No data submitted for germline classification."){
+      XLConnect:: writeWorksheet(wb,"No data submitted for germline classification." , sheet="Classification Summary",
+                                 startRow=12, startCol=13,
+                                 header=FALSE)
+    }else{
     XLConnect:: writeWorksheet(wb,vaRinfo$clinVar$clinVar.info$variant[[1]]$Classification$status , sheet="Classification Summary",
                                startRow=9, startCol=13,
                                header=FALSE)
@@ -117,7 +122,7 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
                                startRow=12, startCol=13,
                                header=FALSE)
 
-  }
+  }}
 
   functionals.messages <- ifelse(vaRclass$final.criteria$PS3.message==vaRclass$final.criteria$BS3.message,
                                  "BS3 and PS3 are not assigned because variant is not found in the automated literature. Please check for more. ",
@@ -363,25 +368,29 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
                                                     dplyr::select("V1")
   }
 
-  if(exists("id.variant")&&nrow(id.variant)>0 &&length(vaRinfo$clinVar$clinVar.info$variant)>0){
+  if(exists("id.variant")&& nrow(id.variant)>0 && length(vaRinfo$clinVar$clinVar.info$variant)>0){
     XLConnect::writeWorksheet(wb, paste0("https://www.ncbi.nlm.nih.gov/clinvar/variation/", id.variant), sheet="ClinVar",
                               startRow=13, startCol=2,
                               header=FALSE, rownames= FALSE)
-
-    XLConnect::writeWorksheet(wb, purrr::map(vaRinfo$clinVar$clinVar.info$variant[[1]][8],2)%>%unlist, sheet="ClinVar", #non_cancer exomes
+    if(vaRinfo$clinVar$clinVar.info$variant[[1]][1] == "No data submitted for germline classification."){
+      XLConnect::writeWorksheet(wb, "No data submitted for germline classification." , sheet="ClinVar", #non_cancer exomes
+                                startRow=3, startCol=5,
+                                header=FALSE, rownames= TRUE)
+    }else{
+    XLConnect::writeWorksheet(wb,  vaRinfo$clinVar$clinVar.info$variant[[1]]$Veredict$status, sheet="ClinVar", #non_cancer exomes
                               startRow=2, startCol=5,
                               header=FALSE, rownames= TRUE)
-    XLConnect::writeWorksheet(wb, purrr::map(vaRinfo$clinVar$clinVar.info$variant[[1]][8],1)%>%unlist, sheet="ClinVar",
+    XLConnect::writeWorksheet(wb,  vaRinfo$clinVar$clinVar.info$variant[[1]]$Veredict$interpret, sheet="ClinVar",
                               startRow=3, startCol=5,
                               header=FALSE, rownames= TRUE)
     XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$variant[[1]]$Submitted.interpretations.and.evidence%>% as.data.frame(), sheet="ClinVar",
                               startRow=15, startCol=1,
                               header=FALSE, rownames= FALSE)
-    XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$variant[[1]]$Citations%>% as.data.frame(), sheet="ClinVar",
-                              startRow=15, startCol=9,
-                              header=FALSE, rownames= FALSE)
+    #XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$variant[[1]]$Citations%>% as.data.frame(), sheet="ClinVar",
+    #                          startRow=15, startCol=9,
+    #                          header=FALSE, rownames= FALSE)
 
-    XLConnect::writeWorksheet(wb, matrix(unlist(vaRinfo$clinVar$clinVar.info$variant[[1]][9]), nrow=5), sheet="ClinVar",
+    XLConnect::writeWorksheet(wb, matrix(unlist(vaRinfo$clinVar$clinVar.info$variant[[1]]$Classification), nrow=5), sheet="ClinVar",
                               startRow=6, startCol=2,
                               header=FALSE, rownames= FALSE)
     #var.clin <- ifelse( exists("vaRinfo$clinVar$clinVar.ids$table$blosum"),
@@ -399,7 +408,7 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
     XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$variant[[1]]$Classification , sheet="ClinVar Variants",
                               startRow=9, startCol=8,
                               header=FALSE, rownames= FALSE)
-  }else{
+  }}else{
     XLConnect::writeWorksheet(wb, "The variant is not found in clinVar db.", sheet="ClinVar",
                               startRow=13, startCol=2,
                               header=FALSE, rownames= FALSE)
@@ -437,6 +446,11 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
                                                                       dplyr::select("V2", "url", "a1", "a2","blosum", "grantham", "prior") %>% as.data.frame(), sheet="ClinVar Variants",
                                 startRow=9+j, startCol=1,
                                 header=FALSE, rownames= FALSE)
+      if(vaRinfo$clinVar$clinVar.info$same_codon[[j]][1] =="No data submitted for germline classification."){
+        XLConnect::writeWorksheet(wb, "No data submitted for germline classification.", sheet="ClinVar Variants",
+                                  startRow=9+j, startCol=8,
+                                  header=FALSE, rownames= FALSE)
+      }else{
       XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$same_codon[[j]]$Classification , sheet="ClinVar Variants",
                                 startRow=9+j, startCol=8,
                                 header=FALSE, rownames= FALSE)
@@ -459,21 +473,22 @@ vaRreport <-   function(vaRinfo, vaRclass, output.dir=NULL ){
                                   startRow=5, startCol=5,
                                   header=FALSE, rownames= FALSE)
       }
-      XLConnect::writeWorksheet(wb, purrr::map(vaRinfo$clinVar$clinVar.info$same_codon[[j]][8],2) %>% unlist, sheet=sheet.name,
+      XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$same_codon[[j]]$Veredict$status, sheet=sheet.name,
                                 startRow=8, startCol=5,
                                 header=FALSE, rownames= TRUE)
-      XLConnect::writeWorksheet(wb, purrr::map(vaRinfo$clinVar$clinVar.info$same_codon[[j]][8],1) %>% unlist, sheet=sheet.name,
+      XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$same_codon[[j]]$Veredict$interpret, sheet=sheet.name,
                                 startRow=9, startCol=5,
                                 header=FALSE, rownames= TRUE)
       XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$same_codon[[j]][5], sheet=sheet.name,
                                 startRow=20, startCol=1,
                                 header=FALSE, rownames= FALSE)
-      XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$same_codon[[j]][7], sheet=sheet.name,
-                                startRow=20, startCol=9,
-                                header=FALSE, rownames= FALSE)
-      XLConnect::writeWorksheet(wb, matrix(unlist(vaRinfo$clinVar$clinVar.info$same_codon[[j]][9]),nrow=5), sheet=sheet.name,
+      #XLConnect::writeWorksheet(wb, vaRinfo$clinVar$clinVar.info$same_codon[[j]][7], sheet=sheet.name,
+      #                          startRow=20, startCol=9,
+      #                          header=FALSE, rownames= FALSE)
+      XLConnect::writeWorksheet(wb, matrix(unlist(vaRinfo$clinVar$clinVar.info$same_codon[[j]]$Classification),nrow=5), sheet=sheet.name,
                                 startRow=12, startCol=2,
                                 header=FALSE, rownames= FALSE)
+      }
     }
   }
   XLConnect::removeSheet(wb, "ClinVar Extra")

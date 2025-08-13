@@ -251,7 +251,12 @@ startVariants <- function (all.information, final.criteria){
 ################################################################################
 ## PS1
 ################################################################################
-
+is_real_evidence <- function(x) {
+  if (length(x) == 1 && is.character(x)) {
+    !grepl("^\\s*no\\s+data\\s+submitted\\s+for\\s+.*classification\\.?\\s*$",
+           tolower(x))
+  } else TRUE
+}
 PS1 <- function (all.information, final.criteria){
   PS1.message <- NULL
   gene <- all.information$Variant.Info$gene
@@ -353,11 +358,13 @@ PS1 <- function (all.information, final.criteria){
 }
 clinVarEvidence <- function(all.information){
   score.total <- c()
-  clinvar.evidence.calc <- sapply(all.information$clinVar$clinVar.info$same_codon,  function (x){
+  posLook <- purrr::map(all.information$clinVar$clinVar.info$same_codon,1) != "No data submitted for germline classification."
+  clinvar.evidence.calc <- sapply(all.information$clinVar$clinVar.info$same_codon[posLook],  function (x){
     num.len <- length(x)
     score <- x[[num.len]]
     score.total <-rbind(score.total, as.matrix(score))
     return(score.total)
+
   })
   return(clinvar.evidence.calc)
 }
