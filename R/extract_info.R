@@ -341,8 +341,9 @@ gnomADcov <- function(assembly, track, gnomAD.nomenclature, chr=NULL, start=NULL
   server.ucsc <- "https://api.genome.ucsc.edu/getData/track?" #UCSC's REST API
   coverage <- try(api2(server.ucsc, ext.coverage))
   ge <- paste0("gnomad", track, "MeanCoverage")
-  cover <- coverage[[ge]][chr.gnom] #we check the coverage for the specific genome and chromosome
-  value.cov <- cover[[chr.gnom]]["value"]
+  #cover <- coverage[[ge]][chr.gnom] #we check the coverage for the specific genome and chromosome
+  #value.cov <- cover[[chr.gnom]]["value"]
+  value.cov <- cover <- coverage[[ge]]["value"]
   if (mean.value==TRUE &!is.null(value.cov)){
     mean.cov <- mean(unlist(value.cov$value))
     return(mean.cov)
