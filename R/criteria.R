@@ -648,7 +648,7 @@ PM5 <- function (all.information, final.criteria){
         }
 
     }else if (all.information$Variant.Info$most.severe.consequence %in% c("splice_donor_variant", "splice_acceptor_variant")){
-      con <- DBI::dbConnect(RMySQL::MySQL(), user='userguest', dbname='class_variants', host='idivarhcdb001-cluster.cluster-ro-c38m6cy2udz0.eu-central-1.rds.amazonaws.com', password='jNU%cd%Xjw*tY*%')
+      con <- DBI::dbConnect(RMySQL::MySQL(), user='userguest', dbname='class_variants', host='idivarhcdb002-instance-1.cls4mi42iy5n.eu-south-2.rds.amazonaws.com', password='jNU%cd%XjwtY%')
       on.exit(DBI::dbDisconnect(con))
       pos <- stringr::str_extract(all.information$Variant.Info$variant, "[0-9]+")
       query <- paste0("SELECT PM5 FROM canonicals WHERE location='c.", pos ,"'")
