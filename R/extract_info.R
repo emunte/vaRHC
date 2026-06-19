@@ -498,7 +498,7 @@ positionToLook <- function (track, gnomAD.ID, bbdd){
     position.query <- stringr::str_c(position[1], position[2], sep=paste0("' OR ", track,"_id ='"))}else{
       position.query <- position
     }
-  con <- DBI::dbConnect(RMySQL::MySQL(), user='userguest', dbname='class_variants', host='idivarhcdb002-instance-1.cls4mi42iy5n.eu-south-2.rds.amazonaws.com', password='jNU%cd%XjwtY%')
+  con <- DBI::dbConnect(RMySQL::MySQL(), user='userguest', dbname='class_variants', host='idivarhcdb002-instance-1.cls4mi42iy5n.eu-south-2.rds.amazonaws.com', password='jNU%cd%Xjw*tY*%')
   query.info.gnomad <- paste0("SELECT * from ", track, "_gnomad WHERE ", track,"_id = '", position.query ,"';")
   on.exit(DBI::dbDisconnect(con))
   info <- DBI::dbGetQuery(con, query.info.gnomad)
