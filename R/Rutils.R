@@ -14,7 +14,7 @@ connectionDB <- function(query){
                         dbname='class_variants',
                         port=3306,
                         host='idivarhcdb002-instance-1.cls4mi42iy5n.eu-south-2.rds.amazonaws.com',
-                        password='jNU%cd%XjwtY%')
+                        password='jNU%cd%Xjw*tY*%')
   on.exit(DBI::dbDisconnect(con))
   results <- lapply(query, function(x){
     return(tryCatch( suppressWarnings(DBI::dbGetQuery(con, x)),
