@@ -13,7 +13,7 @@ connectionDB <- function(query){
                         user='userguest',
                         dbname='class_variants',
                         port=3306,
-                        host='idivarhcdb002-instance-1.cls4mi42iy5n.eu-south-2.rds.amazonaws.com',
+                        host='varhc.idibell.cat',
                         password='jNU%cd%Xjw*tY*%')
   on.exit(DBI::dbDisconnect(con))
   results <- lapply(query, function(x){
